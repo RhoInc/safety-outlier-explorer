@@ -1,14 +1,13 @@
-import { select } from 'd3';
+import { select, min, max } from 'd3';
 import { multiply, createChart } from 'webcharts';
 import rangePolygon from './rangePolygon';
 
 export default function smallMultiples(id, chart) {
     //clear current multiples
 	chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
-    //Establish settings for small multiples based off of the main chart//
-    //NOTE: will likely need polyfill for Object.assign//
+    //Establish settings for small multiples based off of the main chart
+    //NOTE: will likely need polyfill for Object.assign
     var mult_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
-    mult_settings.x.domain = chart.x_dom;
     mult_settings.aspect = 5.4;
     mult_settings.margin = {bottom:20};
     var multiples = createChart(chart.wrap.select('.multiples').node(), mult_settings, null);
@@ -51,12 +50,17 @@ export default function smallMultiples(id, chart) {
             .map(m => +m[chart.config.y.column])
             .filter(f => +f || +f === 0 );
 
-        var ylo = d3.min(yvals);
-        var yhi = d3.max(yvals);
-        var ymin = d3.min([ylo, normlo]);
-        var ymax = d3.max([yhi, normhi]);
+        var ylo = min(yvals);
+        var yhi = max(yvals);
+        var ymin = min([ylo, normlo]);
+        var ymax = max([yhi, normhi]);
 
         this.config.y_dom = [ymin, ymax];
+    });
+    
+    multiples.on('draw', function(){
+        //borrow same domain for x
+        this.x_dom = chart.x.domain();
     });
     
     multiples.on("resize", function(){

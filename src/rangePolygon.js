@@ -17,7 +17,7 @@ export default function rangePolygon (chart){
 
     var dRow = chart.filtered_data[0];
 
-    var myRows = chart.x_dom.map(m => {
+    var myRows = chart.x_dom.slice().map(m => {
         return {
             STNRLO: dRow[chart.config.normal_col_low],
             STNRHI: dRow[chart.config.normal_col_high],

@@ -11,7 +11,7 @@ const settings = {
     //Standard webcharts settings
     x:{
         column:"DY",
-        type:"linear",
+        type:"linear"
         // label:"Study Day"
     },
     y:{
@@ -58,7 +58,7 @@ const settings = {
 
 export const controlInputs = [ 
     {label: "Lab Test", type: "subsetter", value_col: "TEST", start: null},
-    {type: "dropdown", values: ["VISIT","VISITN","DY"], label: "Measure", option: "x.column"}
+    {type: "dropdown", values: ["VISIT","VISITN","DY"], label: "Measure", option: "x.column", require: true}
 ];
 
 export const tableSettings = {

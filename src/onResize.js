@@ -44,8 +44,8 @@ export default function onResize(){
         smallMult(id, mainChart);
     })
 
-    var units = this.current_data[0].values.raw[0][config.unit_col]
-    var measure = this.current_data[0].values.raw[0][config.measure_col]
+    // var units = this.current_data[0].values.raw[0][config.unit_col]
+    // var measure = this.current_data[0].values.raw[0][config.measure_col]
 
     //draw reference boxplot 
     this.svg.select("g.boxplot").remove()

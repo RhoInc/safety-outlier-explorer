@@ -1,7 +1,7 @@
 import React from 'react';
 import stringAccessor from './string-accessor';
 import binding from './binding';
-import ReactShiftPlot from './ReactShiftPlot';
+import ReactOutlierExplorer from './ReactOutlierExplorer';
 
 export default class Renderer extends React.Component {
   constructor(props) {
@@ -52,7 +52,7 @@ export default class Renderer extends React.Component {
   }
   render() {
     return (
-      React.createElement(ReactShiftPlot, {
+      React.createElement(ReactOutlierExplorer, {
         id: this.props.id,
         settings: this.state.settings, 
         controlInputs: this.props.template.controls,

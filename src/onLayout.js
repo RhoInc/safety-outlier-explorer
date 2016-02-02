@@ -12,6 +12,7 @@ export default function onLayout(){
 
             this.config.x.column = value;
             this.config.marks[1].per[2] = value;
+
             //DY is a hardcoded variable...
             this.config.x.type = value == "DY" ? "linear" : "ordinal";
             this.draw();

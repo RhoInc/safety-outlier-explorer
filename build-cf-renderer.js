@@ -15,7 +15,7 @@ rollup.rollup({
 	  dest: 'cf-outlier-explorer.common.js'
 	});
 	console.log('bundled!')
-	fs.writeFileSync( 'cf-outlier-explorer.common.j', result.code );
+	fs.writeFileSync( 'cf-outlier-explorer.common.js', result.code );
 })
 .catch( function (error) {
 	console.log(error);
