@@ -8,7 +8,9 @@ var outlierExplorer = (function (webcharts,d3$1) {
 	    measure_col: "TEST",
 	    value_col: "STRESN",
 	    unit_col: "STRESU",
-	    "start_value": null,
+	    normal_col_low: "STNRLO",
+	    normal_col_high: "STNRHI",
+	    start_value: null,
 	    //Standard webcharts settings
 	    x:{
 	        column:"DY",
@@ -106,7 +108,10 @@ var outlierExplorer = (function (webcharts,d3$1) {
 	            //DY is a hardcoded variable...
 	            this.config.x.type = value == "DY" ? "linear" : "ordinal";
 	            this.draw();
-	        })
+	        });
+
+	    //add wrapper for small multiples
+	    this.wrap.append('div').attr('class', 'multiples');
 	}
 
 	function onDataTransform(){
@@ -118,7 +123,8 @@ var outlierExplorer = (function (webcharts,d3$1) {
 	}
 
 	function onDraw(){
-	    
+	    //clear current multiples
+	    this.wrap.select('.multiples').select('.wc-small-multiples').remove();
 	}
 
 	function addBoxplot(svg, results, height, width, domain, boxPlotWidth, boxColor, boxInsideColor, format, horizontal){
@@ -229,86 +235,112 @@ var outlierExplorer = (function (webcharts,d3$1) {
 	    });
 	}
 
-	function smallMultiples(id, chart) {
+	function rangePolygon (chart){
 
-		d3$1.select(chart.template.element_combined).select('.wc-small-multiples').remove();
+	    var area = d3$1.svg.area()
+	        .x(function(d){ 
+	            return chart.x(d["TIME"])
+	        }) 
+	        .y0(function(d){ 
+	            var lbornlo = d['STNRLO'];
+	            return lbornlo !== 'NA' ? chart.y(+lbornlo) : 0
+	        })
+	        .y1(function(d) { 
+	            var lbornrhi = d['STNRHI'];
+	            return lbornrhi !== 'NA' ? chart.y(+lbornrhi) : 0
+	        });
+
+	    var dRow = chart.filtered_data[0];
+
+	    var myRows = chart.x_dom.map(m => {
+	        return {
+	            STNRLO: dRow[chart.config.normal_col_low],
+	            STNRHI: dRow[chart.config.normal_col_high],
+	            TIME: m
+	        };
+	    });
+
+	    chart.svg.append("path")
+	        .datum(myRows)
+	        .attr("class","norms")
+	        .attr("fill","blue")
+	        .attr("fill-opacity",0.1)
+	        .attr("d",area);
+	}
+
+	function smallMultiples(id, chart) {
+	    //clear current multiples
+		chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
 	    //Establish settings for small multiples based off of the main chart//
-	    //NOTE: Would probably be better to "clone" settings and then adjust ...//
-	    var mult_settings = chart.template.config
-	    mult_settings.x.domain = chart.x_dom
-	    mult_settings.aspect = 5.4
-	    mult_settings.margin={bottom:20}
-	    var multiples = webCharts.createChart(chart.template.element_combined, mult_settings, null);
-	    multiples.template = chart.template
+	    //NOTE: will likely need polyfill for Object.assign//
+	    var mult_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
+	    mult_settings.x.domain = chart.x_dom;
+	    mult_settings.aspect = 5.4;
+	    mult_settings.margin = {bottom:20};
+	    var multiples = webcharts.createChart(chart.wrap.select('.multiples').node(), mult_settings, null);
 
 	    //insert a header
-	    multiples.wrap.insert('strong', '.legend')
-	    .text('All Measures for '+id);
+	    multiples.wrap.insert('strong', '.legend').text('All Measures for '+id);
 	    
 	    //get normal values and adjust domain
 	    multiples.on("layout", function(){
 
 	        //header formatting
-	        this.wrap.selectAll(".wc-chart-title").style("display","block")
+	        this.wrap.selectAll(".wc-chart-title").style("display","block");
 
 	        //set width of container
-	        d3.select(this.div)
-	        .style("width",this.config.width*1.1)
-	        .style("display","block")
+	        this.wrap
+	            .style("width",this.config.width*1.1)
+	            .style("display","block");
 
 	        //remove padding/margins
-	        d3.select(this.div).selectAll(".wc-chart").style("padding-bottom","2px")
+	        this.wrap.selectAll(".wc-chart").style("padding-bottom","2px")
 
 	        //border between multiple
-	        d3.select(this.div).selectAll(".wc-chart-title").style("border-top","1px solid #eee")
+	        this.wrap.selectAll(".wc-chart-title").style("border-top","1px solid #eee")
 	        //set y scale based on values & normal range
-	        var myChart = this;
-	        var filtered_data = this.raw_data.filter(function(d){
-	            return d[myChart.filters[0].col]==myChart.filters[0].val
+	        var filtered_data = this.raw_data.filter(f => {
+	            return f[this.filters[0].col] === this.filters[0].val;
 	        })
 	        var normlovals = filtered_data
-	        .map(function(m){return +m["STNRLO"]})
-	        .filter(function(f){return +f || +f === 0});
+	            .map(m => +m[chart.config.normal_col_low])
+	            .filter(f => +f || +f === 0);
 	        
 	        var normhivals = filtered_data
-	        .map(function(m){return +m["STNRHI"]})
-	        .filter(function(f){return +f || +f === 0});
+	            .map(m => +m[chart.config.normal_col_high])
+	            .filter(f => +f || +f === 0);
 
-	        var normlo = d3.min(normlovals);
-	        var normhi = d3.max(normhivals);
+	        var normlo = Math.min.apply(null, normlovals);
+	        var normhi = Math.max.apply(null, normhivals);
 	        
 	        var yvals = filtered_data
-	        .map(function(m){return +m[chart.config.y.column]})
-	        .filter(function(f){return +f || +f === 0})
+	            .map(m => +m[chart.config.y.column])
+	            .filter(f => +f || +f === 0 );
 
-	        //console.log(yvals)
 	        var ylo = d3.min(yvals);
 	        var yhi = d3.max(yvals);
 	        var ymin = d3.min([ylo, normlo]);
 	        var ymax = d3.max([yhi, normhi]);
 
 	        this.config.y_dom = [ymin, ymax];
-	        //console.log(this.config.y_dom)
-	    })
+	    });
 	    
 	    multiples.on("resize", function(){
 	        //draw normal range
-	        chart.template.lib.rangePolygon(this) 
+	        rangePolygon(this);
 
 	        // axis tweaks
-	        var units = this.current_data[0].values.raw[0].STRESU
-	        this.svg.select(".y.axis").select(".axis-title").text(units)
-	        this.svg.select(".x.axis").select(".axis-title").remove()
+	        var units = this.current_data[0].values.raw[0][chart.config.unit_col];
+	        this.svg.select(".y.axis").select(".axis-title").text(units);
+	        this.svg.select(".x.axis").select(".axis-title").remove();
 
 	        //delete the legend
-	        this.legend.remove()
-	    } )
+	        this.legend.remove();
+	    });
 	    
-	    var ptData = chart
-	    .raw_data
-	    .filter(function(f){return f['USUBJID'] === id})
+	    var ptData = chart.raw_data.filter(f => f[chart.config.id_col] === id );
 
-	    webcharts.multiply(multiples,ptData,'TEST')
+	    webcharts.multiply(multiples, ptData, chart.config.measure_col);
 	}
 
 	function onResize(){

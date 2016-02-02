@@ -5,7 +5,9 @@ const settings = {
     measure_col: "TEST",
     value_col: "STRESN",
     unit_col: "STRESU",
-    "start_value": null,
+    normal_col_low: "STNRLO",
+    normal_col_high: "STNRHI",
+    start_value: null,
     //Standard webcharts settings
     x:{
         column:"DY",

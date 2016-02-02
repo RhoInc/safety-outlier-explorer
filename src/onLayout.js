@@ -15,5 +15,8 @@ export default function onLayout(){
             //DY is a hardcoded variable...
             this.config.x.type = value == "DY" ? "linear" : "ordinal";
             this.draw();
-        })
+        });
+
+    //add wrapper for small multiples
+    this.wrap.append('div').attr('class', 'multiples');
 }
