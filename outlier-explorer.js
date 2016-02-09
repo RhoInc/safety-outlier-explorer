@@ -1,4 +1,5 @@
-var outlierExplorer = (function (webcharts,d3$1) { 'use strict';
+var outlierExplorer = (function (webcharts,d3$1) {
+	'use strict';
 
 	const settings = {
 	    //Addition settings for this template
@@ -426,4 +427,4 @@ var outlierExplorer = (function (webcharts,d3$1) { 'use strict';
 
 	return outlierExplorer;
 
-})(webCharts,d3);
+}(webCharts,d3));
