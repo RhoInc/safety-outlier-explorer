@@ -24,7 +24,9 @@ export default function rangePolygon (chart){
             TIME: m
         };
     });
-
+    //remove what is there now
+    chart.svg.select('.norms').remove();
+    //add new
     chart.svg.append("path")
         .datum(myRows)
         .attr("class","norms")

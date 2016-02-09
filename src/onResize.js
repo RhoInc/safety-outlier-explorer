@@ -5,19 +5,20 @@ import smallMult from './smallMultiples';
 
 export default function onResize(){
     const config = this.config;
+    const chart = this;
     function highlight(id){
-        var myLine = d3.selectAll(".line")
+        var myLine = chart.svg.selectAll(".line")
         .filter(function(d){return d.values[0].values.raw[0][config.id_col] === id})
         
-        var myPoints = d3.selectAll(".point").filter(function(d){return false})
+        var myPoints = chart.svg.selectAll(".point").filter(function(d){return false})
 
         myLine.select("path").attr("stroke-width",4)
         myPoints.select("circle").attr("r",4)
     }
 
     function clearHighlight(){
-        d3.selectAll(".line").select("path").attr("stroke-width",.5)
-        d3.selectAll(".point").select("cirlce").attr("r",2)
+        chart.svg.selectAll(".line").select("path").attr("stroke-width",.5)
+        chart.svg.selectAll(".point").select("cirlce").attr("r",2)
     }
 
     //Set up event listeners on lines and points
