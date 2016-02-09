@@ -1,6 +1,6 @@
 'use strict';
 
-function _interopDefault (ex) { return 'default' in ex ? ex['default'] : ex; }
+function _interopDefault (ex) { return (ex && (typeof ex === 'object') && 'default' in ex) ? ex['default'] : ex; }
 
 var React = _interopDefault(require('react'));
 var d3$1 = require('d3');
@@ -250,7 +250,7 @@ const controlInputs = [
 function onInit(){
     const config = this.config;
     const allMeasures = d3$1.set(this.raw_data.map(m => m[config.measure_col])).values();
-    this.controls.config.inputs.filter(f => f.value_col === config.measure_col)[0].start = allMeasures[0];
+    this.controls.config.inputs.filter(f => f.value_col === config.measure_col)[0].start = config.start_value || allMeasures[0];
 
     //warning for non-numeric endpoints
     var catMeasures = allMeasures
@@ -640,10 +640,27 @@ class ReactOutlierExplorer extends React.Component {
 
 ReactOutlierExplorer.defaultProps = {data: [], controlInputs: [], id: 'id'}
 
+function describeCode(){
+    const code = `//uses d3 v.${d3$1.version}
+//uses webcharts v.${webcharts.version}
+
+var settings = ${JSON.stringify(this.state.settings, null, 2)};
+
+var myChart = outlierExplorer(dataElement, settings);
+
+d3.csv(dataPath, function(error, csv) {
+  myChart.init(data);
+});
+    `;
+    return code;
+}
+
+
 class Renderer extends React.Component {
   constructor(props) {
     super(props);
     this.binding = binding;
+    this.describeCode = describeCode.bind(this);
     this.state = {data: [], settings: {}, template: {}, loadMsg: 'Loading...'};
   }
   createSettings(props) {

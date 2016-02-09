@@ -1,5 +1,4 @@
-var outlierExplorer = (function (webcharts,d3$1) {
-	'use strict';
+var outlierExplorer = (function (webcharts,d3$1) { 'use strict';
 
 	const settings = {
 	    //Addition settings for this template
@@ -67,7 +66,7 @@ var outlierExplorer = (function (webcharts,d3$1) {
 	function onInit(){
 	    const config = this.config;
 	    const allMeasures = d3$1.set(this.raw_data.map(m => m[config.measure_col])).values();
-	    this.controls.config.inputs.filter(f => f.value_col === config.measure_col)[0].start = allMeasures[0];
+	    this.controls.config.inputs.filter(f => f.value_col === config.measure_col)[0].start = config.start_value || allMeasures[0];
 
 	    //warning for non-numeric endpoints
 	    var catMeasures = allMeasures
@@ -427,4 +426,4 @@ var outlierExplorer = (function (webcharts,d3$1) {
 
 	return outlierExplorer;
 
-}(webCharts,d3));
+})(webCharts,d3);
