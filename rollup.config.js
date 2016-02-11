@@ -5,6 +5,6 @@ module.exports = {
     webcharts: 'webCharts',
     d3: 'd3'
   },
-  dest: 'outlier-explorer.js',
+  dest: 'index.js',
   moduleName: 'outlierExplorer'
 }; 
