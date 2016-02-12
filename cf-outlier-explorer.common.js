@@ -295,7 +295,9 @@ function rangePolygon (chart){
             TIME: m
         };
     });
-
+    //remove what is there now
+    chart.svg.select('.norms').remove();
+    //add new
     chart.svg.append("path")
         .datum(myRows)
         .attr("class","norms")
@@ -385,19 +387,20 @@ function smallMultiples(id, chart) {
 
 function onResize(){
     const config = this.config;
+    const chart = this;
     function highlight(id){
-        var myLine = d3.selectAll(".line")
+        var myLine = chart.svg.selectAll(".line")
         .filter(function(d){return d.values[0].values.raw[0][config.id_col] === id})
         
-        var myPoints = d3.selectAll(".point").filter(function(d){return false})
+        var myPoints = chart.svg.selectAll(".point").filter(function(d){return false})
 
         myLine.select("path").attr("stroke-width",4)
         myPoints.select("circle").attr("r",4)
     }
 
     function clearHighlight(){
-        d3.selectAll(".line").select("path").attr("stroke-width",.5)
-        d3.selectAll(".point").select("cirlce").attr("r",2)
+        chart.svg.selectAll(".line").select("path").attr("stroke-width",.5)
+        chart.svg.selectAll(".point").select("cirlce").attr("r",2)
     }
 
     //Set up event listeners on lines and points
@@ -442,6 +445,30 @@ function onResize(){
         "white"
     )
     this.svg.select("g.boxplot").attr("transform", "translate(" + (this.plot_width + this.config.margin.right/2) + ",0)")
+}
+
+if (typeof Object.assign != 'function') {
+  (function () {
+    Object.assign = function (target) {
+      'use strict';
+      if (target === undefined || target === null) {
+        throw new TypeError('Cannot convert undefined or null to object');
+      }
+
+      var output = Object(target);
+      for (var index = 1; index < arguments.length; index++) {
+        var source = arguments[index];
+        if (source !== undefined && source !== null) {
+          for (var nextKey in source) {
+            if (source.hasOwnProperty(nextKey)) {
+              output[nextKey] = source[nextKey];
+            }
+          }
+        }
+      }
+      return output;
+    };
+  })();
 }
 
 function outlierExplorer(element, settings$$){

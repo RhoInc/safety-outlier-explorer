@@ -17,6 +17,7 @@
     "webcharts": "^1.3.2"
   },
   "devDependencies": {
+    "babel": "^5.8.35",
     "rollup": "^0.25.1"
   }
 }
