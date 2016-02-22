@@ -17,7 +17,7 @@ var settings = ${JSON.stringify(settings, null, 2)};
 var myChart = outlierExplorer(dataElement, settings);
 
 d3.csv(dataPath, function(error, csv) {
-  myChart.init(data);
+  myChart.init(csv);
 });
     `;
   return code;
