@@ -10,15 +10,15 @@ export default function onResize(){
         var myLine = chart.svg.selectAll(".line")
         .filter(function(d){return d.values[0].values.raw[0][config.id_col] === id})
         
-        var myPoints = chart.svg.selectAll(".point").filter(function(d){return false})
+        var myPoints = chart.svg.selectAll(".point").filter(function(d){return d.values.raw[0][config.id_col] === id})
 
         myLine.select("path").attr("stroke-width",4)
         myPoints.select("circle").attr("r",4)
     }
 
     function clearHighlight(){
-        chart.svg.selectAll(".line").select("path").attr("stroke-width",.5)
-        chart.svg.selectAll(".point").select("cirlce").attr("r",2)
+        chart.svg.selectAll(".line:not(.selected)").select("path").attr("stroke-width",.5)
+        chart.svg.selectAll(".point:not(.selected)").select("circle").attr("r",2)
     }
 
     //Set up event listeners on lines and points
@@ -28,10 +28,18 @@ export default function onResize(){
         var id = d.values[0].values.raw[0][config.id_col]
         highlight(id)
     })
-    .on("mouseout",clearHighlight)
+    .on("mouseout", clearHighlight)
     .on("click",function(d){
-        var id = d.values[0].values.raw[0][config.id_col]
+        var id = d.values[0].values.raw[0][config.id_col];
+        chart.svg.selectAll(".line").classed('selected', false);
+        chart.svg.selectAll(".point").classed('selected', false);
+        d3.select(this).classed('selected', true);
+        chart.svg.selectAll(".point")
+        .filter(function(d){return d.values.raw[0][config.id_col] === id})
+        .classed('selected', true);
+
         smallMult(id, mainChart);
+        highlight(id);
     })
 
     this.svg.selectAll(".point")
@@ -41,12 +49,21 @@ export default function onResize(){
     })
     .on("mouseout",clearHighlight)
     .on("click",function(d){
-        var id = d.values.raw[0][config.id_col]
+        var id = d.values.raw[0][config.id_col];
+
+        chart.svg.selectAll(".line").classed('selected', false);
+        chart.svg.selectAll(".point").classed('selected', false);
+        chart.svg.selectAll(".point")
+            .filter(function(d){return d.values.raw[0][config.id_col] === id})
+            .classed('selected', true);
+        chart.svg.selectAll(".line")
+            .filter(function(d){return d.values[0].values.raw[0][config.id_col] === id})
+            .classed('selected', true);
+
         smallMult(id, mainChart);
+        highlight(id);
     })
 
-    // var units = this.current_data[0].values.raw[0][config.unit_col]
-    // var measure = this.current_data[0].values.raw[0][config.measure_col]
 
     //draw reference boxplot 
     this.svg.select("g.boxplot").remove()
@@ -62,5 +79,13 @@ export default function onResize(){
         "#bbb", 
         "white"
     )
-    this.svg.select("g.boxplot").attr("transform", "translate(" + (this.plot_width + this.config.margin.right/2) + ",0)")
+    this.svg.select("g.boxplot").attr("transform", "translate(" + (this.plot_width + this.config.margin.right/2) + ",0)");
+
+    this.svg.select('.overlay').on('click', function(){
+        //clear current multiples
+        chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
+        chart.svg.selectAll(".line").classed('selected', false);
+        chart.svg.selectAll(".point").classed('selected', false);
+        clearHighlight();
+    });
 }

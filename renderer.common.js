@@ -352,7 +352,7 @@ function onResize() {
         });
 
         var myPoints = chart.svg.selectAll(".point").filter(function (d) {
-            return false;
+            return d.values.raw[0][config.id_col] === id;
         });
 
         myLine.select("path").attr("stroke-width", 4);
@@ -360,8 +360,8 @@ function onResize() {
     }
 
     function clearHighlight() {
-        chart.svg.selectAll(".line").select("path").attr("stroke-width", .5);
-        chart.svg.selectAll(".point").select("cirlce").attr("r", 2);
+        chart.svg.selectAll(".line:not(.selected)").select("path").attr("stroke-width", .5);
+        chart.svg.selectAll(".point:not(.selected)").select("circle").attr("r", 2);
     }
 
     //Set up event listeners on lines and points
@@ -371,7 +371,15 @@ function onResize() {
         highlight(id);
     }).on("mouseout", clearHighlight).on("click", function (d) {
         var id = d.values[0].values.raw[0][config.id_col];
+        chart.svg.selectAll(".line").classed('selected', false);
+        chart.svg.selectAll(".point").classed('selected', false);
+        d3.select(this).classed('selected', true);
+        chart.svg.selectAll(".point").filter(function (d) {
+            return d.values.raw[0][config.id_col] === id;
+        }).classed('selected', true);
+
         smallMultiples(id, mainChart);
+        highlight(id);
     });
 
     this.svg.selectAll(".point").on("mouseover", function (d) {
@@ -379,11 +387,19 @@ function onResize() {
         highlight(id);
     }).on("mouseout", clearHighlight).on("click", function (d) {
         var id = d.values.raw[0][config.id_col];
-        smallMultiples(id, mainChart);
-    });
 
-    // var units = this.current_data[0].values.raw[0][config.unit_col]
-    // var measure = this.current_data[0].values.raw[0][config.measure_col]
+        chart.svg.selectAll(".line").classed('selected', false);
+        chart.svg.selectAll(".point").classed('selected', false);
+        chart.svg.selectAll(".point").filter(function (d) {
+            return d.values.raw[0][config.id_col] === id;
+        }).classed('selected', true);
+        chart.svg.selectAll(".line").filter(function (d) {
+            return d.values[0].values.raw[0][config.id_col] === id;
+        }).classed('selected', true);
+
+        smallMultiples(id, mainChart);
+        highlight(id);
+    });
 
     //draw reference boxplot
     this.svg.select("g.boxplot").remove();
@@ -393,6 +409,14 @@ function onResize() {
 
     addBoxplot(this.svg, myValues, this.plot_height, 1, this.y_dom, 10, "#bbb", "white");
     this.svg.select("g.boxplot").attr("transform", "translate(" + (this.plot_width + this.config.margin.right / 2) + ",0)");
+
+    this.svg.select('.overlay').on('click', function () {
+        //clear current multiples
+        chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
+        chart.svg.selectAll(".line").classed('selected', false);
+        chart.svg.selectAll(".point").classed('selected', false);
+        clearHighlight();
+    });
 }
 
 if (typeof Object.assign != 'function') {
@@ -482,7 +506,7 @@ ReactOutlierExplorer.defaultProps = { data: [], controlInputs: [], id: 'id' };
 function describeCode(props) {
     var settings = this.createSettings(props);
 
-    var code = '//uses d3 v.' + d3$1.version + '\n//uses webcharts v.' + webcharts.version + '\n\nvar settings = ' + JSON.stringify(settings, null, 2) + ';\n\nvar myChart = outlierExplorer(dataElement, settings);\n\nd3.csv(dataPath, function(error, csv) {\n  myChart.init(data);\n});\n    ';
+    var code = '//uses d3 v.' + d3$1.version + '\n//uses webcharts v.' + webcharts.version + '\n\nvar settings = ' + JSON.stringify(settings, null, 2) + ';\n\nvar myChart = outlierExplorer(dataElement, settings);\n\nd3.csv(dataPath, function(error, csv) {\n  myChart.init(csv);\n});\n    ';
     return code;
 }
 
