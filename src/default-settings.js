@@ -11,7 +11,8 @@ const settings = {
     //Standard webcharts settings
     x:{
         column:"DY",
-        type:"linear"
+        type:"linear",
+        behavior:"flex"
         // label:"Study Day"
     },
     y:{
