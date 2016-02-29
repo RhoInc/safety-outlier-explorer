@@ -16,8 +16,8 @@ var outlierExplorer = (function (webcharts, d3$1) {
         //Standard webcharts settings
         x: {
             column: "DY",
-            type: "linear", 
-            behavior:"flex"
+            type: "linear",
+            behavior: "flex"
             // label:"Study Day"
         },
         y: {
