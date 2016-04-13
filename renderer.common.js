@@ -2,14 +2,14 @@
 
 var _createClass = (function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ('value' in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; })();
 
-var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; desc = parent = getter = undefined; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
+var _get = function get(_x, _x2, _x3) { var _again = true; _function: while (_again) { var object = _x, property = _x2, receiver = _x3; _again = false; if (object === null) object = Function.prototype; var desc = Object.getOwnPropertyDescriptor(object, property); if (desc === undefined) { var parent = Object.getPrototypeOf(object); if (parent === null) { return undefined; } else { _x = parent; _x2 = property; _x3 = receiver; _again = true; desc = parent = undefined; continue _function; } } else if ('value' in desc) { return desc.value; } else { var getter = desc.get; if (getter === undefined) { return undefined; } return getter.call(receiver); } } };
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError('Cannot call a class as a function'); } }
 
 function _inherits(subClass, superClass) { if (typeof superClass !== 'function' && superClass !== null) { throw new TypeError('Super expression must either be null or a function, not ' + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
 
 function _interopDefault(ex) {
-    return 'default' in ex ? ex['default'] : ex;
+    return ex && typeof ex === 'object' && 'default' in ex ? ex['default'] : ex;
 }
 
 var React = _interopDefault(require('react'));
@@ -55,7 +55,8 @@ var settings = {
     x: {
         column: "DY",
         type: "linear",
-        behavior: "flex"
+        behavior: "flex",
+        tickAttr: null
         // label:"Study Day"
     },
     y: {
@@ -344,6 +345,15 @@ function smallMultiples(id, chart) {
     webcharts.multiply(multiples, ptData, chart.config.measure_col);
 }
 
+function adjustTicks(axis, dx, dy, rotation, anchor) {
+    if (!axis) return;
+    this.svg.selectAll("." + axis + ".axis .tick text").attr({
+        "transform": "rotate(" + rotation + ")",
+        "dx": dx,
+        "dy": dy
+    }).style("text-anchor", anchor || 'start');
+}
+
 function onResize() {
     var config = this.config;
     var chart = this;
@@ -418,6 +428,9 @@ function onResize() {
         chart.svg.selectAll(".point").classed('selected', false);
         clearHighlight();
     });
+
+    // rotate ticks
+    adjustTicks.call(this, 'x', 0, 0, config.x.tickAttr.rotate, config.x.tickAttr.anchor);
 }
 
 if (typeof Object.assign != 'function') {
@@ -447,6 +460,11 @@ if (typeof Object.assign != 'function') {
 function outlierExplorer(element, settings$$) {
     //merge user's settings with defaults
     var mergedSettings = Object.assign({}, settings, settings$$);
+    // nested objects must be copied explicitly
+    mergedSettings.x = Object.assign({}, settings.x, settings$$.x);
+    mergedSettings.y = Object.assign({}, settings.y, settings$$.y);
+    mergedSettings.margin = Object.assign({}, settings.margin, settings$$.margin);
+
     //create controls now
     var controls = webcharts.createControls(element, { location: 'top', inputs: controlInputs });
     //create chart
