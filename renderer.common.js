@@ -430,7 +430,9 @@ function onResize() {
     });
 
     // rotate ticks
-    adjustTicks.call(this, 'x', 0, 0, config.x.tickAttr.rotate, config.x.tickAttr.anchor);
+    if (config.x.tickAttr) {
+        adjustTicks.call(this, 'x', 0, 0, config.x.tickAttr.rotate, config.x.tickAttr.anchor);
+    }
 }
 
 if (typeof Object.assign != 'function') {
