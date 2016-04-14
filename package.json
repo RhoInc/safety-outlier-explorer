@@ -1,6 +1,6 @@
 {
   "name": "se-outlier-explorer",
-  "version": "0.0.0",
+  "version": "1.0.1",
   "description": "outlier explorer for safety explorer",
   "main": "renderer.common.js",
   "scripts": {
