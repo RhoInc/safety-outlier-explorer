@@ -10,11 +10,16 @@ import './object-assign';
 
 export default function outlierExplorer(element, settings){
 	//merge user's settings with defaults
-	let mergedSettings = Object.assign({}, config, settings);
+	const mergedSettings = Object.assign({}, config, settings);
+	// nested objects must be copied explicitly
+	mergedSettings.x = Object.assign({}, config.x, settings.x);
+	mergedSettings.y = Object.assign({}, config.y, settings.y);
+	mergedSettings.margin = Object.assign({}, config.margin, settings.margin);
+
 	//create controls now
-	let controls = createControls(element, {location: 'top', inputs: controlInputs});
+	const controls = createControls(element, {location: 'top', inputs: controlInputs});
 	//create chart
-	let chart = createChart(element, mergedSettings, controls);
+	const chart = createChart(element, mergedSettings, controls);
 	chart.on('init', onInit);
 	chart.on('layout', onLayout);
 	chart.on('datatransform', onDataTransform);

@@ -2,6 +2,7 @@ import { set } from 'd3';
 import { dataOps } from 'webcharts';
 import addBoxplot from './addBoxplot';
 import smallMult from './smallMultiples';
+import adjustTicks from './adjust-ticks';
 
 export default function onResize(){
     const config = this.config;
@@ -88,4 +89,9 @@ export default function onResize(){
         chart.svg.selectAll(".point").classed('selected', false);
         clearHighlight();
     });
+
+    // rotate ticks
+    if (config.x.tickAttr) {
+        adjustTicks.call(this, 'x', 0, 0, config.x.tickAttr.rotate, config.x.tickAttr.anchor);
+    }
 }

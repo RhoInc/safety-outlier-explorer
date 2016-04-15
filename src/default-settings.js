@@ -12,7 +12,8 @@ const settings = {
     x:{
         column:"DY",
         type:"linear",
-        behavior:"flex"
+        behavior:"flex",
+        tickAttr: null
         // label:"Study Day"
     },
     y:{
