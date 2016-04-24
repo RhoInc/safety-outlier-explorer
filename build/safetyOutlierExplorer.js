@@ -16,11 +16,13 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 
 		//Standard webcharts settings
 		x: {
+			column: null, //set in syncSettings()
 			type: "linear",
 			behavior: "flex",
 			tickAttr: null
 		},
 		y: {
+			column: null, //set in syncSettings()
 			stat: "mean",
 			type: "linear",
 			label: "Value",
@@ -28,20 +30,25 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 			format: "0.2f"
 		},
 		marks: [{
+			per: null, //set in syncSettings()
 			type: "line",
 			attributes: {
 				'stroke-width': .5,
 				'stroke-opacity': .5,
 				"stroke": "#999"
-			}
+			},
+			tooltip: null //set in syncSettings()
+
 		}, {
+			per: null, //set in syncSettings()
 			type: "circle",
 			radius: 2,
 			attributes: {
 				'stroke-width': .5,
 				'stroke-opacity': .5,
 				'fill-opacity': 1
-			}
+			},
+			tooltip: null //set in syncSettings()
 		}],
 		resizable: true,
 		max_width: 600,
@@ -65,8 +72,15 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 
 	// Map values from settings to control inputs
 	function syncControlInputs(controlInputs, settings) {
-		controlInputs[0].value_col = settings.measure_col;
-		controlInputs[1].values = settings.time_cols;
+		var labTestControl = controlInputs.filter(function (d) {
+			return d.label == "Lab Test";
+		})[0];
+		labTestControl.value_col = settings.measure_col;
+
+		var xAxisControl = controlInputs.filter(function (d) {
+			return d.label == "X axis";
+		})[0];
+		xAxisControl.values = settings.time_cols;
 
 		return controlInputs;
 	}
