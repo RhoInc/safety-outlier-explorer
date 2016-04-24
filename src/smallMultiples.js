@@ -1,6 +1,6 @@
 import { select, min, max } from 'd3';
 import { multiply, createChart } from 'webcharts';
-import rangePolygon from './rangePolygon';
+import rangePolygon from './util/rangePolygon';
 
 export default function smallMultiples(id, chart) {
     //clear current multiples

@@ -1,8 +1,8 @@
 import React from 'react';
 import { select } from 'd3';
-import outlierExplorer from '../src/index';
+import mainChart from '../../wrapper';
 
-export default class ReactOutlierExplorer extends React.Component {
+export default class ReactYourProjectName extends React.Component {
 	constructor(props) {
 		super(props);
 		this.state = {};
@@ -11,14 +11,14 @@ export default class ReactOutlierExplorer extends React.Component {
 		if(this.props.data.length){
 			//manually clear div and redraw
 			select(`.chart-div.id-${this.props.id}`).selectAll('*').remove();
-			let chart = outlierExplorer(`.chart-div.id-${this.props.id}`, this.props.settings).init(this.props.data);
+			let chart = mainChart(`.chart-div.id-${this.props.id}`, this.props.settings).init(this.props.data);
 		}
 	}
 	componentDidUpdate(prevProps, prevState){
 		if(this.props.data.length){
 			//manually clear div and redraw
 			select(`.chart-div.id-${this.props.id}`).selectAll('*').remove();
-			let chart = outlierExplorer(`.chart-div.id-${this.props.id}`, this.props.settings).init(this.props.data);
+			let chart = mainChart(`.chart-div.id-${this.props.id}`, this.props.settings).init(this.props.data);
 		}
 	}
 	render(){
@@ -32,4 +32,4 @@ export default class ReactOutlierExplorer extends React.Component {
 	}
 }
 
-ReactOutlierExplorer.defaultProps = {data: [], controlInputs: [], id: 'id'}
+ReactYourProjectName.defaultProps = {data: [], controlInputs: [], id: 'id'}

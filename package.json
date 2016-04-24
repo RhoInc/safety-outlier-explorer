@@ -1,16 +1,16 @@
 {
   "name": "safety-outlier-explorer",
-  "version": "1.1.0",
-  "description": "outlier explorer for safety explorer",
-  "main": "renderer.common.js",
+  "version": "1.2.0",
+  "description": "Chart showing participant trajectories of lab measures, vital signs and other related measures in clinical trials.",
+  "main": "./build/safetyOutlierExplorer.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev-watch": "cd test && node watcher.js",
-    "build": "rollup -c | babel > index.js",
-    "build-renderer": "rollup -c renderer.rollup.config.js | babel > renderer.common.js"
+    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/safetyOutlierExplorer.js",
+    "build-react": "rollup -c ./scripts/rollup.react.config.js | babel > ./build/safetyOutlierExplorer-react.js"
   },
-  "author": "Rho, Inc.",
-  "license": "ISC",
+  "author": "Rho Inc",
+  "license": "MIT",
   "dependencies": {
     "d3": "^3.5.14",
     "react": "^0.14.7",

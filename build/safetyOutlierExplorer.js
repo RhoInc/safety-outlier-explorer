@@ -1,28 +1,26 @@
 "use strict";
 
-var outlierExplorer = (function (webcharts, d3$1) {
+var safetyOutlierExplorer = (function (webcharts, d3$1) {
 	'use strict';
 
 	var settings = {
 		//Addition settings for this template
 		id_col: "USUBJID",
-		time_col: "VISITN",
+		time_cols: ["VISITN", "VISIT", "DY"],
 		measure_col: "TEST",
 		value_col: "STRESN",
 		unit_col: "STRESU",
 		normal_col_low: "STNRLO",
 		normal_col_high: "STNRHI",
 		start_value: null,
+
 		//Standard webcharts settings
 		x: {
-			column: "DY",
 			type: "linear",
 			behavior: "flex",
 			tickAttr: null
-			// label:"Study Day"
 		},
 		y: {
-			column: "STRESN",
 			stat: "mean",
 			type: "linear",
 			label: "Value",
@@ -31,7 +29,6 @@ var outlierExplorer = (function (webcharts, d3$1) {
 		},
 		marks: [{
 			type: "line",
-			per: ["USUBJID", "TEST"],
 			attributes: {
 				'stroke-width': .5,
 				'stroke-opacity': .5,
@@ -39,7 +36,6 @@ var outlierExplorer = (function (webcharts, d3$1) {
 			}
 		}, {
 			type: "circle",
-			per: ["USUBJID", "TEST", "DY"],
 			radius: 2,
 			attributes: {
 				'stroke-width': .5,
@@ -53,7 +49,27 @@ var outlierExplorer = (function (webcharts, d3$1) {
 		aspect: 1.33
 	};
 
-	var controlInputs = [{ label: "Lab Test", type: "subsetter", value_col: "TEST", start: null }, { type: "dropdown", values: ["VISIT", "VISITN", "DY"], label: "Measure", option: "x.column", require: true }];
+	// Replicate settings in multiple places in the settings object
+	function syncSettings(settings) {
+		settings.y.column = settings.value_col;
+		settings.x.column = settings.time_cols[0];
+		settings.marks[0].per = [settings.id_col, settings.measure_col];
+		settings.marks[0].tooltip = "[" + settings.id_col + "]";
+		settings.marks[1].per = [settings.id_col, settings.measure_col, settings.time_cols[0], settings.value_col];
+		settings.marks[1].tooltip = "[" + settings.id_col + "]:  [" + settings.value_col + "] [" + settings.unit_col + "] at " + settings.x.column + " = [" + settings.x.column + "]";
+		return settings;
+	}
+
+	// Default Control objects
+	var controlInputs = [{ label: "Lab Test", type: "subsetter", start: null }, { type: "dropdown", label: "X axis", option: "x.column", require: true }];
+
+	// Map values from settings to control inputs
+	function syncControlInputs(controlInputs, settings) {
+		controlInputs[0].value_col = settings.measure_col;
+		controlInputs[1].values = settings.time_cols;
+
+		return controlInputs;
+	}
 
 	function onInit() {
 		var _this = this;
@@ -421,16 +437,18 @@ var outlierExplorer = (function (webcharts, d3$1) {
 		})();
 	}
 
-	function outlierExplorer(element, settings$$) {
+	function yourFunctionNameHere(element, settings$$) {
+
 		//merge user's settings with defaults
 		var mergedSettings = Object.assign({}, settings, settings$$);
-		// nested objects must be copied explicitly
-		mergedSettings.x = Object.assign({}, settings.x, settings$$.x);
-		mergedSettings.y = Object.assign({}, settings.y, settings$$.y);
-		mergedSettings.margin = Object.assign({}, settings.margin, settings$$.margin);
 
-		//create controls now
-		var controls = webcharts.createControls(element, { location: 'top', inputs: controlInputs });
+		//keep settings in sync with the data mappings
+		mergedSettings = syncSettings(mergedSettings);
+
+		//keep control inputs in sync and create controls object (if needed)
+		var syncedControlInputs = syncControlInputs(controlInputs, mergedSettings);
+		var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
+
 		//create chart
 		var chart = webcharts.createChart(element, mergedSettings, controls);
 		chart.on('init', onInit);
@@ -442,6 +460,6 @@ var outlierExplorer = (function (webcharts, d3$1) {
 		return chart;
 	}
 
-	return outlierExplorer;
+	return yourFunctionNameHere;
 })(webCharts, d3);
 

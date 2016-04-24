@@ -1,4 +1,3 @@
-
 export default function onDataTransform(){
 	var config = this.config;
 	var units = this.filtered_data[0][config.unit_col];
