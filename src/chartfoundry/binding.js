@@ -1,6 +1,36 @@
 
 export default {
-	dataMappings : [
+	dataMappings : [    
+		//Custom Settings
+		{
+			source:"id_col",
+			target:"id_col"
+		},
+		{
+			source:"time_cols",
+			target:"time_cols"
+		},
+		{
+			source:"measure_col",
+			target:"measure_col"
+		},
+		{
+			source:"value_col",
+			target:"value_col"
+		},
+		{
+			source:"unit_col",
+			target:"unit_col"
+		},
+		{
+			source:"normal_col_low",
+			target:"normal_col_low"
+		},
+		{
+			source:"normal_col_high",
+			target:"normal_col_high"
+		},
+		//WebCharts defaults
 		{
 			source:"x",
 			target:"x.column"
@@ -51,6 +81,12 @@ export default {
 		}
 	],
 	chartProperties: [
+		//Custom Settings
+		//WebCharts defaults
+		{
+			source:"start_value",
+			target:"start_value"
+		},
 		{
 			source:"date_format",
 			target:"date_format"
