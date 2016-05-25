@@ -783,7 +783,7 @@
 	  const code =
 	`// uses d3 v.${d3$1.version}
 // uses webcharts v.${webcharts.version}
-// uses safety-outlier-explorer v.1.1.0
+// uses safety-outlier-explorer v.1.2.0
 
 var settings = ${JSON.stringify(settings, null, 2)};
 
