@@ -1,7 +1,7 @@
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('react'), require('d3'), require('webcharts')) :
 	typeof define === 'function' && define.amd ? define(['react', 'd3', 'webcharts'], factory) :
-	(global.safetyOutlierExplorer = factory(global.React,global.d3,global.webCharts));
+	global.safetyOutlierExplorer = factory(global.React,global.d3,global.webCharts);
 }(this, function (React,d3$1,webcharts) { 'use strict';
 
 	React = 'default' in React ? React['default'] : React;

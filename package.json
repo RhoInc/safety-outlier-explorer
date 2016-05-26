@@ -2,7 +2,7 @@
   "name": "safety-outlier-explorer",
   "version": "1.2.0",
   "description": "Chart showing participant trajectories of lab measures, vital signs and other related measures in clinical trials.",
-  "main": "./build/safetyOutlierExplorer.js",
+  "main": "./build/safetyOutlierExplorer-chf.js",
   "scripts": {    
     "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/safetyOutlierExplorer.js",
     "build-chf": "rollup -c ./scripts/rollup.chf.config.js > ./build/safetyOutlierExplorer-chf.js"
