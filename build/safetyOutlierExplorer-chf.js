@@ -1,26 +1,245 @@
-var outlierExplorer = (function (webcharts,d3$1) {
-	'use strict';
+(function (global, factory) {
+	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('react'), require('d3'), require('webcharts')) :
+	typeof define === 'function' && define.amd ? define(['react', 'd3', 'webcharts'], factory) :
+	global.safetyOutlierExplorer = factory(global.React,global.d3,global.webCharts);
+}(this, function (React,d3$1,webcharts) { 'use strict';
+
+	React = 'default' in React ? React['default'] : React;
+
+	function stringAccessor(o, s, v) {
+		//adapted from http://jsfiddle.net/alnitak/hEsys/
+	    s = s.replace(/\[(\w+)\]/g, '.$1');
+	    s = s.replace(/^\./, '');           
+	    var a = s.split('.');
+	    for (var i = 0, n = a.length; i < n; ++i) {
+	        var k = a[i];
+	        if (k in o) {
+	            if(i == n-1 && v !== undefined)
+	                o[k] = v;
+	            o = o[k];
+	        } else {
+	            return;
+	        }
+	    }
+	    return o;
+	}
+
+	var binding = {
+		dataMappings : [    
+			//Custom Settings
+			{
+				source:"id_col",
+				target:"id_col"
+			},
+			{
+				source:"time_cols",
+				target:"time_cols"
+			},
+			{
+				source:"measure_col",
+				target:"measure_col"
+			},
+			{
+				source:"value_col",
+				target:"value_col"
+			},
+			{
+				source:"unit_col",
+				target:"unit_col"
+			},
+			{
+				source:"normal_col_low",
+				target:"normal_col_low"
+			},
+			{
+				source:"normal_col_high",
+				target:"normal_col_high"
+			},
+			//WebCharts defaults
+			{
+				source:"x",
+				target:"x.column"
+			},
+			{
+				source:"x_order",
+				target:"x.order"
+			},
+			{
+				source:"x_domain",
+				target:"x.domain"
+			},
+			{
+				source:"y",
+				target:"y.column"
+			},
+			{
+				source:"y_order",
+				target:"y.order"
+			},
+			{
+				source:"y_domain",
+				target:"y.domain"
+			},
+			{
+				source:"group",
+				target:"marks.0.per"
+			},
+			{
+				source:"subgroup",
+				target:"marks.0.split"
+			},
+			{
+				source:"subset",
+				target:"marks.0.values"
+			},
+			{
+				source:"color_by",
+				target:"color_by"
+			},
+			{
+				source:"legend_order",
+				target:"legend.order"
+			},
+			{
+				source:"tooltip",
+				target:"marks.0.tooltip"
+			}
+		],
+		chartProperties: [
+			//Custom Settings
+			//WebCharts defaults
+			{
+				source:"start_value",
+				target:"start_value"
+			},
+			{
+				source:"date_format",
+				target:"date_format"
+			},
+			{
+				source:"x_label",
+				target:"x.label"
+			},
+
+			{
+				source:"x_type",
+				target:"x.type"
+			},
+			{
+				source:"x_format",
+				target:"x.format"
+			},
+			{
+				source:"x_sort",
+				target:"x.sort"
+			},
+			{
+				source:"x_bin",
+				target:"x.bin"
+			},
+			{
+				source:"x_behavior",
+				target:"x.behavior"
+			},
+			{
+				source:"y_label",
+				target:"y.label"
+			},
+			{
+				source:"y_type",
+				target:"y.type"
+			},
+			{
+				source:"y_format",
+				target:"y.format"
+			},
+			{
+				source:"y_sort",
+				target:"y.sort"
+			},
+			{
+				source:"y_behavior",
+				target:"y.behavior"
+			},
+			{
+				source:"marks_type",
+				target:"marks.0.type"
+			},
+			{
+				source:"marks_summarizeX",
+				target:"marks.0.summarizeX"
+			},
+			{
+				source:"marks_summarizeY",
+				target:"marks.0.summarizeY"
+			},
+			{
+				source:"marks_arrange",
+				target:"marks.0.arrange"
+			},
+			{
+				source:"marks_fill_opacity",
+				target:"marks.0.attributes.fill-opacity"
+			},
+			{
+				source:"aspect_ratio",
+				target:"aspect"
+			},
+			{
+				source:"range_band",
+				target:"range_band"
+			},
+			{
+				source:"colors",
+				target:"colors"
+			},
+			{
+				source:"gridlines",
+				target:"gridlines"
+			},
+			{
+				source:"max_width",
+				target:"max_width"
+			},
+			{
+				source:"resizable",
+				target:"resizable"
+			},
+			{
+				source:"scale_text",
+				target:"scale_text"
+			},
+			{
+				source: "legend_mark",
+				target: "legend.mark"
+			},
+			{
+				source: "legend_label",
+				target: "legend.label"
+			}
+		]
+	}
 
 	const settings = {
 	    //Addition settings for this template
 	    id_col: "USUBJID",
-	    time_col: "VISITN",
+	    time_cols: ["VISITN","VISIT","DY"],
 	    measure_col: "TEST",
 	    value_col: "STRESN",
 	    unit_col: "STRESU",
 	    normal_col_low: "STNRLO",
 	    normal_col_high: "STNRHI",
 	    start_value: null,
+
 	    //Standard webcharts settings
 	    x:{
-	        column:"DY",
+	        column:null, //set in syncSettings()
 	        type:"linear",
 	        behavior:"flex",
 	        tickAttr: null
-	        // label:"Study Day"
 	    },
 	    y:{
-	        column:"STRESN",
+	        column:null, //set in syncSettings()
 	        stat:"mean",
 	        type:"linear",
 	        label:"Value",
@@ -29,30 +248,26 @@ var outlierExplorer = (function (webcharts,d3$1) {
 	    },
 	    marks:[
 	        {
+	            per:null, //set in syncSettings()
 	            type:"line",
-	            per:[
-	                "USUBJID",
-	                "TEST"
-	            ],
 	            attributes:{
 	                'stroke-width': .5, 
 	                'stroke-opacity': .5 ,
 	                "stroke":"#999"
-	            }
+	            },
+	            tooltip:null //set in syncSettings()
+
 	        },
 	        {
+	            per:null, //set in syncSettings()
 	            type:"circle",
-	            per:[
-	                "USUBJID",
-	                "TEST",
-	                "DY"
-	            ],
 	            radius:2,
 	            attributes:{
 	                'stroke-width': .5, 
 	                'stroke-opacity': .5,
 	                'fill-opacity':1
-	            }  
+	            },
+	            tooltip:null //set in syncSettings()
 	        }
 	    ],
 	    resizable:true,
@@ -61,10 +276,38 @@ var outlierExplorer = (function (webcharts,d3$1) {
 	    aspect: 1.33
 	};
 
+	// Replicate settings in multiple places in the settings object
+	function syncSettings(settings){
+	    settings.y.column = settings.value_col;
+	    settings.x.column = settings.time_cols[0];
+	    settings.marks[0].per = [settings.id_col, settings.measure_col];
+	    settings.marks[0].tooltip = `[${settings.id_col}]`;
+	    settings.marks[1].per = [
+	        settings.id_col, 
+	        settings.measure_col,
+	        settings.time_cols[0],
+	        settings.value_col
+	    ];
+	    settings.marks[1].tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${settings.unit_col}] at ${settings.x.column} = [${settings.x.column}]`;
+	    return settings;
+	}
+
+	// Default Control objects
 	const controlInputs = [ 
-	    {label: "Lab Test", type: "subsetter", value_col: "TEST", start: null},
-	    {type: "dropdown", values: ["VISIT","VISITN","DY"], label: "Measure", option: "x.column", require: true}
+	 	{label: "Lab Test", type: "subsetter", start: null},
+	    {type: "dropdown", label: "X axis", option: "x.column", require: true}
 	];
+
+	// Map values from settings to control inputs
+	function syncControlInputs(controlInputs, settings){
+	    var labTestControl = controlInputs.filter(function(d){return d.label=="Lab Test"})[0]     
+	    labTestControl.value_col = settings.measure_col;
+
+	    var xAxisControl = controlInputs.filter(function(d){return d.label=="X axis"})[0]     
+	    xAxisControl.values = settings.time_cols;
+
+	    return controlInputs
+	}
 
 	function onInit(){
 	    const config = this.config;
@@ -453,7 +696,7 @@ var outlierExplorer = (function (webcharts,d3$1) {
 	    // rotate ticks
 	    if (config.x.tickAttr) {
 	        adjustTicks.call(this, 'x', 0, 0, config.x.tickAttr.rotate, config.x.tickAttr.anchor);
-	    }
+	    } 
 	}
 
 	if (typeof Object.assign != 'function') {
@@ -480,18 +723,20 @@ var outlierExplorer = (function (webcharts,d3$1) {
 	  })();
 	}
 
-	function outlierExplorer(element, settings$$){
+	function yourFunctionNameHere(element, settings$$){
+		
 		//merge user's settings with defaults
-		const mergedSettings = Object.assign({}, settings, settings$$);
-		// nested objects must be copied explicitly
-		mergedSettings.x = Object.assign({}, settings.x, settings$$.x);
-		mergedSettings.y = Object.assign({}, settings.y, settings$$.y);
-		mergedSettings.margin = Object.assign({}, settings.margin, settings$$.margin);
+		let mergedSettings = Object.assign({}, settings, settings$$);
 
-		//create controls now
-		const controls = webcharts.createControls(element, {location: 'top', inputs: controlInputs});
+		//keep settings in sync with the data mappings
+		mergedSettings = syncSettings(mergedSettings);
+		
+		//keep control inputs in sync and create controls object (if needed)
+		let syncedControlInputs = syncControlInputs(controlInputs, mergedSettings);
+		let controls = webcharts.createControls(element, {location: 'top', inputs: syncedControlInputs});
+		
 		//create chart
-		const chart = webcharts.createChart(element, mergedSettings, controls);
+		let chart = webcharts.createChart(element, mergedSettings, controls);
 		chart.on('init', onInit);
 		chart.on('layout', onLayout);
 		chart.on('datatransform', onDataTransform);
@@ -501,6 +746,117 @@ var outlierExplorer = (function (webcharts,d3$1) {
 		return chart;
 	}
 
-	return outlierExplorer;
+	class ReactYourProjectName extends React.Component {
+		constructor(props) {
+			super(props);
+			this.state = {};
+		}
+		componentDidMount(prevProps, prevState){
+			if(this.props.data.length){
+				//manually clear div and redraw
+				d3$1.select(`.chart-div.id-${this.props.id}`).selectAll('*').remove();
+				let chart = yourFunctionNameHere(`.chart-div.id-${this.props.id}`, this.props.settings).init(this.props.data);
+			}
+		}
+		componentDidUpdate(prevProps, prevState){
+			if(this.props.data.length){
+				//manually clear div and redraw
+				d3$1.select(`.chart-div.id-${this.props.id}`).selectAll('*').remove();
+				let chart = yourFunctionNameHere(`.chart-div.id-${this.props.id}`, this.props.settings).init(this.props.data);
+			}
+		}
+		render(){
+			return (
+				React.createElement('div', {
+					key: this.props.id,
+					className: `chart-div id-${this.props.id} ${!(this.props.data.length) ? 'loading' : ''}`,
+					style: { minHeight: '1px', minWidth: '1px' }
+				})
+			);
+		}
+	}
 
-}(webCharts,d3));
+	ReactYourProjectName.defaultProps = {data: [], controlInputs: [], id: 'id'}
+
+	function describeCode(props) {
+	  const settings = this.createSettings(props);
+	  const code =
+	`// uses d3 v.${d3$1.version}
+// uses webcharts v.${webcharts.version}
+// uses safety-outlier-explorer v.1.2.0
+
+var settings = ${JSON.stringify(settings, null, 2)};
+
+var myChart = safetyOutlierExplorer(dataElement, settings);
+
+d3.csv(dataPath, function(error, csv) {
+  myChart.init(csv);
+});
+`;
+	  return code;
+	}
+
+
+	class Renderer extends React.Component {
+	  constructor(props) {
+	    super(props);
+	    this.binding = binding;
+	    this.describeCode = describeCode.bind(this);
+	    this.state = { data: [], settings: {}, template: {}, loadMsg: 'Loading...' };
+	  }
+	  createSettings(props) {
+	    // set placeholders for anything the user can change
+	    const shell = settings;
+
+	    binding.dataMappings.forEach(e => {
+	      let chartVal = stringAccessor(props.dataMappings, e.source);
+	      if (chartVal) {
+	        stringAccessor(shell, e.target, chartVal);
+	      }
+	      else {
+	        let defaultVal = stringAccessor(props.template.dataMappings, e.source+'.default');
+	        if (defaultVal && typeof defaultVal === 'string' && defaultVal.slice(0,3) === 'dm$') {
+	          var pointerVal = stringAccessor(props.dataMappings, defaultVal.slice(3)) || null;
+	          stringAccessor(shell, e.target, pointerVal);
+	        }
+	        else if(defaultVal){
+	          stringAccessor(shell, e.target, defaultVal);
+	        }
+	      }
+	    });
+	    binding.chartProperties.forEach(e => {
+	      let chartVal = stringAccessor(props.chartProperties, e.source);
+	      if (chartVal !== undefined) {
+	        stringAccessor(shell, e.target, chartVal);
+	      }
+	      else {
+	        let defaultVal = stringAccessor(props.template.chartProperties, e.source+'.default');
+	        stringAccessor(shell, e.target, defaultVal);
+	      }
+	    });
+
+	    return syncSettings(shell);
+	  }
+	  componentWillMount() {
+	    var settings = this.createSettings(this.props);
+	    this.setState({ settings });
+	  }
+	  componentWillReceiveProps(nextProps){
+	    var settings = this.createSettings(nextProps);
+	    this.setState({ settings });
+	  }
+	  render() {
+	    return (
+	      React.createElement(ReactYourProjectName, {
+	        id: this.props.id,
+	        settings: this.state.settings,
+	        controlInputs: this.props.template.controls,
+	        data: this.props.data
+	      })
+	    );
+	  }
+	}
+
+	return Renderer;
+
+}));

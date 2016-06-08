@@ -1,5 +1,4 @@
 import { createTable } from 'webcharts';
-import { tableSettings } from './default-settings';
 
 export default function onLayout(){
     //custom filter behavior           

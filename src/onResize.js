@@ -1,8 +1,8 @@
 import { set } from 'd3';
 import { dataOps } from 'webcharts';
-import addBoxplot from './addBoxplot';
+import addBoxplot from './util/addBoxplot';
 import smallMult from './smallMultiples';
-import adjustTicks from './adjust-ticks';
+import adjustTicks from './util/adjust-ticks';
 
 export default function onResize(){
     const config = this.config;
@@ -93,5 +93,5 @@ export default function onResize(){
     // rotate ticks
     if (config.x.tickAttr) {
         adjustTicks.call(this, 'x', 0, 0, config.x.tickAttr.rotate, config.x.tickAttr.anchor);
-    }
+    } 
 }
