@@ -1,5 +1,4 @@
-
-export default function adjustTicks(axis, dx, dy, rotation, anchor){
+export default function(axis, dx, dy, rotation, anchor) {
   if(!axis)
     return;
   this.svg.selectAll("."+axis+".axis .tick text")
