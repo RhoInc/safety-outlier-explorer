@@ -9,6 +9,7 @@ export default function smallMultiples(id, chart) {
     //NOTE: will likely need polyfill for Object.assign
     var mult_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
     mult_settings.aspect = 5.4;
+    mult_settings.resizable = false;
     mult_settings.margin = {bottom:20};
     var multiples = createChart(chart.wrap.select('.multiples').node(), mult_settings, null);
 
