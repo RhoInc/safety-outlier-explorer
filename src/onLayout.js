@@ -1,6 +1,11 @@
 import { createTable } from 'webcharts';
 
 export default function onLayout(){
+  //Add div for participant counts.
+    this.controls.wrap
+        .append('p')
+        .classed('annote', true);
+
     //custom filter behavior           
     var xColSelect = this.controls.wrap.selectAll(".control-group")
         .filter(f => f.option === "x.column")

@@ -27,6 +27,6 @@ export default function onInit(){
             return dataOps.getValType(measureVals, config.value_col) === "continuous";
         });
 
+    this.super_raw_data = this.raw_data;
     this.raw_data = this.raw_data.filter(f => numMeasures.indexOf(f[config.measure_col]) > -1 );
-
 };
