@@ -128,6 +128,17 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 		this.wrap.append('div').attr('class', 'multiples');
 	}
 
+	function onPreprocess() {
+		//Define x- and y-axis ranges based on currently selected measure.
+		const config = this.config;
+		const measure = this.controls.wrap.selectAll('.control-group').filter(function (d) {
+			return d.value_col && d.value_col === config.measure_col;
+		}).select('option:checked').text();
+		const measure_data = this.raw_data.filter(d => d[config.measure_col] === measure);
+		this.config.x.domain = config.x.column !== 'DY' ? d3.set(measure_data.map(d => d[config.x.column])).values() : d3.extent(measure_data, d => +d[config.x.column]);
+		this.config.y.domain = d3.extent(measure_data, d => +d[config.value_col]);
+	}
+
 	function onDataTransform() {
 		var config = this.config;
 		var units = this.filtered_data[0][config.unit_col];
@@ -420,7 +431,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 		})();
 	}
 
-	function yourFunctionNameHere(element, settings$$) {
+	function safetyOutlierExplorer(element, settings$$) {
 
 		//merge user's settings with defaults
 		let mergedSettings = Object.assign({}, settings, settings$$);
@@ -436,6 +447,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 		let chart = webcharts.createChart(element, mergedSettings, controls);
 		chart.on('init', onInit);
 		chart.on('layout', onLayout);
+		chart.on('preprocess', onPreprocess);
 		chart.on('datatransform', onDataTransform);
 		chart.on('draw', onDraw);
 		chart.on('resize', onResize);
@@ -443,6 +455,6 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 		return chart;
 	}
 
-	return yourFunctionNameHere;
+	return safetyOutlierExplorer;
 }(webCharts, d3);
 
