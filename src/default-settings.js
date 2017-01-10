@@ -8,6 +8,9 @@ const settings = {
     normal_col_low: "STNRLO",
     normal_col_high: "STNRHI",
     start_value: null,
+    rotate_x_tick_labels: false,
+        //Set margin.bottom as needed to add vertical space for rotated x-axis tick labels and make
+        //sure to redefine margin.right to maintain horizontal space for the box plot.
 
     //Standard webcharts settings
     x:{
@@ -48,16 +51,16 @@ const settings = {
             tooltip:null //set in syncSettings()
         }
     ],
-    resizable:true,
-    max_width: 600,
-    margin:{right:20},
-    aspect: 1.33
+    margin:{right:20} //create space for box plot
 };
 
 // Replicate settings in multiple places in the settings object
 export function syncSettings(settings){
     settings.y.column = settings.value_col;
     settings.x.column = settings.time_cols[0];
+    settings.x.type = settings.x.column === 'DY'
+        ? 'linear'
+        : 'ordinal';
     settings.marks[0].per = [settings.id_col, settings.measure_col];
     settings.marks[0].tooltip = `[${settings.id_col}]`;
     settings.marks[1].per = [

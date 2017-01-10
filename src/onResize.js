@@ -91,7 +91,7 @@ export default function onResize(){
     });
 
     // rotate ticks
-    if (config.x.tickAttr) {
-        adjustTicks.call(this, 'x', 0, 0, config.x.tickAttr.rotate, config.x.tickAttr.anchor);
+    if (config.rotate_x_tick_labels) {
+        adjustTicks.call(this, 'x', -10, 10, -45, 'end');
     } 
 }

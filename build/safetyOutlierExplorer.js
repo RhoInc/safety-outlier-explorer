@@ -1,9 +1,7 @@
-"use strict";
-
-var safetyOutlierExplorer = (function (webcharts, d3$1) {
+var safetyOutlierExplorer = function (webcharts, d3$1) {
 	'use strict';
 
-	var settings = {
+	const settings = {
 		//Addition settings for this template
 		id_col: "USUBJID",
 		time_cols: ["VISITN", "VISIT", "DY"],
@@ -13,6 +11,9 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 		normal_col_low: "STNRLO",
 		normal_col_high: "STNRHI",
 		start_value: null,
+		rotate_x_tick_labels: false,
+		//Set margin.bottom as needed to add vertical space for rotated x-axis tick labels and make
+		//sure to redefine margin.right to maintain horizontal space for the box plot.
 
 		//Standard webcharts settings
 		x: {
@@ -50,25 +51,23 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 			},
 			tooltip: null //set in syncSettings()
 		}],
-		resizable: true,
-		max_width: 600,
-		margin: { right: 20 },
-		aspect: 1.33
+		margin: { right: 20 } //create space for box plot
 	};
 
 	// Replicate settings in multiple places in the settings object
 	function syncSettings(settings) {
 		settings.y.column = settings.value_col;
 		settings.x.column = settings.time_cols[0];
+		settings.x.type = settings.x.column === 'DY' ? 'linear' : 'ordinal';
 		settings.marks[0].per = [settings.id_col, settings.measure_col];
-		settings.marks[0].tooltip = "[" + settings.id_col + "]";
+		settings.marks[0].tooltip = `[${ settings.id_col }]`;
 		settings.marks[1].per = [settings.id_col, settings.measure_col, settings.time_cols[0], settings.value_col];
-		settings.marks[1].tooltip = "[" + settings.id_col + "]:  [" + settings.value_col + "] [" + settings.unit_col + "] at " + settings.x.column + " = [" + settings.x.column + "]";
+		settings.marks[1].tooltip = `[${ settings.id_col }]:  [${ settings.value_col }] [${ settings.unit_col }] at ${ settings.x.column } = [${ settings.x.column }]`;
 		return settings;
 	}
 
 	// Default Control objects
-	var controlInputs = [{ label: "Lab Test", type: "subsetter", start: null }, { type: "dropdown", label: "X axis", option: "x.column", require: true }];
+	const controlInputs = [{ label: "Lab Test", type: "subsetter", start: null }, { type: "dropdown", label: "X axis", option: "x.column", require: true }];
 
 	// Map values from settings to control inputs
 	function syncControlInputs(controlInputs, settings) {
@@ -86,21 +85,13 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 	}
 
 	function onInit() {
-		var _this = this;
-
-		var config = this.config;
-		var allMeasures = d3$1.set(this.raw_data.map(function (m) {
-			return m[config.measure_col];
-		})).values();
-		this.controls.config.inputs.filter(function (f) {
-			return f.value_col === config.measure_col;
-		})[0].start = config.start_value || allMeasures[0];
+		const config = this.config;
+		const allMeasures = d3$1.set(this.raw_data.map(m => m[config.measure_col])).values();
+		this.controls.config.inputs.filter(f => f.value_col === config.measure_col)[0].start = config.start_value || allMeasures[0];
 
 		//warning for non-numeric endpoints
-		var catMeasures = allMeasures.filter(function (f) {
-			var measureVals = _this.raw_data.filter(function (d) {
-				return d[config.measure_col] === f;
-			});
+		var catMeasures = allMeasures.filter(f => {
+			var measureVals = this.raw_data.filter(d => d[config.measure_col] === f);
 
 			return webcharts.dataOps.getValType(measureVals, config.value_col) !== "continuous";
 		});
@@ -109,36 +100,28 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 		}
 
 		//delete non-numeric endpoints
-		var numMeasures = allMeasures.filter(function (f) {
-			var measureVals = _this.raw_data.filter(function (d) {
-				return d[config.measure_col] === f;
-			});
+		var numMeasures = allMeasures.filter(f => {
+			var measureVals = this.raw_data.filter(d => d[config.measure_col] === f);
 
 			return webcharts.dataOps.getValType(measureVals, config.value_col) === "continuous";
 		});
 
-		this.raw_data = this.raw_data.filter(function (f) {
-			return numMeasures.indexOf(f[config.measure_col]) > -1;
-		});
+		this.raw_data = this.raw_data.filter(f => numMeasures.indexOf(f[config.measure_col]) > -1);
 	};
 
 	function onLayout() {
-		var _this2 = this;
+		//custom filter behavior           
+		var xColSelect = this.controls.wrap.selectAll(".control-group").filter(f => f.option === "x.column").select("select");
 
-		//custom filter behavior          
-		var xColSelect = this.controls.wrap.selectAll(".control-group").filter(function (f) {
-			return f.option === "x.column";
-		}).select("select");
-
-		xColSelect.on("change", function (d) {
+		xColSelect.on("change", d => {
 			var value = xColSelect.property('value');
 
-			_this2.config.x.column = value;
-			_this2.config.marks[1].per[2] = value;
+			this.config.x.column = value;
+			this.config.marks[1].per[2] = value;
 
 			//DY is a hardcoded variable...
-			_this2.config.x.type = value == "DY" ? "linear" : "ordinal";
-			_this2.draw();
+			this.config.x.type = value == "DY" ? "linear" : "ordinal";
+			this.draw();
 		});
 
 		//add wrapper for small multiples
@@ -238,7 +221,7 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 
 		var dRow = chart.filtered_data[0];
 
-		var myRows = chart.x_dom.slice().map(function (m) {
+		var myRows = chart.x_dom.slice().map(m => {
 			return {
 				STNRLO: dRow[chart.config.normal_col_low],
 				STNRHI: dRow[chart.config.normal_col_high],
@@ -251,14 +234,24 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 		chart.svg.append("path").datum(myRows).attr("class", "norms").attr("fill", "blue").attr("fill-opacity", 0.1).attr("d", area);
 	}
 
+	function adjustTicks(axis, dx, dy, rotation, anchor) {
+		if (!axis) return;
+		this.svg.selectAll("." + axis + ".axis .tick text").attr({
+			"transform": "rotate(" + rotation + ")",
+			"dx": dx,
+			"dy": dy
+		}).style("text-anchor", anchor || 'start');
+	}
+
 	function smallMultiples(id, chart) {
-		//clear current multiples
+		//Clear current multiples.
 		chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
-		//Establish settings for small multiples based off of the main chart
-		//NOTE: will likely need polyfill for Object.assign
+
+		//Define small multiples settings.
 		var mult_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
-		mult_settings.aspect = 5.4;
-		mult_settings.margin = { bottom: 20 };
+		mult_settings.resizable = false; // prevent different-sized small multiples
+		if (mult_settings.margin !== undefined) mult_settings.margin.bottom = mult_settings.margin.bottom ? mult_settings.margin.bottom - 10 : 20;else mult_settings.margin = { bottom: 20 }; // create space for x-axis tick labels
+		mult_settings.height = 50 + mult_settings.margin.bottom; // hard code height
 		var multiples = webcharts.createChart(chart.wrap.select('.multiples').node(), mult_settings, null);
 
 		//insert a header
@@ -266,7 +259,6 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 
 		//get normal values and adjust domain
 		multiples.on("layout", function () {
-			var _this3 = this;
 
 			//header formatting
 			this.wrap.selectAll(".wc-chart-title").style("display", "block");
@@ -280,29 +272,17 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 			//border between multiple
 			this.wrap.selectAll(".wc-chart-title").style("border-top", "1px solid #eee");
 			//set y scale based on values & normal range
-			var filtered_data = this.raw_data.filter(function (f) {
-				return f[_this3.filters[0].col] === _this3.filters[0].val;
+			var filtered_data = this.raw_data.filter(f => {
+				return f[this.filters[0].col] === this.filters[0].val;
 			});
-			var normlovals = filtered_data.map(function (m) {
-				return +m[chart.config.normal_col_low];
-			}).filter(function (f) {
-				return +f || +f === 0;
-			});
+			var normlovals = filtered_data.map(m => +m[chart.config.normal_col_low]).filter(f => +f || +f === 0);
 
-			var normhivals = filtered_data.map(function (m) {
-				return +m[chart.config.normal_col_high];
-			}).filter(function (f) {
-				return +f || +f === 0;
-			});
+			var normhivals = filtered_data.map(m => +m[chart.config.normal_col_high]).filter(f => +f || +f === 0);
 
 			var normlo = Math.min.apply(null, normlovals);
 			var normhi = Math.max.apply(null, normhivals);
 
-			var yvals = filtered_data.map(function (m) {
-				return +m[chart.config.y.column];
-			}).filter(function (f) {
-				return +f || +f === 0;
-			});
+			var yvals = filtered_data.map(m => +m[chart.config.y.column]).filter(f => +f || +f === 0);
 
 			var ylo = d3$1.min(yvals);
 			var yhi = d3$1.max(yvals);
@@ -318,6 +298,10 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 		});
 
 		multiples.on("resize", function () {
+			//Resize text manually.
+			this.wrap.select('.wc-chart-title').style('font-size', '12px');
+			this.svg.selectAll('.axis .tick text').style('font-size', '10px');
+
 			//draw normal range
 			rangePolygon(this);
 
@@ -328,27 +312,21 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 
 			//delete the legend
 			this.legend.remove();
+
+			// rotate ticks
+			if (chart.config.rotate_x_tick_labels) {
+				adjustTicks.call(this, 'x', -10, 10, -45, 'end');
+			}
 		});
 
-		var ptData = chart.raw_data.filter(function (f) {
-			return f[chart.config.id_col] === id;
-		});
+		var ptData = chart.raw_data.filter(f => f[chart.config.id_col] === id);
 
 		webcharts.multiply(multiples, ptData, chart.config.measure_col);
 	}
 
-	function adjustTicks(axis, dx, dy, rotation, anchor) {
-		if (!axis) return;
-		this.svg.selectAll("." + axis + ".axis .tick text").attr({
-			"transform": "rotate(" + rotation + ")",
-			"dx": dx,
-			"dy": dy
-		}).style("text-anchor", anchor || 'start');
-	}
-
 	function onResize() {
-		var config = this.config;
-		var chart = this;
+		const config = this.config;
+		const chart = this;
 		function highlight(id) {
 			var myLine = chart.svg.selectAll(".line").filter(function (d) {
 				return d.values[0].values.raw[0][config.id_col] === id;
@@ -404,7 +382,7 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 			highlight(id);
 		});
 
-		//draw reference boxplot
+		//draw reference boxplot 
 		this.svg.select("g.boxplot").remove();
 		var myValues = this.current_data.map(function (d) {
 			return d.values.y;
@@ -422,8 +400,8 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 		});
 
 		// rotate ticks
-		if (config.x.tickAttr) {
-			adjustTicks.call(this, 'x', 0, 0, config.x.tickAttr.rotate, config.x.tickAttr.anchor);
+		if (config.rotate_x_tick_labels) {
+			adjustTicks.call(this, 'x', -10, 10, -45, 'end');
 		}
 	}
 
@@ -431,6 +409,7 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 		(function () {
 			Object.assign = function (target) {
 				'use strict';
+
 				if (target === undefined || target === null) {
 					throw new TypeError('Cannot convert undefined or null to object');
 				}
@@ -454,17 +433,17 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 	function yourFunctionNameHere(element, settings$$) {
 
 		//merge user's settings with defaults
-		var mergedSettings = Object.assign({}, settings, settings$$);
+		let mergedSettings = Object.assign({}, settings, settings$$);
 
 		//keep settings in sync with the data mappings
 		mergedSettings = syncSettings(mergedSettings);
 
 		//keep control inputs in sync and create controls object (if needed)
-		var syncedControlInputs = syncControlInputs(controlInputs, mergedSettings);
-		var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
+		let syncedControlInputs = syncControlInputs(controlInputs, mergedSettings);
+		let controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
 
 		//create chart
-		var chart = webcharts.createChart(element, mergedSettings, controls);
+		let chart = webcharts.createChart(element, mergedSettings, controls);
 		chart.on('init', onInit);
 		chart.on('layout', onLayout);
 		chart.on('datatransform', onDataTransform);
@@ -475,5 +454,5 @@ var safetyOutlierExplorer = (function (webcharts, d3$1) {
 	}
 
 	return yourFunctionNameHere;
-})(webCharts, d3);
+}(webCharts, d3);
 
