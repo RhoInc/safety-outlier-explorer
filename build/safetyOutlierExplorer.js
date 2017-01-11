@@ -105,7 +105,8 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 			return webcharts.dataOps.getValType(measureVals, config.value_col) === "continuous";
 		});
 
-		this.super_raw_data = this.raw_data;
+		//count the number of unique ids in the data set
+		this.populationCount = d3.set(this.raw_data.map(d => d[this.config.id_col])).values().length;
 		this.raw_data = this.raw_data.filter(f => numMeasures.indexOf(f[config.measure_col]) > -1);
 	};
 
@@ -150,8 +151,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
  \------------------------------------------------------------------------------------------------*/
 
 	function updateSubjectCount(chart, id_col, selector, id_unit) {
-		//count the number of unique ids in the data set
-		const totalObs = d3.set(chart.super_raw_data.map(d => d[id_col])).values().length;
+		const totalObs = chart.populationCount;
 
 		//count the number of unique ids in the current chart and calculate the percentage
 		const currentObs = d3.set(chart.filtered_data.map(d => d[id_col])).values().length;

@@ -9,9 +9,7 @@
 \------------------------------------------------------------------------------------------------*/
 
 export default function(chart, id_col, selector, id_unit) {
-  //count the number of unique ids in the data set
-    const totalObs = d3.set(chart.super_raw_data
-        .map(d => d[id_col])).values().length;
+    const totalObs = chart.populationCount;
 
   //count the number of unique ids in the current chart and calculate the percentage
     const currentObs = d3.set(chart.filtered_data
