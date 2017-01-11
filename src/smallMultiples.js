@@ -5,16 +5,12 @@ import adjustTicks from './util/adjust-ticks';
 
 export default function smallMultiples(id, chart) {
   //Clear current multiples.
-	chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
+    chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
 
   //Define small multiples settings.
     var mult_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
     mult_settings.resizable = false; // prevent different-sized small multiples
-    if (mult_settings.margin !== undefined)
-        mult_settings.margin.bottom = mult_settings.margin.bottom ? (mult_settings.margin.bottom - 10) : 20;
-    else
-        mult_settings.margin = {bottom: 20}; // create space for x-axis tick labels
-    mult_settings.height = 50 + mult_settings.margin.bottom; // hard code height
+    mult_settings.height = 100 + mult_settings.margin.bottom; // hard code height
     var multiples = createChart(chart.wrap.select('.multiples').node(), mult_settings, null);
 
     //insert a header

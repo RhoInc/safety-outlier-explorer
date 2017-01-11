@@ -1,47 +1,65 @@
 const settings = {
-    //Addition settings for this template
-    id_col: "USUBJID",
-    time_cols: ["VISITN","VISIT","DY"],
-    measure_col: "TEST",
-    value_col: "STRESN",
-    unit_col: "STRESU",
-    normal_col_low: "STNRLO",
-    normal_col_high: "STNRHI",
-    start_value: null,
-    rotate_x_tick_labels: false,
-        //Set margin.bottom as needed to add vertical space for rotated x-axis tick labels and make
-        //sure to redefine margin.right to maintain horizontal space for the box plot.
+  //Custom settings for this template
+    id_col: 'USUBJID',
+    time_cols:
+        [
+            {value_col: 'VISITN'
+            ,type: 'ordinal'
+            ,label: 'Visit Number'
+            ,rotate_tick_labels: false
+            ,vertical_space: 0}
 
-    //Standard webcharts settings
+        ,
+            {value_col: 'VISIT'
+            ,type: 'ordinal'
+            ,label: 'Visit'
+            ,rotate_tick_labels: true
+            ,vertical_space: 100} // Specify vertical space for rotated tick labels.  Maps to [margin.bottom].
+
+        ,
+            {value_col: 'DY'
+            ,type: 'linear'
+            ,label: 'Study Day'
+            ,rotate_tick_labels: false
+            ,vertical_space: 0}
+        ],
+    measure_col: 'TEST',
+    value_col: 'STRESN',
+    unit_col: 'STRESU',
+    normal_col_low: 'STNRLO',
+    normal_col_high: 'STNRHI',
+    start_value: null,
+
+  //Standard webCharts settings
     x:{
         column:null, //set in syncSettings()
-        type:"linear",
-        behavior:"flex",
+        type:'linear',
+        behavior:'flex',
         tickAttr: null
     },
     y:{
         column:null, //set in syncSettings()
-        stat:"mean",
-        type:"linear",
-        label:"Value",
-        behavior:"flex",
-        format:"0.2f"
+        stat:'mean',
+        type:'linear',
+        label:'Value',
+        behavior:'flex',
+        format:'0.2f'
     },
     marks:[
         {
             per:null, //set in syncSettings()
-            type:"line",
+            type:'line',
             attributes:{
                 'stroke-width': .5, 
                 'stroke-opacity': .5 ,
-                "stroke":"#999"
+                'stroke':'#999'
             },
             tooltip:null //set in syncSettings()
 
         },
         {
             per:null, //set in syncSettings()
-            type:"circle",
+            type:'circle',
             radius:2,
             attributes:{
                 'stroke-width': .5, 
@@ -51,41 +69,58 @@ const settings = {
             tooltip:null //set in syncSettings()
         }
     ],
-    margin:{right:20} //create space for box plot
+    margin: {right: 20} //create space for box plot
 };
 
 // Replicate settings in multiple places in the settings object
-export function syncSettings(settings){
+export function syncSettings(settings) {
+    const time_col = settings.time_cols[0];
+
+    settings.x.column = time_col.value_col;
+    settings.x.type = time_col.type;
+    settings.x.label = time_col.label;
+
     settings.y.column = settings.value_col;
-    settings.x.column = settings.time_cols[0];
-    settings.x.type = settings.x.column === 'DY'
-        ? 'linear'
-        : 'ordinal';
-    settings.marks[0].per = [settings.id_col, settings.measure_col];
+
+    settings.marks[0].per = [
+        settings.id_col,
+        settings.measure_col
+    ];
     settings.marks[0].tooltip = `[${settings.id_col}]`;
+
     settings.marks[1].per = [
         settings.id_col, 
         settings.measure_col,
-        settings.time_cols[0],
+        time_col.value_col,
         settings.value_col
     ];
     settings.marks[1].tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${settings.unit_col}] at ${settings.x.column} = [${settings.x.column}]`;
+
+    if (settings.margin)
+        settings.margin.bottom = time_col.vertical_space;
+    else
+        settings.margin =
+            {right: 20
+            ,bottom: time_col.vertical_space};
+
+    settings.rotate_x_tick_labels = time_col.rotate_tick_labels;
+
     return settings;
 }
 
 // Default Control objects
 export const controlInputs = [ 
- 	{label: "Lab Test", type: "subsetter", start: null},
-    {type: "dropdown", label: "X axis", option: "x.column", require: true}
+    {label: 'Lab Test', type: 'subsetter', start: null},
+    {type: 'dropdown', label: 'X axis', option: 'x.column', require: true}
 ];
 
 // Map values from settings to control inputs
 export function syncControlInputs(controlInputs, settings){
-    var labTestControl = controlInputs.filter(function(d){return d.label=="Lab Test"})[0]     
+    var labTestControl = controlInputs.filter(function(d){return d.label=='Lab Test'})[0]     
     labTestControl.value_col = settings.measure_col;
 
-    var xAxisControl = controlInputs.filter(function(d){return d.label=="X axis"})[0]     
-    xAxisControl.values = settings.time_cols;
+    var xAxisControl = controlInputs.filter(function(d){return d.label=='X axis'})[0]     
+    xAxisControl.values = settings.time_cols.map(d => d.value_col);
 
     return controlInputs
 }
