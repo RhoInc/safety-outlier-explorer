@@ -8,6 +8,7 @@ const settings = {
     normal_col_low: "STNRLO",
     normal_col_high: "STNRHI",
     start_value: null,
+    custom_marks: null,
 
     //Standard webcharts settings
     x:{
@@ -48,18 +49,17 @@ const settings = {
             tooltip:null //set in syncSettings()
         }
     ],
-    resizable:true,
-    max_width: 600,
-    margin:{right:20},
-    aspect: 1.33
+    margin:{right:20}
 };
 
 // Replicate settings in multiple places in the settings object
 export function syncSettings(settings){
-    settings.y.column = settings.value_col;
     settings.x.column = settings.time_cols[0];
+    settings.y.column = settings.value_col;
+
     settings.marks[0].per = [settings.id_col, settings.measure_col];
     settings.marks[0].tooltip = `[${settings.id_col}]`;
+
     settings.marks[1].per = [
         settings.id_col, 
         settings.measure_col,
@@ -67,6 +67,12 @@ export function syncSettings(settings){
         settings.value_col
     ];
     settings.marks[1].tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${settings.unit_col}] at ${settings.x.column} = [${settings.x.column}]`;
+
+  //Add custom marks to settings.marks.
+    if (settings.custom_marks)
+        settings.custom_marks
+            .forEach(mark => settings.marks.push(mark));
+
     return settings;
 }
 
