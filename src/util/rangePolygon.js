@@ -15,7 +15,7 @@ export default function rangePolygon (chart){
             return lbornrhi !== 'NA' ? chart.y(+lbornrhi) : 0
         });
 
-    var dRow = chart.filtered_data[0];
+    var dRow = chart.raw_data[0];
 
     var myRows = chart.x_dom.slice().map(m => {
         return {
