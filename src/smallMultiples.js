@@ -68,7 +68,7 @@ export default function smallMultiples(id, chart) {
         rangePolygon(this);
 
         // axis tweaks
-        var units = this.current_data[0].values.raw[0][chart.config.unit_col];
+        var units = this.raw_data[0][chart.config.unit_col];
         this.svg.select(".y.axis").select(".axis-title").text(units);
         this.svg.select(".x.axis").select(".axis-title").remove();
 
