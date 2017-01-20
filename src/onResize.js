@@ -5,66 +5,82 @@ import smallMult from './smallMultiples';
 import adjustTicks from './util/adjust-ticks';
 
 export default function onResize(){
+    let chart = this;
     const config = this.config;
-    const chart = this;
 
-    function highlight(id){
-        var myLine = chart.svg.selectAll('.line')
-        .filter(function(d){return d.values[0].values.raw[0][config.id_col] === id})
+  //Highlight lines and point corresponding to an ID.
+    function highlight(id) {
+        const myLine = chart.svg.selectAll(".line")
+            .filter(d => d.values[0].values.raw[0][config.id_col] === id[config.id_col]);
+        myLine.select("path")
+            .attr("stroke-width",4)
         
-        var myPoints = chart.svg.selectAll('.point').filter(function(d){return d.values.raw[0][config.id_col] === id})
-
-        myLine.select('path').attr('stroke-width',4)
-        myPoints.select('circle').attr('r',4)
+        const myPoints = chart.svg.selectAll(".point")
+            .filter(d => d.values.raw[0][config.id_col] === id[config.id_col]);
+        myPoints.select("circle")
+            .attr("r",4)
     }
 
-    function clearHighlight(){
-        chart.svg.selectAll('.line:not(.selected)').select('path').attr('stroke-width',.5)
-        chart.svg.selectAll('.point:not(.selected)').select('circle').attr('r',2)
+  //Remove highlighting.
+    function clearHighlight() {
+        chart.svg.selectAll(".line:not(.selected)").select("path").attr("stroke-width",.5);
+        chart.svg.selectAll(".point:not(.selected)").select("circle").attr("r",2);
     }
 
-    //Set up event listeners on lines and points
-    var mainChart = this;
-    this.svg.selectAll('.line')
-    .on('mouseover',function(d){ 
-        var id = d.values[0].values.raw[0][config.id_col]
-        highlight(id)
-    })
-    .on('mouseout', clearHighlight)
-    .on('click',function(d){
-        var id = d.values[0].values.raw[0][config.id_col];
-        chart.svg.selectAll('.line').classed('selected', false);
-        chart.svg.selectAll('.point').classed('selected', false);
-        d3.select(this).classed('selected', true);
-        chart.svg.selectAll('.point')
-        .filter(function(d){return d.values.raw[0][config.id_col] === id})
-        .classed('selected', true);
+  //Set up event listeners on lines and points
+    this.svg.selectAll(".line")
+        .on("mouseover",function(d){ 
+            const id = chart.raw_data
+                .filter(di => di[config.id_col] === d.values[0].values.raw[0][config.id_col])[0];
+            highlight(id);
+        })
+        .on("mouseout", clearHighlight)
+        .on("click",function(d) {
+            const id = chart.raw_data
+                .filter(di => di[config.id_col] === d.values[0].values.raw[0][config.id_col])[0];
 
-        smallMult(id, mainChart);
-        highlight(id);
-    })
+          //Un-select all lines and points.
+            chart.svg.selectAll(".line").classed('selected', false);
+            chart.svg.selectAll(".point").classed('selected', false);
 
-    this.svg.selectAll('.point')
-    .on('mouseover',function(d){ 
-        var id = d.values.raw[0][config.id_col]
-        highlight(id)
-    })
-    .on('mouseout',clearHighlight)
-    .on('click',function(d){
-        var id = d.values.raw[0][config.id_col];
+          //Select line and all points corresponding to selected ID.
+            d3.select(this).classed('selected', true);
+            chart.svg.selectAll(".point")
+                .filter(d => d.values.raw[0][config.id_col] === id[config.id_col])
+                .classed('selected', true);
 
-        chart.svg.selectAll('.line').classed('selected', false);
-        chart.svg.selectAll('.point').classed('selected', false);
-        chart.svg.selectAll('.point')
-            .filter(function(d){return d.values.raw[0][config.id_col] === id})
-            .classed('selected', true);
-        chart.svg.selectAll('.line')
-            .filter(function(d){return d.values[0].values.raw[0][config.id_col] === id})
-            .classed('selected', true);
+          //Generate small multiples and highlight marks.
+            smallMult(id, chart);
+            highlight(id);
+        });
 
-        smallMult(id, mainChart);
-        highlight(id);
-    })
+    this.svg.selectAll(".point")
+        .on("mouseover",function(d){ 
+            const id = chart.raw_data
+                .filter(di => di[config.id_col] === d.values.raw[0][config.id_col])[0];
+            highlight(id)
+        })
+        .on("mouseout",clearHighlight)
+        .on("click",function(d){
+            const id = chart.raw_data
+                .filter(di => di[config.id_col] === d.values.raw[0][config.id_col])[0];
+
+          //Un-select all lines and points.
+            chart.svg.selectAll(".line").classed('selected', false);
+            chart.svg.selectAll(".point").classed('selected', false);
+
+          //Select line and all points corresponding to selected ID.
+            chart.svg.selectAll(".line")
+                .filter(function(d){return d.values[0].values.raw[0][config.id_col] === id})
+                .classed('selected', true);
+            chart.svg.selectAll(".point")
+                .filter(function(d){return d.values.raw[0][config.id_col] === id})
+                .classed('selected', true);
+
+          //Generate small multiples and highlight marks.
+            smallMult(id, chart);
+            highlight(id);
+        });
 
 
     //draw reference boxplot 
