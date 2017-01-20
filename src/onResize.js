@@ -84,7 +84,7 @@ export default function onResize(){
 
 
     //draw reference boxplot 
-    this.svg.select("g.boxplot").remove()
+    this.svg.select('g.boxplot').remove()
     var myValues = this.current_data.map(function(d){return d.values.y}) 
 
     addBoxplot(
@@ -94,21 +94,21 @@ export default function onResize(){
         1, 
         this.y_dom, 
         10, 
-        "#bbb", 
-        "white"
+        '#bbb', 
+        'white'
     )
-    this.svg.select("g.boxplot").attr("transform", "translate(" + (this.plot_width + this.config.margin.right/2) + ",0)");
+    this.svg.select('g.boxplot').attr('transform', 'translate(' + (this.plot_width + this.config.margin.right/2) + ',0)');
 
     this.svg.select('.overlay').on('click', function(){
         //clear current multiples
         chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
-        chart.svg.selectAll(".line").classed('selected', false);
-        chart.svg.selectAll(".point").classed('selected', false);
+        chart.svg.selectAll('.line').classed('selected', false);
+        chart.svg.selectAll('.point').classed('selected', false);
         clearHighlight();
     });
 
     // rotate ticks
-    if (config.x.tickAttr) {
-        adjustTicks.call(this, 'x', 0, 0, config.x.tickAttr.rotate, config.x.tickAttr.anchor);
+    if (config.rotate_x_tick_labels) {
+        adjustTicks.call(this, 'x', -10, 10, -45, 'end');
     } 
 }

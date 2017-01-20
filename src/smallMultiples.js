@@ -1,15 +1,17 @@
 import { select, min, max } from 'd3';
 import { createChart, multiply } from 'webcharts';
 import rangePolygon from './util/rangePolygon';
+import adjustTicks from './util/adjust-ticks';
 
-export default function(id, chart) {
-    //clear current multiples
-	chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
-    //Establish settings for small multiples based off of the main chart
-    //NOTE: will likely need polyfill for Object.assign
+export default function smallMultiples(id, chart) {
+  //Clear current multiples.
+    chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
+
+  //Define small multiples settings.
+
     var mult_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
-    mult_settings.aspect = 5.4;
-    mult_settings.margin = {bottom:20};
+    mult_settings.resizable = false; // prevent different-sized small multiples
+    mult_settings.height = 100 + mult_settings.margin.bottom; // hard code height
     var multiples = createChart(chart.wrap.select('.multiples').node(), mult_settings, null);
 
   //Insert header.
@@ -104,6 +106,12 @@ export default function(id, chart) {
     });
     
     multiples.on("resize", function(){
+      //Resize text manually.
+        this.wrap.select('.wc-chart-title')
+            .style('font-size', '12px');
+        this.svg.selectAll('.axis .tick text')
+            .style('font-size', '10px');
+
         //draw normal range
         rangePolygon(this);
 
@@ -114,6 +122,11 @@ export default function(id, chart) {
 
         //delete the legend
         this.legend.remove();
+
+        // rotate ticks
+        if (chart.config.rotate_x_tick_labels) {
+            adjustTicks.call(this, 'x', -10, 10, -45, 'end');
+        } 
     });
     
     var ptData = chart.raw_data.filter(f => f[chart.config.id_col] === id[chart.config.id_col] );
