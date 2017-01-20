@@ -12,6 +12,7 @@ const settings = {
         [   {value_col: 'AGE', label: 'Age'}
         ,   {value_col: 'SEX', label: 'Sex'}
         ,   {value_col: 'RACE', label: 'Race'}],
+    filters: null,
 
     //Standard webcharts settings
     x:{
@@ -73,17 +74,28 @@ export function syncSettings(settings){
 
 // Default Control objects
 export const controlInputs = [ 
- 	{label: "Lab Test", type: "subsetter", start: null},
+ 	{label: "Measure", type: "subsetter", start: null},
     {type: "dropdown", label: "X axis", option: "x.column", require: true}
 ];
 
 // Map values from settings to control inputs
 export function syncControlInputs(controlInputs, settings){
-    var labTestControl = controlInputs.filter(function(d){return d.label=="Lab Test"})[0]     
+    let labTestControl = controlInputs
+        .filter(d => d.label === 'Measure')[0];
     labTestControl.value_col = settings.measure_col;
 
-    var xAxisControl = controlInputs.filter(function(d){return d.label=="X axis"})[0]     
+    let xAxisControl = controlInputs
+        .filter(d => d.label === 'X axis')[0];
     xAxisControl.values = settings.time_cols;
+
+    settings.filters.reverse()
+        .forEach((d,i) => {
+            const thisFilter =
+                {type: 'subsetter'
+                ,value_col: d.value_col ? d.value_col : d
+                ,label: d.label ? d.label : d.value_col ? d.value_col : d};
+            controlInputs.push(thisFilter);
+        });
 
     return controlInputs
 }
