@@ -35,13 +35,15 @@ const settings = {
         ,   {value_col: 'RACE', label: 'Race'}],
     filters: null,
     custom_marks: null,
+    multiples_sizing:
+        {width: 300
+        ,height: 100},
 
   //Standard webCharts settings
     x:{
         column:null, //set in syncSettings()
-        type:'linear',
-        behavior:'flex',
-        tickAttr: null
+        type:null, //set in syncSettings()
+        behavior:'flex'
     },
     y:{
         column:null, //set in syncSettings()
@@ -124,7 +126,7 @@ export function syncSettings(settings) {
 
 // Default Control objects
 export const controlInputs = [ 
- 	{label: "Measure", type: "subsetter", start: null},
+    {label: "Measure", type: "subsetter", start: null},
     {type: "dropdown", label: "X axis", option: "x.column", require: true}
 ];
 

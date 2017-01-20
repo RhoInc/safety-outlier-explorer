@@ -3,13 +3,12 @@ export default function onPreprocess() {
     const config = this.config;
     const measure = this.controls.wrap
         .selectAll('.control-group')
-        .filter(function(d) {
-            return d.value_col && d.value_col === config.measure_col; })
+        .filter(d => d.value_col && d.value_col === config.measure_col)
         .select('option:checked')
         .text();
     const measure_data = this.raw_data
         .filter(d => d[config.measure_col] === measure);
-    this.config.x.domain = (config.x.column !== 'DY')
+    this.config.x.domain = (config.x.type === 'ordinal')
         ? d3.set   (measure_data.map(d =>  d[config.x.column ])).values()
         : d3.extent(measure_data,    d => +d[config.x.column ]);
     this.config.y.domain =
