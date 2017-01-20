@@ -1,6 +1,6 @@
 import { svg } from 'd3';
 
-export default function rangePolygon (chart){
+export default function(chart) {
 
     var area = svg.area()
         .x(function(d){ 
@@ -15,7 +15,7 @@ export default function rangePolygon (chart){
             return lbornrhi !== 'NA' ? chart.y(+lbornrhi) : 0
         });
 
-    var dRow = chart.filtered_data[0];
+    var dRow = chart.raw_data[0];
 
     var myRows = chart.x_dom.slice().map(m => {
         return {
