@@ -128,7 +128,7 @@ export function syncControlInputs(controlInputs, settings){
 
     let xAxisControl = controlInputs
         .filter(d => d.label === 'X axis')[0];
-    xAxisControl.values = settings.time_cols;
+    xAxisControl.values = settings.time_cols.map(d => d.value_col);
 
     settings.filters.reverse()
         .forEach((d,i) => {
