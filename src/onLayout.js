@@ -6,13 +6,10 @@ export default function onLayout(){
         .append('p')
         .classed('annote', true);
 
-    //custom filter behavior           
-    var xColSelect = this.controls.wrap.selectAll(".control-group")
-        .filter(f => f.option === "x.column")
-        .select("select")
-        
-    xColSelect.on("change", d => {
-            var value = xColSelect.property('value');
+  //Define x-axis column control behavior.
+    let xColSelect = this.controls.wrap.selectAll('.control-group')
+        .filter(f => f.option === 'x.column')
+        .select('select');
 
   //Map column names to column labels.
     xColSelect
