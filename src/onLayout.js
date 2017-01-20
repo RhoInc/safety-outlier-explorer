@@ -14,14 +14,35 @@ export default function onLayout(){
     xColSelect.on("change", d => {
             var value = xColSelect.property('value');
 
-            this.config.x.column = value;
-            this.config.marks[1].per[2] = value;
+  //Map column names to column labels.
+    xColSelect
+        .selectAll('option')
+        .text(d =>
+            this.config.time_cols[
+                this.config.time_cols
+                    .map(d => d.value_col)
+                    .indexOf(d)].label);
 
-            //DY is a hardcoded variable...
-            this.config.x.type = value == "DY" ? "linear" : "ordinal";
-            this.draw();
-        });
+  //Define event listener.
+    xColSelect.on('change', d => {
+        const time_col = this.config.time_cols[
+            this.config.time_cols
+                .map(di => di.label)
+                .indexOf(xColSelect.property('value'))];
 
-    //add wrapper for small multiples
-    this.wrap.append('div').attr('class', 'multiples');
+      //Redefine settings properties based on x-axis column selection.
+        this.config.x.column = time_col.value_col;
+        this.config.x.type = time_col.type;
+        this.config.x.label = time_col.label;
+        this.config.marks[1].per[2] = time_col.value_col;
+        this.config.rotate_x_tick_labels = time_col.rotate_tick_labels;
+        this.config.margin.bottom = time_col.vertical_space;
+
+        this.draw();
+    });
+
+  //Add wrapper for small multiples.
+    this.wrap
+        .append('div')
+        .attr('class', 'multiples');
 }
