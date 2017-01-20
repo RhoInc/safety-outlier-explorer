@@ -8,6 +8,10 @@ const settings = {
     normal_col_low: "STNRLO",
     normal_col_high: "STNRHI",
     start_value: null,
+    details:
+        [   {value_col: 'AGE', label: 'Age'}
+        ,   {value_col: 'SEX', label: 'Sex'}
+        ,   {value_col: 'RACE', label: 'Race'}],
     filters: null,
 
     //Standard webcharts settings

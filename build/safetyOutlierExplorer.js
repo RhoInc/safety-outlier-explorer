@@ -11,6 +11,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 		normal_col_low: "STNRLO",
 		normal_col_high: "STNRHI",
 		start_value: null,
+		details: [{ value_col: 'AGE', label: 'Age' }, { value_col: 'SEX', label: 'Sex' }, { value_col: 'RACE', label: 'Race' }],
 		filters: null,
 
 		//Standard webcharts settings
@@ -234,7 +235,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 		chart.svg.append("path").datum(myRows).attr("class", "norms").attr("fill", "blue").attr("fill-opacity", 0.1).attr("d", area);
 	}
 
-	function smallMultiples(id, chart) {
+	function smallMult(id, chart) {
 		//clear current multiples
 		chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
 		//Establish settings for small multiples based off of the main chart
@@ -244,8 +245,22 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 		mult_settings.margin = { bottom: 20 };
 		var multiples = webcharts.createChart(chart.wrap.select('.multiples').node(), mult_settings, null);
 
-		//insert a header
-		multiples.wrap.insert('strong', '.legend').text('All Measures for ' + id);
+		//Insert header.
+		let text = 'All Measures for ' + id[chart.config.id_col];
+		multiples.wrap.insert('strong', '.legend').text(text);
+		let detail_table = multiples.wrap.insert('table', '.legend').append('tbody').classed('detail-listing', true);
+		detail_table.append('thead').selectAll('th').data(['', '']).enter().append('th');
+		detail_table.append('tbody');
+		//Insert a line for each item in [ settings.detail_cols ].
+		if (chart.config.details && chart.config.details.length) {
+			chart.config.details.forEach(detail => {
+				const value_col = detail.value_col ? detail.value_col : detail;
+				const label = detail.label ? detail.label : detail.value_col ? detail.value_col : detail;
+				if (id[value_col] !== undefined) {
+					let detail_row = detail_table.select('tbody').append('tr').selectAll('td').data([label, id[value_col]]).enter().append('td').style('text-align', (d, i) => i === 0 ? 'right' : 'left').text((d, i) => i === 0 ? d + ':' : d);
+				}
+			});
+		}
 
 		//get normal values and adjust domain
 		multiples.on("layout", function () {
@@ -300,7 +315,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 			this.legend.remove();
 		});
 
-		var ptData = chart.raw_data.filter(f => f[chart.config.id_col] === id);
+		var ptData = chart.raw_data.filter(f => f[chart.config.id_col] === id[chart.config.id_col]);
 
 		webcharts.multiply(multiples, ptData, chart.config.measure_col);
 	}
@@ -315,60 +330,64 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 	}
 
 	function onResize() {
+		let chart = this;
 		const config = this.config;
-		const chart = this;
+
+		//Highlight lines and point corresponding to an ID.
 		function highlight(id) {
-			var myLine = chart.svg.selectAll(".line").filter(function (d) {
-				return d.values[0].values.raw[0][config.id_col] === id;
-			});
-
-			var myPoints = chart.svg.selectAll(".point").filter(function (d) {
-				return d.values.raw[0][config.id_col] === id;
-			});
-
+			const myLine = chart.svg.selectAll(".line").filter(d => d.values[0].values.raw[0][config.id_col] === id[config.id_col]);
 			myLine.select("path").attr("stroke-width", 4);
+
+			const myPoints = chart.svg.selectAll(".point").filter(d => d.values.raw[0][config.id_col] === id[config.id_col]);
 			myPoints.select("circle").attr("r", 4);
 		}
 
+		//Remove highlighting.
 		function clearHighlight() {
 			chart.svg.selectAll(".line:not(.selected)").select("path").attr("stroke-width", .5);
 			chart.svg.selectAll(".point:not(.selected)").select("circle").attr("r", 2);
 		}
 
 		//Set up event listeners on lines and points
-		var mainChart = this;
 		this.svg.selectAll(".line").on("mouseover", function (d) {
-			var id = d.values[0].values.raw[0][config.id_col];
+			const id = chart.raw_data.filter(di => di[config.id_col] === d.values[0].values.raw[0][config.id_col])[0];
 			highlight(id);
 		}).on("mouseout", clearHighlight).on("click", function (d) {
-			var id = d.values[0].values.raw[0][config.id_col];
+			const id = chart.raw_data.filter(di => di[config.id_col] === d.values[0].values.raw[0][config.id_col])[0];
+
+			//Un-select all lines and points.
 			chart.svg.selectAll(".line").classed('selected', false);
 			chart.svg.selectAll(".point").classed('selected', false);
-			d3.select(this).classed('selected', true);
-			chart.svg.selectAll(".point").filter(function (d) {
-				return d.values.raw[0][config.id_col] === id;
-			}).classed('selected', true);
 
-			smallMultiples(id, mainChart);
+			//Select line and all points corresponding to selected ID.
+			d3.select(this).classed('selected', true);
+			chart.svg.selectAll(".point").filter(d => d.values.raw[0][config.id_col] === id[config.id_col]).classed('selected', true);
+
+			//Generate small multiples and highlight marks.
+			smallMult(id, chart);
 			highlight(id);
 		});
 
 		this.svg.selectAll(".point").on("mouseover", function (d) {
-			var id = d.values.raw[0][config.id_col];
+			const id = chart.raw_data.filter(di => di[config.id_col] === d.values.raw[0][config.id_col])[0];
 			highlight(id);
 		}).on("mouseout", clearHighlight).on("click", function (d) {
-			var id = d.values.raw[0][config.id_col];
+			const id = chart.raw_data.filter(di => di[config.id_col] === d.values.raw[0][config.id_col])[0];
 
+			//Un-select all lines and points.
 			chart.svg.selectAll(".line").classed('selected', false);
 			chart.svg.selectAll(".point").classed('selected', false);
-			chart.svg.selectAll(".point").filter(function (d) {
-				return d.values.raw[0][config.id_col] === id;
-			}).classed('selected', true);
+
+			//Select line and all points corresponding to selected ID.
 			chart.svg.selectAll(".line").filter(function (d) {
 				return d.values[0].values.raw[0][config.id_col] === id;
 			}).classed('selected', true);
+			chart.svg.selectAll(".point").filter(function (d) {
+				return d.values.raw[0][config.id_col] === id;
+			}).classed('selected', true);
 
-			smallMultiples(id, mainChart);
+			//Generate small multiples and highlight marks.
+			smallMult(id, chart);
 			highlight(id);
 		});
 

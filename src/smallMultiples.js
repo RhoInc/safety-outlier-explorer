@@ -1,8 +1,8 @@
 import { select, min, max } from 'd3';
-import { multiply, createChart } from 'webcharts';
+import { createChart, multiply } from 'webcharts';
 import rangePolygon from './util/rangePolygon';
 
-export default function smallMultiples(id, chart) {
+export default function(id, chart) {
     //clear current multiples
 	chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
     //Establish settings for small multiples based off of the main chart
@@ -12,8 +12,48 @@ export default function smallMultiples(id, chart) {
     mult_settings.margin = {bottom:20};
     var multiples = createChart(chart.wrap.select('.multiples').node(), mult_settings, null);
 
-    //insert a header
-    multiples.wrap.insert('strong', '.legend').text('All Measures for '+id);
+  //Insert header.
+    let text = 'All Measures for '
+        + id[chart.config.id_col];
+    multiples.wrap
+        .insert('strong', '.legend')
+        .text(text);
+    let detail_table = multiples.wrap
+        .insert('table', '.legend')
+        .append('tbody')
+        .classed('detail-listing', true);
+    detail_table
+        .append('thead')
+        .selectAll('th')
+            .data(['',''])
+            .enter()
+            .append('th');
+    detail_table
+        .append('tbody');
+  //Insert a line for each item in [ settings.detail_cols ].
+    if (chart.config.details && chart.config.details.length) {
+        chart.config.details
+            .forEach(detail => {
+                const value_col = detail.value_col
+                    ? detail.value_col
+                    : detail;
+                const label = detail.label
+                    ? detail.label
+                    : detail.value_col
+                        ? detail.value_col
+                        : detail;
+                if (id[value_col] !== undefined) {
+                    let detail_row = detail_table.select('tbody')
+                        .append('tr')
+                        .selectAll('td')
+                            .data([label, id[value_col]])
+                            .enter()
+                            .append('td')
+                            .style('text-align', (d,i) => i === 0 ? 'right' : 'left')
+                            .text((d,i) => i === 0 ? d + ':' : d);
+                }
+            });
+    }
     
     //get normal values and adjust domain
     multiples.on("layout", function(){
@@ -76,7 +116,7 @@ export default function smallMultiples(id, chart) {
         this.legend.remove();
     });
     
-    var ptData = chart.raw_data.filter(f => f[chart.config.id_col] === id );
+    var ptData = chart.raw_data.filter(f => f[chart.config.id_col] === id[chart.config.id_col] );
 
     multiply(multiples, ptData, chart.config.measure_col);
 }
