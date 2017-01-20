@@ -12,6 +12,7 @@ export default function smallMultiples(id, chart) {
     multiples_settings.x.domain = chart.x.domain();
     multiples_settings.y.domain = null;
     multiples_settings.resizable = false;
+    multiples_settings.scale_text = false;
 
     if (multiples_settings.multiples_sizing.width)
         multiples_settings.width = multiples_settings.multiples_sizing.width;

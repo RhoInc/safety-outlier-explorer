@@ -29,7 +29,11 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     const settings = {
         //Custom settings for this template
         id_col: 'USUBJID',
-        time_cols: [{ value_col: 'VISITN',
+        time_cols: [{ value_col: 'DY',
+            type: 'linear',
+            label: 'Study Day',
+            rotate_tick_labels: false,
+            vertical_space: 0 }, { value_col: 'VISITN',
             type: 'ordinal',
             label: 'Visit Number',
             rotate_tick_labels: false,
@@ -38,22 +42,16 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             label: 'Visit',
             rotate_tick_labels: true,
             vertical_space: 100 } // Specify vertical space for rotated tick labels.  Maps to [margin.bottom].
-
-
-        , { value_col: 'DY',
-            type: 'linear',
-            label: 'Study Day',
-            rotate_tick_labels: false,
-            vertical_space: 0 }],
+        ],
         measure_col: 'TEST',
         value_col: 'STRESN',
         unit_col: 'STRESU',
         normal_col_low: 'STNRLO',
         normal_col_high: 'STNRHI',
         start_value: null,
-        details: [{ value_col: 'AGE', label: 'Age' }, { value_col: 'SEX', label: 'Sex' }, { value_col: 'RACE', label: 'Race' }],
         filters: null,
         custom_marks: null,
+        details: [{ value_col: 'AGE', label: 'Age' }, { value_col: 'SEX', label: 'Sex' }, { value_col: 'RACE', label: 'Race' }],
         multiples_sizing: { width: 300,
             height: 100 },
 
@@ -92,8 +90,9 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             },
             tooltip: null //set in syncSettings()
         }],
+        resizable: true,
         margin: { right: 20 }, //create space for box plot
-        resizable: true
+        aspect: 3
     };
 
     // Replicate settings in multiple places in the settings object
@@ -125,7 +124,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     }
 
     // Default Control objects
-    const controlInputs = [{ label: "Measure", type: "subsetter", start: null }, { type: "dropdown", label: "X axis", option: "x.column", require: true }];
+    const controlInputs = [{ label: 'Measure', type: 'subsetter', start: null }, { type: 'dropdown', label: 'X axis', option: 'x.column', require: true }];
 
     // Map values from settings to control inputs
     function syncControlInputs(controlInputs, settings) {
@@ -135,7 +134,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         let xAxisControl = controlInputs.filter(d => d.label === 'X axis')[0];
         xAxisControl.values = settings.time_cols.map(d => d.value_col);
 
-        settings.filters.reverse().forEach((d, i) => {
+        if (settings.filters) settings.filters.reverse().forEach((d, i) => {
             const thisFilter = { type: 'subsetter',
                 value_col: d.value_col ? d.value_col : d,
                 label: d.label ? d.label : d.value_col ? d.value_col : d };
@@ -212,7 +211,9 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
     function onDataTransform() {
         //Define y-axis label.
-        this.config.y.label = this.filtered_data[0][this.config.measure_col] + ' level (' + this.filtered_data[0][this.config.unit_col] + ')';
+        const measure = this.filters.filter(filter => filter.col === this.config.measure_col)[0].val;
+        const measureData = this.raw_data.filter(d => d[this.config.measure_col] === measure);
+        this.config.y.label = `${measureData[0][this.config.measure_col]} (` + `${measureData[0][this.config.unit_col]})`;
     }
 
     /*------------------------------------------------------------------------------------------------\
@@ -229,7 +230,15 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         const totalObs = chart.populationCount;
 
         //count the number of unique ids in the current chart and calculate the percentage
-        const currentObs = d3.set(chart.filtered_data.map(d => d[id_col])).values().length;
+        const currentObs = d3.set(chart.raw_data.filter(d => {
+            let filtered = false;
+
+            chart.filters.forEach(filter => {
+                if (!filtered && filter.val !== 'All') filtered = d[filter.col] !== filter.val;
+            });
+
+            return !filtered;
+        }).map(d => d[id_col])).values().length;
 
         const percentage = d3.format('0.1%')(currentObs / totalObs);
 
@@ -361,6 +370,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         multiples_settings.x.domain = chart.x.domain();
         multiples_settings.y.domain = null;
         multiples_settings.resizable = false;
+        multiples_settings.scale_text = false;
 
         if (multiples_settings.multiples_sizing.width) multiples_settings.width = multiples_settings.multiples_sizing.width;
         if (multiples_settings.multiples_sizing.height) multiples_settings.height = multiples_settings.multiples_sizing.height + (multiples_settings.margin.bottom ? multiples_settings.margin.bottom : 0);
@@ -442,54 +452,54 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
         //Highlight lines and point corresponding to an ID.
         function highlight(id) {
-            const myLine = chart.svg.selectAll(".line").filter(d => d.values[0].values.raw[0][config.id_col] === id[config.id_col]);
-            myLine.select("path").attr("stroke-width", 4);
+            const myLine = chart.svg.selectAll('.line').filter(d => d.values[0].values.raw[0][config.id_col] === id[config.id_col]);
+            myLine.select('path').attr('stroke-width', 4);
 
-            const myPoints = chart.svg.selectAll(".point").filter(d => d.values.raw[0][config.id_col] === id[config.id_col]);
-            myPoints.select("circle").attr("r", 4);
+            const myPoints = chart.svg.selectAll('.point').filter(d => d.values.raw[0][config.id_col] === id[config.id_col]);
+            myPoints.select('circle').attr('r', 4);
         }
 
         //Remove highlighting.
         function clearHighlight() {
-            chart.svg.selectAll(".line:not(.selected)").select("path").attr("stroke-width", .5);
-            chart.svg.selectAll(".point:not(.selected)").select("circle").attr("r", 2);
+            chart.svg.selectAll('.line:not(.selected)').select('path').attr('stroke-width', .5);
+            chart.svg.selectAll('.point:not(.selected)').select('circle').attr('r', 2);
         }
 
         //Set up event listeners on lines and points
-        this.svg.selectAll(".line").on("mouseover", function (d) {
+        this.svg.selectAll('.line').on('mouseover', function (d) {
             const id = chart.raw_data.filter(di => di[config.id_col] === d.values[0].values.raw[0][config.id_col])[0];
             highlight(id);
-        }).on("mouseout", clearHighlight).on("click", function (d) {
+        }).on('mouseout', clearHighlight).on('click', function (d) {
             const id = chart.raw_data.filter(di => di[config.id_col] === d.values[0].values.raw[0][config.id_col])[0];
 
             //Un-select all lines and points.
-            chart.svg.selectAll(".line").classed('selected', false);
-            chart.svg.selectAll(".point").classed('selected', false);
+            chart.svg.selectAll('.line').classed('selected', false);
+            chart.svg.selectAll('.point').classed('selected', false);
 
             //Select line and all points corresponding to selected ID.
             d3.select(this).classed('selected', true);
-            chart.svg.selectAll(".point").filter(d => d.values.raw[0][config.id_col] === id[config.id_col]).classed('selected', true);
+            chart.svg.selectAll('.point').filter(d => d.values.raw[0][config.id_col] === id[config.id_col]).classed('selected', true);
 
             //Generate small multiples and highlight marks.
             smallMultiples(id, chart);
             highlight(id);
         });
 
-        this.svg.selectAll(".point").on("mouseover", function (d) {
+        this.svg.selectAll('.point').on('mouseover', function (d) {
             const id = chart.raw_data.filter(di => di[config.id_col] === d.values.raw[0][config.id_col])[0];
             highlight(id);
-        }).on("mouseout", clearHighlight).on("click", function (d) {
+        }).on('mouseout', clearHighlight).on('click', function (d) {
             const id = chart.raw_data.filter(di => di[config.id_col] === d.values.raw[0][config.id_col])[0];
 
             //Un-select all lines and points.
-            chart.svg.selectAll(".line").classed('selected', false);
-            chart.svg.selectAll(".point").classed('selected', false);
+            chart.svg.selectAll('.line').classed('selected', false);
+            chart.svg.selectAll('.point').classed('selected', false);
 
             //Select line and all points corresponding to selected ID.
-            chart.svg.selectAll(".line").filter(function (d) {
+            chart.svg.selectAll('.line').filter(function (d) {
                 return d.values[0].values.raw[0][config.id_col] === id;
             }).classed('selected', true);
-            chart.svg.selectAll(".point").filter(function (d) {
+            chart.svg.selectAll('.point').filter(function (d) {
                 return d.values.raw[0][config.id_col] === id;
             }).classed('selected', true);
 

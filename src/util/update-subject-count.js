@@ -12,10 +12,21 @@ export default function(chart, id_col, selector, id_unit) {
     const totalObs = chart.populationCount;
 
   //count the number of unique ids in the current chart and calculate the percentage
-    const currentObs = d3.set(chart.filtered_data
-        .map(d => d[id_col]))
-        .values()
-        .length;
+    const currentObs = d3.set(
+            chart.raw_data
+                .filter(d => {
+                    let filtered = false;
+
+                    chart.filters
+                        .forEach(filter => {
+                            if (!filtered && filter.val !== 'All')
+                                filtered = d[filter.col] !== filter.val;
+                        });
+
+                    return !filtered;
+                })
+                .map(d => d[id_col])
+        ).values().length;
 
     const percentage = d3.format('0.1%')(currentObs / totalObs);
 
