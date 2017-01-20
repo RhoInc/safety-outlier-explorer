@@ -27,6 +27,8 @@ export default function onInit(){
             return dataOps.getValType(measureVals, config.value_col) === "continuous";
         });
 
+  //count the number of unique ids in the data set
+    this.populationCount = d3.set(this.raw_data
+        .map(d => d[this.config.id_col])).values().length;
     this.raw_data = this.raw_data.filter(f => numMeasures.indexOf(f[config.measure_col]) > -1 );
-
 };
