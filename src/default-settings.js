@@ -34,6 +34,7 @@ const settings = {
         ,   {value_col: 'SEX', label: 'Sex'}
         ,   {value_col: 'RACE', label: 'Race'}],
     filters: null,
+    custom_marks: null,
 
   //Standard webCharts settings
     x:{
@@ -102,6 +103,13 @@ export function syncSettings(settings) {
     ];
     settings.marks[1].tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${settings.unit_col}] at ${settings.x.column} = [${settings.x.column}]`;
 
+
+  //Add custom marks to settings.marks.
+    if (settings.custom_marks)
+        settings.custom_marks
+            .forEach(mark => settings.marks.push(mark));
+
+  //Define margins for box plot and rotated x-axis tick labels.
     if (settings.margin)
         settings.margin.bottom = time_col.vertical_space;
     else
