@@ -10,8 +10,10 @@ export default function smallMultiples(id, chart) {
   //Define small multiples settings.
 
     var mult_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
-    mult_settings.resizable = false; // prevent different-sized small multiples
-    mult_settings.height = 100 + mult_settings.margin.bottom; // hard code height
+    mult_settings.aspect = 5.4;
+    mult_settings.resizable = false;
+    mult_settings.margin = {bottom:20};
+
     var multiples = createChart(chart.wrap.select('.multiples').node(), mult_settings, null);
 
   //Insert header.
