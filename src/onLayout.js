@@ -1,10 +1,18 @@
 import { createTable } from 'webcharts';
 
-export default function onLayout() {
-  //Select x-axis column control.
-    let xColSelect = this.controls.wrap.selectAll('.control-group')
-        .filter(f => f.option === 'x.column')
-        .select('select');
+export default function onLayout(){
+  //Add div for participant counts.
+    this.controls.wrap
+        .append('p')
+        .classed('annote', true);
+
+    //custom filter behavior           
+    var xColSelect = this.controls.wrap.selectAll(".control-group")
+        .filter(f => f.option === "x.column")
+        .select("select")
+        
+    xColSelect.on("change", d => {
+            var value = xColSelect.property('value');
 
   //Map column names to column labels.
     xColSelect
