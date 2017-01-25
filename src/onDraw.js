@@ -1,5 +1,5 @@
 import updateSubjectCount
-    from './util/update-subject-count';
+    from './util/updateSubjectCount';
 
 export default function onDraw() {
   //Annotate sample and population counts.

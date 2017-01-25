@@ -1,6 +1,6 @@
 import { svg } from 'd3';
 
-export default function(chart) {
+export default function rangePolygon(chart) {
 
     var area = svg.area()
         .x(function(d){ 

@@ -1,5 +1,3 @@
-import { createTable } from 'webcharts';
-
 export default function onLayout(){
   //Add div for participant counts.
     this.controls.wrap

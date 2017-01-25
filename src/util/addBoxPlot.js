@@ -1,4 +1,4 @@
-export default function(svg, results, height, width, domain, boxPlotWidth, boxColor, boxInsideColor, format, horizontal) {
+export default function addBoxPlot(svg, results, height, width, domain, boxPlotWidth, boxColor, boxInsideColor, format, horizontal) {
     //set default orientation to "horizontal"
     var horizontal = horizontal==undefined ? true : horizontal 
 

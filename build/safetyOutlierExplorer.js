@@ -26,7 +26,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         })();
     }
 
-    const settings = {
+    var defaultSettings = {
         //Custom settings for this template
         id_col: 'USUBJID',
         time_cols: [{ value_col: 'DY',
@@ -97,7 +97,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
     // Replicate settings in multiple places in the settings object
     function syncSettings(settings) {
-        const time_col = settings.time_cols[0];
+        var time_col = settings.time_cols[0];
 
         settings.x.column = time_col.value_col;
         settings.x.type = time_col.type;
@@ -106,13 +106,15 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         settings.y.column = settings.value_col;
 
         settings.marks[0].per = [settings.id_col, settings.measure_col];
-        settings.marks[0].tooltip = `[${settings.id_col}]`;
+        settings.marks[0].tooltip = '[' + settings.id_col + ']';
 
         settings.marks[1].per = [settings.id_col, settings.measure_col, time_col.value_col, settings.value_col];
-        settings.marks[1].tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${settings.unit_col}] at ${settings.x.column} = [${settings.x.column}]`;
+        settings.marks[1].tooltip = '[' + settings.id_col + ']:  [' + settings.value_col + '] [' + settings.unit_col + '] at ' + settings.x.column + ' = [' + settings.x.column + ']';
 
         //Add custom marks to settings.marks.
-        if (settings.custom_marks) settings.custom_marks.forEach(mark => settings.marks.push(mark));
+        if (settings.custom_marks) settings.custom_marks.forEach(function (mark) {
+            return settings.marks.push(mark);
+        });
 
         //Define margins for box plot and rotated x-axis tick labels.
         if (settings.margin) settings.margin.bottom = time_col.vertical_space;else settings.margin = { right: 20,
@@ -124,18 +126,24 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     }
 
     // Default Control objects
-    const controlInputs = [{ label: 'Measure', type: 'subsetter', start: null }, { type: 'dropdown', label: 'X axis', option: 'x.column', require: true }];
+    var controlInputs = [{ label: 'Measure', type: 'subsetter', start: null }, { type: 'dropdown', label: 'X axis', option: 'x.column', require: true }];
 
     // Map values from settings to control inputs
     function syncControlInputs(controlInputs, settings) {
-        let labTestControl = controlInputs.filter(d => d.label === 'Measure')[0];
+        var labTestControl = controlInputs.filter(function (d) {
+            return d.label === 'Measure';
+        })[0];
         labTestControl.value_col = settings.measure_col;
 
-        let xAxisControl = controlInputs.filter(d => d.label === 'X axis')[0];
-        xAxisControl.values = settings.time_cols.map(d => d.value_col);
+        var xAxisControl = controlInputs.filter(function (d) {
+            return d.label === 'X axis';
+        })[0];
+        xAxisControl.values = settings.time_cols.map(function (d) {
+            return d.value_col;
+        });
 
-        if (settings.filters) settings.filters.reverse().forEach((d, i) => {
-            const thisFilter = { type: 'subsetter',
+        if (settings.filters) settings.filters.reverse().forEach(function (d, i) {
+            var thisFilter = { type: 'subsetter',
                 value_col: d.value_col ? d.value_col : d,
                 label: d.label ? d.label : d.value_col ? d.value_col : d };
             controlInputs.push(thisFilter);
@@ -145,13 +153,21 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     }
 
     function onInit() {
-        const config = this.config;
-        const allMeasures = d3$1.set(this.raw_data.map(m => m[config.measure_col])).values();
-        this.controls.config.inputs.filter(f => f.value_col === config.measure_col)[0].start = config.start_value || allMeasures[0];
+        var _this = this;
+
+        var config = this.config;
+        var allMeasures = d3$1.set(this.raw_data.map(function (m) {
+            return m[config.measure_col];
+        })).values();
+        this.controls.config.inputs.filter(function (f) {
+            return f.value_col === config.measure_col;
+        })[0].start = config.start_value || allMeasures[0];
 
         //warning for non-numeric endpoints
-        var catMeasures = allMeasures.filter(f => {
-            var measureVals = this.raw_data.filter(d => d[config.measure_col] === f);
+        var catMeasures = allMeasures.filter(function (f) {
+            var measureVals = _this.raw_data.filter(function (d) {
+                return d[config.measure_col] === f;
+            });
 
             return webcharts.dataOps.getValType(measureVals, config.value_col) !== "continuous";
         });
@@ -160,40 +176,56 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         }
 
         //delete non-numeric endpoints
-        var numMeasures = allMeasures.filter(f => {
-            var measureVals = this.raw_data.filter(d => d[config.measure_col] === f);
+        var numMeasures = allMeasures.filter(function (f) {
+            var measureVals = _this.raw_data.filter(function (d) {
+                return d[config.measure_col] === f;
+            });
 
             return webcharts.dataOps.getValType(measureVals, config.value_col) === "continuous";
         });
 
         //count the number of unique ids in the data set
-        this.populationCount = d3.set(this.raw_data.map(d => d[this.config.id_col])).values().length;
-        this.raw_data = this.raw_data.filter(f => numMeasures.indexOf(f[config.measure_col]) > -1);
+        this.populationCount = d3.set(this.raw_data.map(function (d) {
+            return d[_this.config.id_col];
+        })).values().length;
+        this.raw_data = this.raw_data.filter(function (f) {
+            return numMeasures.indexOf(f[config.measure_col]) > -1;
+        });
     };
 
     function onLayout() {
+        var _this = this;
+
         //Add div for participant counts.
         this.controls.wrap.append('p').classed('annote', true);
 
         //Define x-axis column control behavior.
-        let xColSelect = this.controls.wrap.selectAll('.control-group').filter(f => f.option === 'x.column').select('select');
+        var xColSelect = this.controls.wrap.selectAll('.control-group').filter(function (f) {
+            return f.option === 'x.column';
+        }).select('select');
 
         //Map column names to column labels.
-        xColSelect.selectAll('option').text(d => this.config.time_cols[this.config.time_cols.map(d => d.value_col).indexOf(d)].label);
+        xColSelect.selectAll('option').text(function (d) {
+            return _this.config.time_cols[_this.config.time_cols.map(function (d) {
+                return d.value_col;
+            }).indexOf(d)].label;
+        });
 
         //Define event listener.
-        xColSelect.on('change', d => {
-            const time_col = this.config.time_cols[this.config.time_cols.map(di => di.label).indexOf(xColSelect.property('value'))];
+        xColSelect.on('change', function (d) {
+            var time_col = _this.config.time_cols[_this.config.time_cols.map(function (di) {
+                return di.label;
+            }).indexOf(xColSelect.property('value'))];
 
             //Redefine settings properties based on x-axis column selection.
-            this.config.x.column = time_col.value_col;
-            this.config.x.type = time_col.type;
-            this.config.x.label = time_col.label;
-            this.config.marks[1].per[2] = time_col.value_col;
-            this.config.rotate_x_tick_labels = time_col.rotate_tick_labels;
-            this.config.margin.bottom = time_col.vertical_space;
+            _this.config.x.column = time_col.value_col;
+            _this.config.x.type = time_col.type;
+            _this.config.x.label = time_col.label;
+            _this.config.marks[1].per[2] = time_col.value_col;
+            _this.config.rotate_x_tick_labels = time_col.rotate_tick_labels;
+            _this.config.margin.bottom = time_col.vertical_space;
 
-            this.draw();
+            _this.draw();
         });
 
         //Add wrapper for small multiples.
@@ -202,18 +234,34 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
     function onPreprocess() {
         //Define x- and y-axis ranges based on currently selected measure.
-        const config = this.config;
-        const measure = this.controls.wrap.selectAll('.control-group').filter(d => d.value_col && d.value_col === config.measure_col).select('option:checked').text();
-        const measure_data = this.raw_data.filter(d => d[config.measure_col] === measure);
-        this.config.x.domain = config.x.type === 'ordinal' ? d3.set(measure_data.map(d => d[config.x.column])).values() : d3.extent(measure_data, d => +d[config.x.column]);
-        this.config.y.domain = d3.extent(measure_data, d => +d[config.value_col]);
+        var config = this.config;
+        var measure = this.controls.wrap.selectAll('.control-group').filter(function (d) {
+            return d.value_col && d.value_col === config.measure_col;
+        }).select('option:checked').text();
+        var measure_data = this.raw_data.filter(function (d) {
+            return d[config.measure_col] === measure;
+        });
+        this.config.x.domain = config.x.type === 'ordinal' ? d3.set(measure_data.map(function (d) {
+            return d[config.x.column];
+        })).values() : d3.extent(measure_data, function (d) {
+            return +d[config.x.column];
+        });
+        this.config.y.domain = d3.extent(measure_data, function (d) {
+            return +d[config.value_col];
+        });
     }
 
     function onDataTransform() {
+        var _this = this;
+
         //Define y-axis label.
-        const measure = this.filters.filter(filter => filter.col === this.config.measure_col)[0].val;
-        const measureData = this.raw_data.filter(d => d[this.config.measure_col] === measure);
-        this.config.y.label = `${measureData[0][this.config.measure_col]} (` + `${measureData[0][this.config.unit_col]})`;
+        var measure = this.filters.filter(function (filter) {
+            return filter.col === _this.config.measure_col;
+        })[0].val;
+        var measureData = this.raw_data.filter(function (d) {
+            return d[_this.config.measure_col] === measure;
+        });
+        this.config.y.label = measureData[0][this.config.measure_col] + " (" + (measureData[0][this.config.unit_col] + ")");
     }
 
     /*------------------------------------------------------------------------------------------------\
@@ -227,27 +275,29 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     \------------------------------------------------------------------------------------------------*/
 
     function updateSubjectCount(chart, id_col, selector, id_unit) {
-        const totalObs = chart.populationCount;
+        var totalObs = chart.populationCount;
 
         //count the number of unique ids in the current chart and calculate the percentage
-        const currentObs = d3.set(chart.raw_data.filter(d => {
-            let filtered = false;
+        var currentObs = d3.set(chart.raw_data.filter(function (d) {
+            var filtered = false;
 
-            chart.filters.forEach(filter => {
+            chart.filters.forEach(function (filter) {
                 if (!filtered && filter.val !== 'All') filtered = d[filter.col] !== filter.val;
             });
 
             return !filtered;
-        }).map(d => d[id_col])).values().length;
+        }).map(function (d) {
+            return d[id_col];
+        })).values().length;
 
-        const percentage = d3.format('0.1%')(currentObs / totalObs);
+        var percentage = d3.format('0.1%')(currentObs / totalObs);
 
         //clear the annotation
-        let annotation = d3.select(selector);
+        var annotation = d3.select(selector);
         annotation.selectAll('*').remove();
 
         //update the annotation
-        const units = id_unit ? ' ' + id_unit : ' participant(s)';
+        var units = id_unit ? ' ' + id_unit : ' participant(s)';
         annotation.text(currentObs + ' of ' + totalObs + units + ' shown (' + percentage + ')');
     }
 
@@ -259,7 +309,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         this.wrap.select('.multiples').select('.wc-small-multiples').remove();
     }
 
-    function addBoxplot(svg, results, height, width, domain, boxPlotWidth, boxColor, boxInsideColor, format, horizontal) {
+    function addBoxPlot(svg, results, height, width, domain, boxPlotWidth, boxColor, boxInsideColor, format, horizontal) {
         //set default orientation to "horizontal"
         var horizontal = horizontal == undefined ? true : horizontal;
 
@@ -339,7 +389,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
         var dRow = chart.filtered_data[0];
 
-        var myRows = chart.x_dom.slice().map(m => {
+        var myRows = chart.x_dom.slice().map(function (m) {
             return {
                 STNRLO: dRow[chart.config.normal_col_low],
                 STNRHI: dRow[chart.config.normal_col_high],
@@ -366,7 +416,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
 
         //Define small multiples settings.
-        let multiples_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
+        var multiples_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
         multiples_settings.x.domain = chart.x.domain();
         multiples_settings.y.domain = null;
         multiples_settings.resizable = false;
@@ -377,45 +427,73 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
         multiples_settings.margin = { bottom: multiples_settings.margin.bottom || 20 };
 
-        let multiples = webcharts.createChart(chart.wrap.select('.multiples').node(), multiples_settings, null);
+        var multiples = webcharts.createChart(chart.wrap.select('.multiples').node(), multiples_settings, null);
 
         //Insert header.
-        multiples.wrap.insert('strong', '.legend').text(`All Measures for ${id[chart.config.id_col]}`);
-        let detail_table = multiples.wrap.insert('table', '.legend').append('tbody').classed('detail-listing', true);
+        multiples.wrap.insert('strong', '.legend').text('All Measures for ' + id[chart.config.id_col]);
+        var detail_table = multiples.wrap.insert('table', '.legend').append('tbody').classed('detail-listing', true);
         detail_table.append('thead').selectAll('th').data(['', '']).enter().append('th');
         detail_table.append('tbody');
 
         //Insert a line for each item in [ settings.detail_cols ].
         if (chart.config.details && chart.config.details.length) {
-            chart.config.details.forEach(detail => {
-                const value_col = detail.value_col ? detail.value_col : detail;
+            chart.config.details.forEach(function (detail) {
+                var value_col = detail.value_col ? detail.value_col : detail;
 
-                const label = detail.label ? detail.label : detail.value_col ? detail.value_col : detail;
+                var label = detail.label ? detail.label : detail.value_col ? detail.value_col : detail;
 
-                if (id[value_col] !== undefined) detail_table.select('tbody').append('tr').selectAll('td').data([label, id[value_col]]).enter().append('td').style('text-align', (d, i) => i === 0 ? 'right' : 'left').text((d, i) => i === 0 ? d + ':' : d);
+                if (id[value_col] !== undefined) detail_table.select('tbody').append('tr').selectAll('td').data([label, id[value_col]]).enter().append('td').style('text-align', function (d, i) {
+                    return i === 0 ? 'right' : 'left';
+                }).text(function (d, i) {
+                    return i === 0 ? d + ':' : d;
+                });
             });
         }
 
         //Add styling to small multiples.
         multiples.on('layout', function () {
+            var _this = this;
+
             this.wrap.style('display', 'block');
             this.wrap.selectAll('.wc-chart-title').style('display', 'block').style('border-top', '1px solid #eee');
             this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
-            this.config.y.label = this.raw_data.filter(d => d[this.config.filters[0].col] === d[this.config.filters[0].val])[0][this.config.unit_col];
+            this.config.y.label = this.raw_data.filter(function (d) {
+                return d[_this.config.filters[0].col] === d[_this.config.filters[0].val];
+            })[0][this.config.unit_col];
         });
 
         multiples.on('preprocess', function () {
+            var _this2 = this;
+
             //Define y-domain as minimum of lower limit of normal and minimum result and maximum of
             //upper limit of normal and maximum result.
-            const filtered_data = this.raw_data.filter(f => f[this.filters[0].col] === this.filters[0].val);
+            var filtered_data = this.raw_data.filter(function (f) {
+                return f[_this2.filters[0].col] === _this2.filters[0].val;
+            });
 
             //Calculate range of normal range.
-            const normlo = Math.min.apply(null, filtered_data.map(m => +m[chart.config.normal_col_low]).filter(f => +f || +f === 0));
-            const normhi = Math.max.apply(null, filtered_data.map(m => +m[chart.config.normal_col_high]).filter(f => +f || +f === 0));
+            var normlo = Math.min.apply(null, filtered_data.map(function (m) {
+                return +m[chart.config.normal_col_low];
+            }).filter(function (f) {
+                return +f || +f === 0;
+            }));
+            var normhi = Math.max.apply(null, filtered_data.map(function (m) {
+                return +m[chart.config.normal_col_high];
+            }).filter(function (f) {
+                return +f || +f === 0;
+            }));
 
             //Calculate range of data.
-            const ylo = d3$1.min(filtered_data.map(m => +m[chart.config.y.column]).filter(f => +f || +f === 0));
-            const yhi = d3$1.max(filtered_data.map(m => +m[chart.config.y.column]).filter(f => +f || +f === 0));
+            var ylo = d3$1.min(filtered_data.map(function (m) {
+                return +m[chart.config.y.column];
+            }).filter(function (f) {
+                return +f || +f === 0;
+            }));
+            var yhi = d3$1.max(filtered_data.map(function (m) {
+                return +m[chart.config.y.column];
+            }).filter(function (f) {
+                return +f || +f === 0;
+            }));
 
             //Set y-domain.
             this.config.y_dom = [Math.min(normlo, ylo), Math.max(normhi, yhi)];
@@ -442,21 +520,27 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             }
         });
 
-        const ptData = chart.raw_data.filter(f => f[chart.config.id_col] === id[chart.config.id_col]);
+        var ptData = chart.raw_data.filter(function (f) {
+            return f[chart.config.id_col] === id[chart.config.id_col];
+        });
 
         webcharts.multiply(multiples, ptData, chart.config.measure_col);
     }
 
     function onResize() {
-        let chart = this;
-        const config = this.config;
+        var chart = this;
+        var config = this.config;
 
         //Highlight lines and point corresponding to an ID.
         function highlight(id) {
-            const myLine = chart.svg.selectAll('.line').filter(d => d.values[0].values.raw[0][config.id_col] === id[config.id_col]);
+            var myLine = chart.svg.selectAll('.line').filter(function (d) {
+                return d.values[0].values.raw[0][config.id_col] === id[config.id_col];
+            });
             myLine.select('path').attr('stroke-width', 4);
 
-            const myPoints = chart.svg.selectAll('.point').filter(d => d.values.raw[0][config.id_col] === id[config.id_col]);
+            var myPoints = chart.svg.selectAll('.point').filter(function (d) {
+                return d.values.raw[0][config.id_col] === id[config.id_col];
+            });
             myPoints.select('circle').attr('r', 4);
         }
 
@@ -468,10 +552,14 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
         //Set up event listeners on lines and points
         this.svg.selectAll('.line').on('mouseover', function (d) {
-            const id = chart.raw_data.filter(di => di[config.id_col] === d.values[0].values.raw[0][config.id_col])[0];
+            var id = chart.raw_data.filter(function (di) {
+                return di[config.id_col] === d.values[0].values.raw[0][config.id_col];
+            })[0];
             highlight(id);
         }).on('mouseout', clearHighlight).on('click', function (d) {
-            const id = chart.raw_data.filter(di => di[config.id_col] === d.values[0].values.raw[0][config.id_col])[0];
+            var id = chart.raw_data.filter(function (di) {
+                return di[config.id_col] === d.values[0].values.raw[0][config.id_col];
+            })[0];
 
             //Un-select all lines and points.
             chart.svg.selectAll('.line').classed('selected', false);
@@ -479,7 +567,9 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
             //Select line and all points corresponding to selected ID.
             d3.select(this).classed('selected', true);
-            chart.svg.selectAll('.point').filter(d => d.values.raw[0][config.id_col] === id[config.id_col]).classed('selected', true);
+            chart.svg.selectAll('.point').filter(function (d) {
+                return d.values.raw[0][config.id_col] === id[config.id_col];
+            }).classed('selected', true);
 
             //Generate small multiples and highlight marks.
             smallMultiples(id, chart);
@@ -487,10 +577,14 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         });
 
         this.svg.selectAll('.point').on('mouseover', function (d) {
-            const id = chart.raw_data.filter(di => di[config.id_col] === d.values.raw[0][config.id_col])[0];
+            var id = chart.raw_data.filter(function (di) {
+                return di[config.id_col] === d.values.raw[0][config.id_col];
+            })[0];
             highlight(id);
         }).on('mouseout', clearHighlight).on('click', function (d) {
-            const id = chart.raw_data.filter(di => di[config.id_col] === d.values.raw[0][config.id_col])[0];
+            var id = chart.raw_data.filter(function (di) {
+                return di[config.id_col] === d.values.raw[0][config.id_col];
+            })[0];
 
             //Un-select all lines and points.
             chart.svg.selectAll('.line').classed('selected', false);
@@ -515,7 +609,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             return d.values.y;
         });
 
-        addBoxplot(this.svg, myValues, this.plot_height, 1, this.y_dom, 10, '#bbb', 'white');
+        addBoxPlot(this.svg, myValues, this.plot_height, 1, this.y_dom, 10, '#bbb', 'white');
         this.svg.select('g.boxplot').attr('transform', 'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)');
 
         this.svg.select('.overlay').on('click', function () {
@@ -532,19 +626,19 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         }
     }
 
-    function safetyOutlierExplorer(element, settings$$) {
+    function safetyOutlierExplorer(element, settings) {
         //Merge user settings with default settings.
-        let mergedSettings = Object.assign({}, settings, settings$$);
+        var mergedSettings = Object.assign({}, defaultSettings, settings);
 
         //Sync options within settings object, e.g. data mappings.
         mergedSettings = syncSettings(mergedSettings);
 
         //Sync control inputs with with settings object.
-        let syncedControlInputs = syncControlInputs(controlInputs, mergedSettings);
-        let controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
+        var syncedControlInputs = syncControlInputs(controlInputs, mergedSettings);
+        var controls = webcharts.createControls(element, { location: 'top', inputs: syncedControlInputs });
 
         //Create chart.
-        let chart = webcharts.createChart(element, mergedSettings, controls);
+        var chart = webcharts.createChart(element, mergedSettings, controls);
         chart.on('init', onInit);
         chart.on('layout', onLayout);
         chart.on('preprocess', onPreprocess);

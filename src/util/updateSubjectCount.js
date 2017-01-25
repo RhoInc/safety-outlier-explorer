@@ -8,7 +8,7 @@
     selector - css selector for the annotation
 \------------------------------------------------------------------------------------------------*/
 
-export default function(chart, id_col, selector, id_unit) {
+export default function updateSubjectCount(chart, id_col, selector, id_unit) {
     const totalObs = chart.populationCount;
 
   //count the number of unique ids in the current chart and calculate the percentage

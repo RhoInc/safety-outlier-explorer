@@ -1,4 +1,4 @@
-const settings = {
+const defaultSettings = {
   //Custom settings for this template
     id_col: 'USUBJID',
     time_cols:
@@ -152,4 +152,4 @@ export function syncControlInputs(controlInputs, settings){
     return controlInputs
 }
 
-export default settings
+export default defaultSettings;

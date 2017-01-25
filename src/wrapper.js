@@ -1,6 +1,6 @@
 import './util/object-assign';
-import config from './default-settings';
-import { controlInputs, syncControlInputs, syncSettings } from './default-settings'
+import defaultSettings from './defaultSettings';
+import { controlInputs, syncControlInputs, syncSettings } from './defaultSettings'
 
 import { createChart, createControls, createTable } from 'webcharts';
 
@@ -14,7 +14,7 @@ import onResize from './onResize';
 
 export default function safetyOutlierExplorer(element, settings) {
   //Merge user settings with default settings.
-    let mergedSettings = Object.assign({}, config, settings);
+    let mergedSettings = Object.assign({}, defaultSettings, settings);
 
   //Sync options within settings object, e.g. data mappings.
     mergedSettings = syncSettings(mergedSettings);

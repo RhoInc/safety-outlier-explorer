@@ -2,7 +2,7 @@ import { set } from 'd3';
 import { dataOps } from 'webcharts';
 import addBoxplot from './util/addBoxplot';
 import smallMult from './smallMultiples';
-import adjustTicks from './util/adjust-ticks';
+import adjustTicks from './util/adjustTicks';
 
 export default function onResize(){
     let chart = this;
