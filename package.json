@@ -1,17 +1,15 @@
 {
   "name": "safety-outlier-explorer",
-  "version": "1.3.0",
+  "version": "2.0.0",
   "description": "Chart showing participant trajectories of lab measures, vital signs and other related measures in clinical trials.",
   "main": "./build/safetyOutlierExplorer.js",
   "scripts": {    
-    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/safetyOutlierExplorer.js",
-    "build-chf": "rollup -c ./scripts/rollup.chf.config.js > ./build/safetyOutlierExplorer-chf.js"
+    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/safetyOutlierExplorer.js"
  },
   "author": "Rho, Inc.",
   "license": "MIT",
   "dependencies": {
     "d3": "^3.5.14",
-    "react": "^0.14.7",
     "webcharts": "^1.3.2"
   },
   "devDependencies": {
