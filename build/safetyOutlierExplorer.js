@@ -401,6 +401,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             this.wrap.style('display', 'block');
             this.wrap.selectAll('.wc-chart-title').style('display', 'block').style('border-top', '1px solid #eee');
             this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
+            this.config.y.label = this.raw_data.filter(d => d[this.config.filters[0].col] === d[this.config.filters[0].val])[0][this.config.unit_col];
         });
 
         multiples.on('preprocess', function () {
@@ -426,10 +427,10 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             this.svg.selectAll('.axis .tick text').style('font-size', '10px');
 
             //Draw normal range.
-            rangePolygon(this);
+            if (this.filtered_data.length) rangePolygon(this);
 
             //Axis tweaks
-            this.svg.select('.y.axis').select('.axis-title').text(this.filtered_data[0][chart.config.unit_col]);
+            //this.svg.select('.y.axis').select('.axis-title').text(this.filtered_data[0][chart.config.unit_col]);
             this.svg.select('.x.axis').select('.axis-title').remove();
 
             //Delete legend.
@@ -497,10 +498,10 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
             //Select line and all points corresponding to selected ID.
             chart.svg.selectAll('.line').filter(function (d) {
-                return d.values[0].values.raw[0][config.id_col] === id;
+                return d.values[0].values.raw[0][config.id_col] === id[config.id_col];
             }).classed('selected', true);
             chart.svg.selectAll('.point').filter(function (d) {
-                return d.values.raw[0][config.id_col] === id;
+                return d.values.raw[0][config.id_col] === id[config.id_col];
             }).classed('selected', true);
 
             //Generate small multiples and highlight marks.

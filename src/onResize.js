@@ -71,10 +71,10 @@ export default function onResize(){
 
           //Select line and all points corresponding to selected ID.
             chart.svg.selectAll('.line')
-                .filter(function(d){return d.values[0].values.raw[0][config.id_col] === id})
+                .filter(function(d){return d.values[0].values.raw[0][config.id_col] === id[config.id_col]})
                 .classed('selected', true);
             chart.svg.selectAll('.point')
-                .filter(function(d){return d.values.raw[0][config.id_col] === id})
+                .filter(function(d){return d.values.raw[0][config.id_col] === id[config.id_col]})
                 .classed('selected', true);
 
           //Generate small multiples and highlight marks.
