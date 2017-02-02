@@ -454,11 +454,14 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         multiples.on('layout', function () {
             var _this = this;
 
+            //Define multiple styling.
             this.wrap.style('display', 'block');
             this.wrap.selectAll('.wc-chart-title').style('display', 'block').style('border-top', '1px solid #eee');
             this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
+
+            //Set y-label to measure unit.
             this.config.y.label = this.raw_data.filter(function (d) {
-                return d[_this.config.filters[0].col] === d[_this.config.filters[0].val];
+                return d[_this.config.measure_col] === _this.wrap.select('.wc-chart-title').text();
             })[0][this.config.unit_col];
         });
 
