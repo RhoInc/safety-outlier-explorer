@@ -70,6 +70,7 @@ export default function smallMultiples(id, chart) {
     
   //Add styling to small multiples.
     multiples.on('layout', function() {
+      //Define multiple styling.
         this.wrap
             .style('display', 'block');
         this.wrap.selectAll('.wc-chart-title')
@@ -77,8 +78,10 @@ export default function smallMultiples(id, chart) {
             .style('border-top', '1px solid #eee');
         this.wrap.selectAll('.wc-chart')
             .style('padding-bottom', '2px');
+
+      //Set y-label to measure unit.
         this.config.y.label = this.raw_data
-            .filter(d => d[this.config.filters[0].col] === d[this.config.filters[0].val])
+            .filter(d => d[this.config.measure_col] === this.wrap.select('.wc-chart-title').text())
             [0][this.config.unit_col];
     });
     
