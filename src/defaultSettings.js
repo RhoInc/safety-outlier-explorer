@@ -126,7 +126,7 @@ export function syncSettings(settings) {
 // Default Control objects
 export const controlInputs = [ 
     {label: 'Measure', type: 'subsetter', start: null},
-    {type: 'dropdown', label: 'X axis', option: 'x.column', require: true}
+    {type: 'dropdown', label: 'X-axis', option: 'x.column', require: true}
 ];
 
 // Map values from settings to control inputs
@@ -136,11 +136,11 @@ export function syncControlInputs(controlInputs, settings){
     labTestControl.value_col = settings.measure_col;
 
     let xAxisControl = controlInputs
-        .filter(d => d.label === 'X axis')[0];
+        .filter(d => d.label === 'X-axis')[0];
     xAxisControl.values = settings.time_cols.map(d => d.value_col);
 
     if (settings.filters)
-        settings.filters.reverse()
+        settings.filters
             .forEach((d,i) => {
                 const thisFilter =
                     {type: 'subsetter'

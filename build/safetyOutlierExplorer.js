@@ -126,7 +126,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     }
 
     // Default Control objects
-    var controlInputs = [{ label: 'Measure', type: 'subsetter', start: null }, { type: 'dropdown', label: 'X axis', option: 'x.column', require: true }];
+    var controlInputs = [{ label: 'Measure', type: 'subsetter', start: null }, { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true }];
 
     // Map values from settings to control inputs
     function syncControlInputs(controlInputs, settings) {
@@ -136,13 +136,13 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         labTestControl.value_col = settings.measure_col;
 
         var xAxisControl = controlInputs.filter(function (d) {
-            return d.label === 'X axis';
+            return d.label === 'X-axis';
         })[0];
         xAxisControl.values = settings.time_cols.map(function (d) {
             return d.value_col;
         });
 
-        if (settings.filters) settings.filters.reverse().forEach(function (d, i) {
+        if (settings.filters) settings.filters.forEach(function (d, i) {
             var thisFilter = { type: 'subsetter',
                 value_col: d.value_col ? d.value_col : d,
                 label: d.label ? d.label : d.value_col ? d.value_col : d };
