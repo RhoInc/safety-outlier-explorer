@@ -1,23 +1,22 @@
 {
   "name": "safety-outlier-explorer",
-  "version": "1.2.1",
+ HEAD
+  "version": "2.0.0",
   "description": "Chart showing participant trajectories of lab measures, vital signs and other related measures in clinical trials.",
-  "main": "./build/safetyOutlierExplorer-chf.js",
-  "scripts": {
-    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/safetyOutlierExplorer.js",
-    "build-chf": "rollup -c ./scripts/rollup.chf.config.js > ./build/safetyOutlierExplorer-chf.js"
-  },
+  "main": "./build/safetyOutlierExplorer.js",
+  "scripts": {    
+    "build": "rollup -c ./scripts/rollup.wrapper.config.js | babel > ./build/safetyOutlierExplorer.js"
+ },
   "author": "Rho, Inc.",
   "license": "MIT",
   "dependencies": {
     "d3": "^3.5.14",
-    "react": "^0.14.7",
     "webcharts": "^1.3.2"
   },
   "devDependencies": {
-    "babel": "^5.8.35",
+    "babel-cli": "^6.5.1",
     "babel-preset-es2015-rollup": "^1.1.1",
-    "rollup": "^0.25.1",
-    "rollup-plugin-babel": "^2.5.1"
+    "rollup": "^0.25.3",
+    "rollup-plugin-babel": "^2.3.9"
   }
 }

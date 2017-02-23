@@ -4,7 +4,9 @@ import { dataOps } from 'webcharts';
 export default function onInit(){
     const config = this.config;
     const allMeasures = set(this.raw_data.map(m => m[config.measure_col])).values();
-    this.controls.config.inputs.filter(f => f.value_col === config.measure_col)[0].start = config.start_value || allMeasures[0];
+    this.controls.config.inputs
+        .filter(f => f.value_col === config.measure_col)[0].start = config.start_value
+            || allMeasures[0];
 
     //warning for non-numeric endpoints
     var catMeasures = allMeasures
@@ -27,6 +29,8 @@ export default function onInit(){
             return dataOps.getValType(measureVals, config.value_col) === "continuous";
         });
 
+  //count the number of unique ids in the data set
+    this.populationCount = d3.set(this.raw_data
+        .map(d => d[this.config.id_col])).values().length;
     this.raw_data = this.raw_data.filter(f => numMeasures.indexOf(f[config.measure_col]) > -1 );
-
 };
