@@ -142,12 +142,22 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             return d.value_col;
         });
 
-        if (settings.filters) settings.filters.forEach(function (d, i) {
-            var thisFilter = { type: 'subsetter',
-                value_col: d.value_col ? d.value_col : d,
-                label: d.label ? d.label : d.value_col ? d.value_col : d };
-            controlInputs.push(thisFilter);
-        });
+        if (settings.filters) {
+            settings.filters.forEach(function (d, i) {
+                var thisFilter = {
+                    type: 'subsetter',
+                    value_col: d.value_col ? d.value_col : d,
+                    label: d.label ? d.label : d.value_col ? d.value_col : d
+                };
+                //add the filter to the control inputs (as long as it isn't already there)
+                var current_value_cols = controlInputs.filter(function (f) {
+                    return f.type == "subsetter";
+                }).map(function (m) {
+                    return m.value_col;
+                });
+                if (current_value_cols.indexOf(thisFilter.value_col) == -1) controlInputs.push(thisFilter);
+            });
+        }
 
         return controlInputs;
     }

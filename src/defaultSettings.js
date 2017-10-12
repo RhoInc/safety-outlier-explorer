@@ -56,7 +56,7 @@ const defaultSettings = {
             per: null, //set in syncSettings()
             type: 'line',
             attributes: {
-                'stroke-width': .5, 
+                'stroke-width': .5,
                 'stroke-opacity': .5 ,
                 'stroke': '#999'
             },
@@ -68,7 +68,7 @@ const defaultSettings = {
             type: 'circle',
             radius: 2,
             attributes: {
-                'stroke-width': .5, 
+                'stroke-width': .5,
                 'stroke-opacity': .5,
                 'fill-opacity': 1
             },
@@ -97,7 +97,7 @@ export function syncSettings(settings) {
     settings.marks[0].tooltip = `[${settings.id_col}]`;
 
     settings.marks[1].per = [
-        settings.id_col, 
+        settings.id_col,
         settings.measure_col,
         time_col.value_col,
         settings.value_col
@@ -124,7 +124,7 @@ export function syncSettings(settings) {
 }
 
 // Default Control objects
-export const controlInputs = [ 
+export const controlInputs = [
     {label: 'Measure', type: 'subsetter', start: null},
     {type: 'dropdown', label: 'X-axis', option: 'x.column', require: true}
 ];
@@ -139,15 +139,20 @@ export function syncControlInputs(controlInputs, settings){
         .filter(d => d.label === 'X-axis')[0];
     xAxisControl.values = settings.time_cols.map(d => d.value_col);
 
-    if (settings.filters)
-        settings.filters
-            .forEach((d,i) => {
-                const thisFilter =
-                    {type: 'subsetter'
-                    ,value_col: d.value_col ? d.value_col : d
-                    ,label: d.label ? d.label : d.value_col ? d.value_col : d};
-                controlInputs.push(thisFilter);
-            });
+    if (settings.filters){
+      settings.filters.forEach(function(d,i){
+        const thisFilter ={
+          type: 'subsetter',
+          value_col: d.value_col ? d.value_col : d,
+          label: d.label ? d.label : d.value_col ? d.value_col : d
+      };
+      //add the filter to the control inputs (as long as it isn't already there)
+      var current_value_cols = controlInputs.filter(f=>f.type=="subsetter").map(m=>m.value_col)
+      if(current_value_cols.indexOf(thisFilter.value_col)==-1)
+        controlInputs.push(thisFilter);
+      });
+    }
+
 
     return controlInputs
 }
