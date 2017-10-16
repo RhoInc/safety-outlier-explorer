@@ -11,6 +11,13 @@ export default function onPreprocess() {
     this.config.x.domain = (config.x.type === 'ordinal')
         ? d3.set   (measure_data.map(d =>  d[config.x.column ])).values()
         : d3.extent(measure_data,    d => +d[config.x.column ]);
+    if(this.config.x.order){
+      this.config.x.domain.sort(function(a,b){
+        var aindex = config.x.order.indexOf(a)
+        var bindex = config.x.order.indexOf(b)
+        return aindex-bindex
+      })
+    }
     this.config.y.domain =
           d3.extent(measure_data,    d => +d[config.value_col]);
 }

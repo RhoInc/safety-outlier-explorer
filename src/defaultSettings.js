@@ -4,18 +4,21 @@ const defaultSettings = {
     time_cols:
         [
             {value_col: 'DY'
+            ,order:null
             ,type: 'linear'
             ,label: 'Study Day'
             ,rotate_tick_labels: false
             ,vertical_space: 0}
         ,
             {value_col: 'VISITN'
+            ,order:null
             ,type: 'ordinal'
             ,label: 'Visit Number'
             ,rotate_tick_labels: false
             ,vertical_space: 0}
         ,
             {value_col: 'VISIT'
+            ,order:null
             ,type: 'ordinal'
             ,label: 'Visit'
             ,rotate_tick_labels: true
@@ -87,7 +90,8 @@ export function syncSettings(settings) {
     settings.x.column = time_col.value_col;
     settings.x.type = time_col.type;
     settings.x.label = time_col.label;
-
+    settings.x.order = time_col.order;
+    
     settings.y.column = settings.value_col;
 
     settings.marks[0].per = [
