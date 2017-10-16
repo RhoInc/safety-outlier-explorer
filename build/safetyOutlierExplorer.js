@@ -282,7 +282,6 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             this.config.x.domain.sort(function (a, b) {
                 var aindex = config.x.order.indexOf(a);
                 var bindex = config.x.order.indexOf(b);
-                console.log(a + "(" + aindex + ") - " + b + "(" + bindex + ")");
                 return aindex - bindex;
             });
         }
@@ -571,7 +570,6 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     }
 
     function onResize() {
-        console.log(this);
         var chart = this;
         var config = this.config;
 
