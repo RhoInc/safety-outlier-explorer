@@ -14,7 +14,7 @@ export default function onResize(){
             .filter(d => d.values[0].values.raw[0][config.id_col] === id[config.id_col]);
         myLine.select('path')
             .attr('stroke-width',4)
-        
+
         const myPoints = chart.svg.selectAll('.point')
             .filter(d => d.values.raw[0][config.id_col] === id[config.id_col]);
         myPoints.select('circle')
@@ -29,7 +29,7 @@ export default function onResize(){
 
   //Set up event listeners on lines and points
     this.svg.selectAll('.line')
-        .on('mouseover',function(d){ 
+        .on('mouseover',function(d){
             const id = chart.raw_data
                 .filter(di => di[config.id_col] === d.values[0].values.raw[0][config.id_col])[0];
             highlight(id);
@@ -55,7 +55,7 @@ export default function onResize(){
         });
 
     this.svg.selectAll('.point')
-        .on('mouseover',function(d){ 
+        .on('mouseover',function(d){
             const id = chart.raw_data
                 .filter(di => di[config.id_col] === d.values.raw[0][config.id_col])[0];
             highlight(id)
@@ -83,18 +83,18 @@ export default function onResize(){
         });
 
 
-    //draw reference boxplot 
+    //draw reference boxplot
     this.svg.select('g.boxplot').remove()
-    var myValues = this.current_data.map(function(d){return d.values.y}) 
+    var myValues = this.current_data.map(function(d){return d.values.y})
 
     addBoxplot(
         this.svg,
-        myValues, 
-        this.plot_height, 
-        1, 
-        this.y_dom, 
-        10, 
-        '#bbb', 
+        myValues,
+        this.plot_height,
+        1,
+        this.y_dom,
+        10,
+        '#bbb',
         'white'
     )
     this.svg.select('g.boxplot').attr('transform', 'translate(' + (this.plot_width + this.config.margin.right/2) + ',0)');
@@ -110,5 +110,5 @@ export default function onResize(){
     // rotate ticks
     if (config.rotate_x_tick_labels) {
         adjustTicks.call(this, 'x', -10, 10, -45, 'end');
-    } 
+    }
 }

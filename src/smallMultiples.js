@@ -9,7 +9,7 @@ export default function smallMultiples(id, chart) {
 
   //Define small multiples settings.
     let multiples_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
-    multiples_settings.x.domain = chart.x.domain();
+    multiples_settings.x.domain = null;
     multiples_settings.y.domain = null;
     multiples_settings.resizable = false;
     multiples_settings.scale_text = false;
@@ -67,7 +67,7 @@ export default function smallMultiples(id, chart) {
                             .text((d,i) => i === 0 ? d + ':' : d);
             });
     }
-    
+
   //Add styling to small multiples.
     multiples.on('layout', function() {
       //Define multiple styling.
@@ -84,7 +84,7 @@ export default function smallMultiples(id, chart) {
             .filter(d => d[this.config.measure_col] === this.wrap.select('.wc-chart-title').text())
             [0][this.config.unit_col];
     });
-    
+
     multiples.on('preprocess', function(){
       //Define y-domain as minimum of lower limit of normal and minimum result and maximum of
       //upper limit of normal and maximum result.
@@ -115,8 +115,10 @@ export default function smallMultiples(id, chart) {
         this.config.y_dom =
             [Math.min(normlo, ylo)
             ,Math.max(normhi, yhi)];
+
+      
     });
- 
+
     multiples.on('resize', function() {
       //Resize text manually.
         this.wrap.select('.wc-chart-title')

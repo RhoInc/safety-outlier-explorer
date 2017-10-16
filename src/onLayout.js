@@ -29,6 +29,7 @@ export default function onLayout(){
         this.config.x.column = time_col.value_col;
         this.config.x.type = time_col.type;
         this.config.x.label = time_col.label;
+        this.config.x.order = time_col.order;
         this.config.marks[1].per[2] = time_col.value_col;
         this.config.rotate_x_tick_labels = time_col.rotate_tick_labels;
         this.config.margin.bottom = time_col.vertical_space;

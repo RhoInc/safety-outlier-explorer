@@ -30,14 +30,17 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         //Custom settings for this template
         id_col: 'USUBJID',
         time_cols: [{ value_col: 'DY',
+            order: null,
             type: 'linear',
             label: 'Study Day',
             rotate_tick_labels: false,
             vertical_space: 0 }, { value_col: 'VISITN',
+            order: null,
             type: 'ordinal',
             label: 'Visit Number',
             rotate_tick_labels: false,
             vertical_space: 0 }, { value_col: 'VISIT',
+            order: null,
             type: 'ordinal',
             label: 'Visit',
             rotate_tick_labels: true,
@@ -102,6 +105,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         settings.x.column = time_col.value_col;
         settings.x.type = time_col.type;
         settings.x.label = time_col.label;
+        settings.x.order = time_col.order;
 
         settings.y.column = settings.value_col;
 
@@ -248,6 +252,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             _this.config.x.column = time_col.value_col;
             _this.config.x.type = time_col.type;
             _this.config.x.label = time_col.label;
+            _this.config.x.order = time_col.order;
             _this.config.marks[1].per[2] = time_col.value_col;
             _this.config.rotate_x_tick_labels = time_col.rotate_tick_labels;
             _this.config.margin.bottom = time_col.vertical_space;
@@ -273,6 +278,14 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         })).values() : d3.extent(measure_data, function (d) {
             return +d[config.x.column];
         });
+        if (this.config.x.order) {
+            this.config.x.domain.sort(function (a, b) {
+                var aindex = config.x.order.indexOf(a);
+                var bindex = config.x.order.indexOf(b);
+                console.log(a + "(" + aindex + ") - " + b + "(" + bindex + ")");
+                return aindex - bindex;
+            });
+        }
         this.config.y.domain = d3.extent(measure_data, function (d) {
             return +d[config.value_col];
         });
@@ -444,7 +457,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
         //Define small multiples settings.
         var multiples_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
-        multiples_settings.x.domain = chart.x.domain();
+        multiples_settings.x.domain = null;
         multiples_settings.y.domain = null;
         multiples_settings.resizable = false;
         multiples_settings.scale_text = false;
@@ -558,6 +571,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     }
 
     function onResize() {
+        console.log(this);
         var chart = this;
         var config = this.config;
 
@@ -633,7 +647,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             highlight(id);
         });
 
-        //draw reference boxplot 
+        //draw reference boxplot
         this.svg.select('g.boxplot').remove();
         var myValues = this.current_data.map(function (d) {
             return d.values.y;
