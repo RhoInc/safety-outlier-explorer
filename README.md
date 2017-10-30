@@ -8,9 +8,9 @@ Safety Outlier Explorer is a JavaScript library built using Webcharts ([1](https
 
 ![Example](https://github.com/RhoInc/safety-outlier-explorer/wiki/img/all-measures.PNG)
 
-Users can view any outcome in the data and specify a linear (study day) or ordinal (study visit) x-axis; the full functionality is described [here](https://github.com/RhoInc/safety-outlier-explorer/wiki/User-Requirements).
+Users can view any outcome in the data and specify a linear (study day) or ordinal (study visit) x-axis; the full functionality is described [here](https://github.com/RhoInc/safety-outlier-explorer/wiki/Technical-Documentation).
 The library expects an [ADaM-esque data structure](https://www.cdisc.org/system/files/members/standard/foundational/adam/analysis_data_model_v2.1.pdf) by default but can be customized to use any dataset that is one row per participant per timepoint per measure.
-Full details about chart configuration are [here](Configuration).
+Full details about chart configuration are [here](https://github.com/RhoInc/safety-outlier-explorer/wiki/Configuration).
 
 
 
