@@ -4,11 +4,7 @@
 
 
 ## Overview 
-safety-outlier-explorer is a JavaScript library built using Webcharts ([1](https://github.com/RhoInc/Webcharts), [2](https://github.com/RhoInc/webcharts-wrapper-boilerplate)) that allows users to view clinical outcomes such as lab results and vital signs over time and to identify values that fall outside of expected ranges. A typical chart created with safety-outlier-explorer looks like this:
-
-![Example](https://github.com/RhoInc/safety-outlier-explorer/wiki/img/default-view.PNG)
-
-Clicking on a point or line generates a participant-level plot for each measure in the data:
+Safety Outlier Explorer is a JavaScript library built using Webcharts ([1](https://github.com/RhoInc/Webcharts), [2](https://github.com/RhoInc/webcharts-wrapper-boilerplate)) that allows users to view clinical outcomes such as lab results and vital signs over time and to identify values that fall outside of expected ranges. Clicking on a point or line generates a participant-level plot for each measure in the data:
 
 ![Example](https://github.com/RhoInc/safety-outlier-explorer/wiki/img/all-measures.PNG)
 
