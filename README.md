@@ -67,10 +67,8 @@ The chart can be configured to facilitate non-standard data formats and to alter
 
 ## Links 
 
-More information is available in the project's [wiki](https://github.com/RhoInc/paneled-outlier-explorer/wiki/): 
-
-- [Interactive Example](https://rhoinc.github.io/viz-library/examples/0019-paneled-outlier-explorer/example.html)
-- [Configuration](https://github.com/RhoInc/paneled-outlier-explorer/wiki/Configuration) 
-- [API](https://github.com/RhoInc/paneled-outlier-explorer/wiki/Configuration)
-- [Technical Documentation](https://github.com/RhoInc/paneled-outlier-explorer/wiki/Technical-Documentation) 
-- [Data Guidelines](https://github.com/RhoInc/paneled-outlier-explorer/wiki/Data-Guidelines)
+- [Interactive Example](https://rhoinc.github.io/viz-library/examples/0008-safetyExplorer-default/safety-outlier-explorer/)
+- [Configuration](https://github.com/RhoInc/safety-outlier-explorer/wiki/Configuration) 
+- [API](https://github.com/RhoInc/safety-outlier-explorer/wiki/API)
+- [User Requirements](https://github.com/RhoInc/safety-outlier-explorer/wiki/User-Requirements) 
+- [Data Guidelines](https://github.com/RhoInc/safety-outlier-explorer/wiki/Data-Guidelines)
