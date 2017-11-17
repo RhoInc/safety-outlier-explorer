@@ -61,7 +61,8 @@ const defaultSettings = {
             attributes: {
                 'stroke-width': .5,
                 'stroke-opacity': .5 ,
-                'stroke': '#999'
+                'stroke': '#999',
+                 'clip-path':'url(#1)'
             },
             tooltip: null //set in syncSettings()
 
@@ -73,7 +74,8 @@ const defaultSettings = {
             attributes: {
                 'stroke-width': .5,
                 'stroke-opacity': .5,
-                'fill-opacity': 1
+                'fill-opacity': 1,
+                 'clip-path':'url(#1)'
             },
             tooltip: null //set in syncSettings()
         }
@@ -91,7 +93,7 @@ export function syncSettings(settings) {
     settings.x.type = time_col.type;
     settings.x.label = time_col.label;
     settings.x.order = time_col.order;
-    
+
     settings.y.column = settings.value_col;
 
     settings.marks[0].per = [
@@ -130,7 +132,9 @@ export function syncSettings(settings) {
 // Default Control objects
 export const controlInputs = [
     {label: 'Measure', type: 'subsetter', start: null},
-    {type: 'dropdown', label: 'X-axis', option: 'x.column', require: true}
+    {type: 'dropdown', label: 'X-axis', option: 'x.column', require: true},
+    {type: 'number', label: 'Y-axis - Lower Limit', option: 'y.domain[0]', require: true},
+    {type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true}
 ];
 
 // Map values from settings to control inputs

@@ -1,13 +1,16 @@
 export default function onPreprocess() {
   //Define x- and y-axis ranges based on currently selected measure.
     const config = this.config;
-    const measure = this.controls.wrap
+    const prevMeasure = this.currentMeasure
+    this.currentMeasure = this.controls.wrap
         .selectAll('.control-group')
         .filter(d => d.value_col && d.value_col === config.measure_col)
         .select('option:checked')
         .text();
+    const changedMeasureFlag = this.currentMeasure != prevMeasure
+
     const measure_data = this.raw_data
-        .filter(d => d[config.measure_col] === measure);
+        .filter(d => d[config.measure_col] === this.currentMeasure);
     this.config.x.domain = (config.x.type === 'ordinal')
         ? d3.set   (measure_data.map(d =>  d[config.x.column ])).values()
         : d3.extent(measure_data,    d => +d[config.x.column ]);
@@ -18,6 +21,28 @@ export default function onPreprocess() {
         return aindex-bindex
       })
     }
-    this.config.y.domain =
-          d3.extent(measure_data,    d => +d[config.value_col]);
+
+    //set y domain based on range - and set initial values for axis controls
+    if(changedMeasureFlag){
+      //reset axis to full range when measure changes
+      this.config.y.domain = d3.extent(measure_data, d => +d[config.value_col]);
+
+      //update label for the reset button
+      var resetLabel = this.controls.wrap.selectAll('.control-group')
+      .filter(f => f.label === 'reset_y')
+      .select(".control-label")
+
+      resetLabel.select(".min").text(this.config.y.domain[0])
+      resetLabel.select(".max").text(this.config.y.domain[1])
+    }
+
+    this.controls.wrap.selectAll('.control-group')
+      .filter(f => f.option === 'y.domain[0]')
+      .select('input')
+      .property("value",this.config.y.domain[0])
+
+    this.controls.wrap.selectAll('.control-group')
+      .filter(f => f.option === 'y.domain[1]')
+      .select('input')
+      .property("value",this.config.y.domain[1])
 }

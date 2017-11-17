@@ -78,7 +78,8 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             attributes: {
                 'stroke-width': .5,
                 'stroke-opacity': .5,
-                'stroke': '#999'
+                'stroke': '#999',
+                'clip-path': 'url(#1)'
             },
             tooltip: null //set in syncSettings()
 
@@ -89,7 +90,8 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             attributes: {
                 'stroke-width': .5,
                 'stroke-opacity': .5,
-                'fill-opacity': 1
+                'fill-opacity': 1,
+                'clip-path': 'url(#1)'
             },
             tooltip: null //set in syncSettings()
         }],
@@ -130,7 +132,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     }
 
     // Default Control objects
-    var controlInputs = [{ label: 'Measure', type: 'subsetter', start: null }, { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true }];
+    var controlInputs = [{ label: 'Measure', type: 'subsetter', start: null }, { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true }, { type: 'number', label: 'Y-axis - Lower Limit', option: 'y.domain[0]', require: true }, { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true }];
 
     // Map values from settings to control inputs
     function syncControlInputs(controlInputs, settings) {
@@ -173,6 +175,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         var allMeasures = d3$1.set(this.raw_data.map(function (m) {
             return m[config.measure_col];
         })).values();
+        this.currentMeasure = null;
         this.controls.config.inputs.filter(function (f) {
             return f.value_col === config.measure_col;
         })[0].start = config.start_value || allMeasures[0];
@@ -227,8 +230,8 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     function onLayout() {
         var _this = this;
 
-        //Add div for participant counts.
-        this.controls.wrap.append('p').classed('annote', true);
+        var chart = this;
+        var config = chart.config;
 
         //Define x-axis column control behavior.
         var xColSelect = this.controls.wrap.selectAll('.control-group').filter(function (f) {
@@ -259,19 +262,48 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
             _this.draw();
         });
+        //Add a button to reset the y-domain
+        var resetDiv = this.controls.wrap.append("div").attr("class", 'control-group').datum({ "label": "reset_y", "value_col": null, "option": null });
+        resetDiv.append("span").attr("class", "control-label").html("Reset to [<span class='min'></span> - <span class='max'></span>]");
+        resetDiv.append("button").text("Reset Y-axis").on("click", function () {
+            var measure_data = chart.raw_data.filter(function (d) {
+                return d[config.measure_col] === chart.currentMeasure;
+            });
+            chart.config.y.domain = d3.extent(measure_data, function (d) {
+                return +d[config.value_col];
+            }); //reset axis to full range
+
+            chart.controls.wrap.selectAll('.control-group').filter(function (f) {
+                return f.option === 'y.domain[0]';
+            }).select('input').property("value", chart.config.y.domain[0]);
+
+            chart.controls.wrap.selectAll('.control-group').filter(function (f) {
+                return f.option === 'y.domain[1]';
+            }).select('input').property("value", chart.config.y.domain[1]);
+
+            chart.draw();
+        });
+
+        //Add div for participant counts.
+        this.controls.wrap.append('p').classed('annote', true);
 
         //Add wrapper for small multiples.
         this.wrap.append('div').attr('class', 'multiples');
     }
 
     function onPreprocess() {
+        var _this = this;
+
         //Define x- and y-axis ranges based on currently selected measure.
         var config = this.config;
-        var measure = this.controls.wrap.selectAll('.control-group').filter(function (d) {
+        var prevMeasure = this.currentMeasure;
+        this.currentMeasure = this.controls.wrap.selectAll('.control-group').filter(function (d) {
             return d.value_col && d.value_col === config.measure_col;
         }).select('option:checked').text();
+        var changedMeasureFlag = this.currentMeasure != prevMeasure;
+
         var measure_data = this.raw_data.filter(function (d) {
-            return d[config.measure_col] === measure;
+            return d[config.measure_col] === _this.currentMeasure;
         });
         this.config.x.domain = config.x.type === 'ordinal' ? d3.set(measure_data.map(function (d) {
             return d[config.x.column];
@@ -285,9 +317,30 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
                 return aindex - bindex;
             });
         }
-        this.config.y.domain = d3.extent(measure_data, function (d) {
-            return +d[config.value_col];
-        });
+
+        //set y domain based on range - and set initial values for axis controls
+        if (changedMeasureFlag) {
+            //reset axis to full range when measure changes
+            this.config.y.domain = d3.extent(measure_data, function (d) {
+                return +d[config.value_col];
+            });
+
+            //update label for the reset button
+            var resetLabel = this.controls.wrap.selectAll('.control-group').filter(function (f) {
+                return f.label === 'reset_y';
+            }).select(".control-label");
+
+            resetLabel.select(".min").text(this.config.y.domain[0]);
+            resetLabel.select(".max").text(this.config.y.domain[1]);
+        }
+
+        this.controls.wrap.selectAll('.control-group').filter(function (f) {
+            return f.option === 'y.domain[0]';
+        }).select('input').property("value", this.config.y.domain[0]);
+
+        this.controls.wrap.selectAll('.control-group').filter(function (f) {
+            return f.option === 'y.domain[1]';
+        }).select('input').property("value", this.config.y.domain[1]);
     }
 
     function onDataTransform() {
@@ -340,12 +393,36 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         annotation.text(currentObs + ' of ' + totalObs + units + ' shown (' + percentage + ')');
     }
 
+    function updateYDomain(chart) {
+        var yMinSelect = chart.controls.wrap.selectAll('.control-group').filter(function (f) {
+            return f.option === 'y.domain[0]';
+        }).select('input');
+
+        var yMaxSelect = chart.controls.wrap.selectAll('.control-group').filter(function (f) {
+            return f.option === 'y.domain[1]';
+        }).select('input');
+
+        //switch the values if min > max
+        var range = [yMinSelect.node().value, yMaxSelect.node().value].sort(function (a, b) {
+            return a - b;
+        });
+        yMinSelect.node().value = range[0];
+        yMaxSelect.node().value = range[1];
+
+        //apply custom domain to the chart
+        chart.config.y.domain = range;
+        chart.y_dom = range;
+    }
+
     function onDraw() {
         //Annotate sample and population counts.
         updateSubjectCount(this, this.config.id_col, '.annote');
 
         //Clear current multiples.
         this.wrap.select('.multiples').select('.wc-small-multiples').remove();
+
+        //update the y domain using the custom controsl
+        updateYDomain(this);
     }
 
     function addBoxPlot(svg, results, height, width, domain, boxPlotWidth, boxColor, boxInsideColor, format, horizontal) {
