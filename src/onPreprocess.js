@@ -24,7 +24,16 @@ export default function onPreprocess() {
 
     //set y domain based on range - and set initial values for axis controls
     if(changedMeasureFlag){
-      this.config.y.domain = d3.extent(measure_data, d => +d[config.value_col]); //reset axis to full range when measure changes
+      //reset axis to full range when measure changes
+      this.config.y.domain = d3.extent(measure_data, d => +d[config.value_col]);
+
+      //update label for the reset button
+      var resetLabel = this.controls.wrap.selectAll('.control-group')
+      .filter(f => f.label === 'reset_y')
+      .select(".control-label")
+
+      resetLabel.select(".min").text(this.config.y.domain[0])
+      resetLabel.select(".max").text(this.config.y.domain[1])
     }
 
     this.controls.wrap.selectAll('.control-group')

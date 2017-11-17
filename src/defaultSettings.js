@@ -134,7 +134,7 @@ export const controlInputs = [
     {label: 'Measure', type: 'subsetter', start: null},
     {type: 'dropdown', label: 'X-axis', option: 'x.column', require: true},
     {type: 'number', label: 'Y-axis - Lower Limit', option: 'y.domain[0]', require: true},
-    {type: 'number', label: 'Y-axis - Upper Limit', option: 'y.domain[1]', require: true}
+    {type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true}
 ];
 
 // Map values from settings to control inputs

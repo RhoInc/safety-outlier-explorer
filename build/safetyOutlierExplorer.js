@@ -132,7 +132,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     }
 
     // Default Control objects
-    var controlInputs = [{ label: 'Measure', type: 'subsetter', start: null }, { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true }, { type: 'number', label: 'Y-axis - Lower Limit', option: 'y.domain[0]', require: true }, { type: 'number', label: 'Y-axis - Upper Limit', option: 'y.domain[1]', require: true }];
+    var controlInputs = [{ label: 'Measure', type: 'subsetter', start: null }, { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true }, { type: 'number', label: 'Y-axis - Lower Limit', option: 'y.domain[0]', require: true }, { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true }];
 
     // Map values from settings to control inputs
     function syncControlInputs(controlInputs, settings) {
@@ -230,8 +230,8 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
     function onLayout() {
         var _this = this;
 
-        //Add div for participant counts.
-        this.controls.wrap.append('p').classed('annote', true);
+        var chart = this;
+        var config = chart.config;
 
         //Define x-axis column control behavior.
         var xColSelect = this.controls.wrap.selectAll('.control-group').filter(function (f) {
@@ -262,6 +262,30 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
             _this.draw();
         });
+        //Add a button to reset the y-domain
+        var resetDiv = this.controls.wrap.append("div").attr("class", 'control-group').datum({ "label": "reset_y", "value_col": null, "option": null });
+        resetDiv.append("span").attr("class", "control-label").html("Reset to [<span class='min'></span> - <span class='max'></span>]");
+        resetDiv.append("button").text("Reset Y-axis").on("click", function () {
+            var measure_data = chart.raw_data.filter(function (d) {
+                return d[config.measure_col] === chart.currentMeasure;
+            });
+            chart.config.y.domain = d3.extent(measure_data, function (d) {
+                return +d[config.value_col];
+            }); //reset axis to full range
+
+            chart.controls.wrap.selectAll('.control-group').filter(function (f) {
+                return f.option === 'y.domain[0]';
+            }).select('input').property("value", chart.config.y.domain[0]);
+
+            chart.controls.wrap.selectAll('.control-group').filter(function (f) {
+                return f.option === 'y.domain[1]';
+            }).select('input').property("value", chart.config.y.domain[1]);
+
+            chart.draw();
+        });
+
+        //Add div for participant counts.
+        this.controls.wrap.append('p').classed('annote', true);
 
         //Add wrapper for small multiples.
         this.wrap.append('div').attr('class', 'multiples');
@@ -296,9 +320,18 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
         //set y domain based on range - and set initial values for axis controls
         if (changedMeasureFlag) {
+            //reset axis to full range when measure changes
             this.config.y.domain = d3.extent(measure_data, function (d) {
                 return +d[config.value_col];
-            }); //reset axis to full range when measure changes
+            });
+
+            //update label for the reset button
+            var resetLabel = this.controls.wrap.selectAll('.control-group').filter(function (f) {
+                return f.label === 'reset_y';
+            }).select(".control-label");
+
+            resetLabel.select(".min").text(this.config.y.domain[0]);
+            resetLabel.select(".max").text(this.config.y.domain[1]);
         }
 
         this.controls.wrap.selectAll('.control-group').filter(function (f) {
@@ -369,7 +402,14 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
             return f.option === 'y.domain[1]';
         }).select('input');
 
-        var range = [yMinSelect.node().value, yMaxSelect.node().value];
+        //switch the values if min > max
+        var range = [yMinSelect.node().value, yMaxSelect.node().value].sort(function (a, b) {
+            return a - b;
+        });
+        yMinSelect.node().value = range[0];
+        yMaxSelect.node().value = range[1];
+
+        //apply custom domain to the chart
         chart.config.y.domain = range;
         chart.y_dom = range;
     }

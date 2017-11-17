@@ -7,7 +7,12 @@ export function updateYDomain(chart){
       .filter(f => f.option === 'y.domain[1]')
       .select('input')
 
-  var range = [yMinSelect.node().value,yMaxSelect.node().value]
+  //switch the values if min > max
+  var range = [yMinSelect.node().value,yMaxSelect.node().value].sort(function(a,b){return a-b})
+  yMinSelect.node().value = range[0]
+  yMaxSelect.node().value = range[1]
+
+  //apply custom domain to the chart
   chart.config.y.domain = range;
   chart.y_dom = range;
 }
