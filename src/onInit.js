@@ -1,5 +1,5 @@
 import { set } from 'd3';
-import { dataOps } from 'webcharts';
+import { getValType } from './util/getValType';
 
 export default function onInit(){
     const config = this.config;
@@ -14,19 +14,19 @@ export default function onInit(){
             var measureVals = this.raw_data
                 .filter(d => d[config.measure_col] === f);
 
-            return dataOps.getValType(measureVals, config.value_col) !== "continuous";
+            return getValType(measureVals, config.value_col) !== "continuous";
         });
     if(catMeasures.length){
-        console.warn(catMeasures.length + " non-numeric endpoints have been removed: "+catMeasures.join(", "))    
+        console.warn(catMeasures.length + " non-numeric endpoints have been removed: "+catMeasures.join(", "))
     }
-    
+
     //delete non-numeric endpoints
     var numMeasures = allMeasures
         .filter(f => {
             var measureVals = this.raw_data
                 .filter(d => d[config.measure_col] === f );
 
-            return dataOps.getValType(measureVals, config.value_col) === "continuous";
+            return getValType(measureVals, config.value_col) === "continuous";
         });
 
   //count the number of unique ids in the data set
@@ -46,7 +46,7 @@ export default function onInit(){
             if(levels.length < 2 ){
                 console.warn(d.value_col + " filter not shown since the variable has less than 2 levels")
             }
-            return levels.length >=2    
+            return levels.length >=2
         }
     })
 

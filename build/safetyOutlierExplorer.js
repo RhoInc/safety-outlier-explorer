@@ -183,7 +183,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
                 return d[config.measure_col] === f;
             });
 
-            return webcharts.dataOps.getValType(measureVals, config.value_col) !== "continuous";
+            return webcharts.getValType(measureVals, config.value_col) !== "continuous";
         });
         if (catMeasures.length) {
             console.warn(catMeasures.length + " non-numeric endpoints have been removed: " + catMeasures.join(", "));
@@ -195,7 +195,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
                 return d[config.measure_col] === f;
             });
 
-            return webcharts.dataOps.getValType(measureVals, config.value_col) === "continuous";
+            return webcharts.getValType(measureVals, config.value_col) === "continuous";
         });
 
         //count the number of unique ids in the data set
