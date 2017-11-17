@@ -61,7 +61,8 @@ const defaultSettings = {
             attributes: {
                 'stroke-width': .5,
                 'stroke-opacity': .5 ,
-                'stroke': '#999'
+                'stroke': '#999',
+                 'clip-path':'url(#1)'
             },
             tooltip: null //set in syncSettings()
 
@@ -73,7 +74,8 @@ const defaultSettings = {
             attributes: {
                 'stroke-width': .5,
                 'stroke-opacity': .5,
-                'fill-opacity': 1
+                'fill-opacity': 1,
+                 'clip-path':'url(#1)'
             },
             tooltip: null //set in syncSettings()
         }
