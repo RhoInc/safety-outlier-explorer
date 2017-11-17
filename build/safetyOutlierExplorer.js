@@ -166,6 +166,21 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
         return controlInputs;
     }
 
+    function getValType(data, variable) {
+        var var_vals = d3$1.set(data.map(function (m) {
+            return m[variable];
+        })).values();
+        var vals_numbers = var_vals.filter(function (f) {
+            return +f || +f === 0;
+        });
+
+        if (var_vals.length === vals_numbers.length) {
+            return 'continuous';
+        } else {
+            return 'categorical';
+        }
+    }
+
     function onInit() {
         var _this = this;
 
@@ -183,7 +198,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
                 return d[config.measure_col] === f;
             });
 
-            return webcharts.getValType(measureVals, config.value_col) !== "continuous";
+            return getValType(measureVals, config.value_col) !== "continuous";
         });
         if (catMeasures.length) {
             console.warn(catMeasures.length + " non-numeric endpoints have been removed: " + catMeasures.join(", "));
@@ -195,7 +210,7 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
                 return d[config.measure_col] === f;
             });
 
-            return webcharts.getValType(measureVals, config.value_col) === "continuous";
+            return getValType(measureVals, config.value_col) === "continuous";
         });
 
         //count the number of unique ids in the data set
@@ -346,6 +361,13 @@ var safetyOutlierExplorer = function (webcharts, d3$1) {
 
         //Clear current multiples.
         this.wrap.select('.multiples').select('.wc-small-multiples').remove();
+
+        //hack to avoid domains with 0 extent
+        if (this.y_dom[0] == this.y_dom[1]) {
+            var jitter = this.y_dom[0] / 10;
+            this.y_dom[0] = this.y_dom[0] - jitter;
+            this.y_dom[1] = this.y_dom[1] + jitter;
+        }
     }
 
     function addBoxPlot(svg, results, height, width, domain, boxPlotWidth, boxColor, boxInsideColor, format, horizontal) {
