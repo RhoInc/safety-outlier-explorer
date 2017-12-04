@@ -1,10 +1,10 @@
 import { set } from 'd3';
 
 export function getValType(data, variable) {
-    let var_vals = set(data.map(m => m[variable])).values();
-    let vals_numbers = var_vals.filter(f => +f || +f === 0);
+    const values = set(data.map(m => m[variable])).values(),
+        numbers = values.filter(f => +f || (+f === 0 && !/^\s*$/.test(f)));
 
-    if (var_vals.length === vals_numbers.length) {
+    if (values.length === numbers.length) {
         return 'continuous';
     } else {
         return 'categorical';

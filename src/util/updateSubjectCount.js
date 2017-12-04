@@ -8,36 +8,33 @@
     selector - css selector for the annotation
 \------------------------------------------------------------------------------------------------*/
 
+import { set, format, select } from 'd3';
+
 export default function updateSubjectCount(chart, id_col, selector, id_unit) {
     const totalObs = chart.populationCount;
 
-  //count the number of unique ids in the current chart and calculate the percentage
-    const currentObs = d3.set(
-            chart.raw_data
-                .filter(d => {
-                    let filtered = false;
+    //count the number of unique ids in the current chart and calculate the percentage
+    const currentObs = set(
+        chart.raw_data
+            .filter(d => {
+                let filtered = false;
 
-                    chart.filters
-                        .forEach(filter => {
-                            if (!filtered && filter.val !== 'All')
-                                filtered = d[filter.col] !== filter.val;
-                        });
+                chart.filters.forEach(filter => {
+                    if (!filtered && filter.val !== 'All') filtered = d[filter.col] !== filter.val;
+                });
 
-                    return !filtered;
-                })
-                .map(d => d[id_col])
-        ).values().length;
+                return !filtered;
+            })
+            .map(d => d[id_col])
+    ).values().length;
 
-    const percentage = d3.format('0.1%')(currentObs / totalObs);
+    const percentage = format('0.1%')(currentObs / totalObs);
 
-  //clear the annotation
-    let annotation = d3.select(selector);
+    //clear the annotation
+    let annotation = select(selector);
     annotation.selectAll('*').remove();
 
-  //update the annotation
-    const units = id_unit
-        ? ' ' + id_unit
-        : ' participant(s)';
-    annotation
-        .text(currentObs + ' of ' + totalObs + units +' shown (' + percentage + ')');
+    //update the annotation
+    const units = id_unit ? ' ' + id_unit : ' participant(s)';
+    annotation.text(currentObs + ' of ' + totalObs + units + ' shown (' + percentage + ')');
 }

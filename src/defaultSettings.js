@@ -1,29 +1,32 @@
 const defaultSettings = {
-  //Custom settings for this template
+    //Custom settings for this template
     id_col: 'USUBJID',
-    time_cols:
-        [
-            {value_col: 'DY'
-            ,order:null
-            ,type: 'linear'
-            ,label: 'Study Day'
-            ,rotate_tick_labels: false
-            ,vertical_space: 0}
-        ,
-            {value_col: 'VISITN'
-            ,order:null
-            ,type: 'ordinal'
-            ,label: 'Visit Number'
-            ,rotate_tick_labels: false
-            ,vertical_space: 0}
-        ,
-            {value_col: 'VISIT'
-            ,order:null
-            ,type: 'ordinal'
-            ,label: 'Visit'
-            ,rotate_tick_labels: true
-            ,vertical_space: 100} // Specify vertical space for rotated tick labels.  Maps to [margin.bottom].
-        ],
+    time_cols: [
+        {
+            value_col: 'DY',
+            order: null,
+            type: 'linear',
+            label: 'Study Day',
+            rotate_tick_labels: false,
+            vertical_space: 0
+        },
+        {
+            value_col: 'VISITN',
+            order: null,
+            type: 'ordinal',
+            label: 'Visit Number',
+            rotate_tick_labels: false,
+            vertical_space: 0
+        },
+        {
+            value_col: 'VISIT',
+            order: null,
+            type: 'ordinal',
+            label: 'Visit',
+            rotate_tick_labels: true,
+            vertical_space: 100
+        } // Specify vertical space for rotated tick labels.  Maps to [margin.bottom].
+    ],
     measure_col: 'TEST',
     value_col: 'STRESN',
     unit_col: 'STRESU',
@@ -32,15 +35,17 @@ const defaultSettings = {
     start_value: null,
     filters: null,
     custom_marks: null,
-    details:
-        [   {value_col: 'AGE', label: 'Age'}
-        ,   {value_col: 'SEX', label: 'Sex'}
-        ,   {value_col: 'RACE', label: 'Race'}],
-    multiples_sizing:
-        {width: 300
-        ,height: 100},
+    details: [
+        { value_col: 'AGE', label: 'Age' },
+        { value_col: 'SEX', label: 'Sex' },
+        { value_col: 'RACE', label: 'Race' }
+    ],
+    multiples_sizing: {
+        width: 300,
+        height: 100
+    },
 
-  //Standard webCharts settings
+    //Standard webCharts settings
     x: {
         column: null, //set in syncSettings()
         type: null, //set in syncSettings()
@@ -59,27 +64,26 @@ const defaultSettings = {
             per: null, //set in syncSettings()
             type: 'line',
             attributes: {
-                'stroke-width': .5,
-                'stroke-opacity': .5 ,
-                'stroke': '#999'
+                'stroke-width': 0.5,
+                'stroke-opacity': 0.5,
+                stroke: '#999'
             },
             tooltip: null //set in syncSettings()
-
         },
         {
             per: null, //set in syncSettings()
             type: 'circle',
             radius: 2,
             attributes: {
-                'stroke-width': .5,
-                'stroke-opacity': .5,
+                'stroke-width': 0.5,
+                'stroke-opacity': 0.5,
                 'fill-opacity': 1
             },
             tooltip: null //set in syncSettings()
         }
     ],
     resizable: true,
-    margin: {right: 20}, //create space for box plot
+    margin: { right: 20 }, //create space for box plot
     aspect: 3
 };
 
@@ -91,13 +95,10 @@ export function syncSettings(settings) {
     settings.x.type = time_col.type;
     settings.x.label = time_col.label;
     settings.x.order = time_col.order;
-    
+
     settings.y.column = settings.value_col;
 
-    settings.marks[0].per = [
-        settings.id_col,
-        settings.measure_col
-    ];
+    settings.marks[0].per = [settings.id_col, settings.measure_col];
     settings.marks[0].tooltip = `[${settings.id_col}]`;
 
     settings.marks[1].per = [
@@ -106,21 +107,20 @@ export function syncSettings(settings) {
         time_col.value_col,
         settings.value_col
     ];
-    settings.marks[1].tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${settings.unit_col}] at ${settings.x.column} = [${settings.x.column}]`;
+    settings.marks[1].tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${
+        settings.unit_col
+    }] at ${settings.x.column} = [${settings.x.column}]`;
 
+    //Add custom marks to settings.marks.
+    if (settings.custom_marks) settings.custom_marks.forEach(mark => settings.marks.push(mark));
 
-  //Add custom marks to settings.marks.
-    if (settings.custom_marks)
-        settings.custom_marks
-            .forEach(mark => settings.marks.push(mark));
-
-  //Define margins for box plot and rotated x-axis tick labels.
-    if (settings.margin)
-        settings.margin.bottom = time_col.vertical_space;
+    //Define margins for box plot and rotated x-axis tick labels.
+    if (settings.margin) settings.margin.bottom = time_col.vertical_space;
     else
-        settings.margin =
-            {right: 20
-            ,bottom: time_col.vertical_space};
+        settings.margin = {
+            right: 20,
+            bottom: time_col.vertical_space
+        };
 
     settings.rotate_x_tick_labels = time_col.rotate_tick_labels;
 
@@ -129,36 +129,35 @@ export function syncSettings(settings) {
 
 // Default Control objects
 export const controlInputs = [
-    {label: 'Measure', type: 'subsetter', start: null},
-    {type: 'dropdown', label: 'X-axis', option: 'x.column', require: true}
+    { label: 'Measure', type: 'subsetter', start: null },
+    { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true }
 ];
 
 // Map values from settings to control inputs
-export function syncControlInputs(controlInputs, settings){
-    let labTestControl = controlInputs
-        .filter(d => d.label === 'Measure')[0];
+export function syncControlInputs(controlInputs, settings) {
+    let labTestControl = controlInputs.filter(d => d.label === 'Measure')[0];
     labTestControl.value_col = settings.measure_col;
 
-    let xAxisControl = controlInputs
-        .filter(d => d.label === 'X-axis')[0];
+    let xAxisControl = controlInputs.filter(d => d.label === 'X-axis')[0];
     xAxisControl.values = settings.time_cols.map(d => d.value_col);
 
-    if (settings.filters){
-      settings.filters.forEach(function(d,i){
-        const thisFilter ={
-          type: 'subsetter',
-          value_col: d.value_col ? d.value_col : d,
-          label: d.label ? d.label : d.value_col ? d.value_col : d
-      };
-      //add the filter to the control inputs (as long as it isn't already there)
-      var current_value_cols = controlInputs.filter(f=>f.type=="subsetter").map(m=>m.value_col)
-      if(current_value_cols.indexOf(thisFilter.value_col)==-1)
-        controlInputs.push(thisFilter);
-      });
+    if (settings.filters) {
+        settings.filters.forEach(function(d, i) {
+            const thisFilter = {
+                type: 'subsetter',
+                value_col: d.value_col ? d.value_col : d,
+                label: d.label ? d.label : d.value_col ? d.value_col : d
+            };
+            //add the filter to the control inputs (as long as it isn't already there)
+            var current_value_cols = controlInputs
+                .filter(f => f.type == 'subsetter')
+                .map(m => m.value_col);
+            if (current_value_cols.indexOf(thisFilter.value_col) == -1)
+                controlInputs.push(thisFilter);
+        });
     }
 
-
-    return controlInputs
+    return controlInputs;
 }
 
 export default defaultSettings;
