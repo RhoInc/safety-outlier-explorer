@@ -1,7 +1,6 @@
 export default function onLayout() {
-  const
-    chart = this,
-    config = chart.config;
+    const chart = this,
+        config = chart.config;
 
     //Define x-axis column control behavior.
     let xColSelect = this.controls.wrap
@@ -33,31 +32,41 @@ export default function onLayout() {
 
         this.draw();
     });
-  //Add a button to reset the y-domain
-  var resetDiv  = this.controls.wrap.append("div").attr("class",'control-group').datum({"label":"reset_y","value_col":null, "option":null})
-  resetDiv.append("span").attr("class","control-label").html("Reset to [<span class='min'></span> - <span class='max'></span>]")
-  resetDiv.append("button").text("Reset Y-axis")
-  .on("click",function(){
-    const measure_data = chart.raw_data.filter(d => d[config.measure_col] === chart.currentMeasure);
-    chart.config.y.domain = d3.extent(measure_data, d => +d[config.value_col]); //reset axis to full range
+    //Add a button to reset the y-domain
+    var resetDiv = this.controls.wrap
+        .append('div')
+        .attr('class', 'control-group')
+        .datum({ label: 'reset_y', value_col: null, option: null });
+    resetDiv
+        .append('span')
+        .attr('class', 'control-label')
+        .html("Reset to [<span class='min'></span> - <span class='max'></span>]");
+    resetDiv
+        .append('button')
+        .text('Reset Y-axis')
+        .on('click', function() {
+            const measure_data = chart.raw_data.filter(
+                d => d[config.measure_col] === chart.currentMeasure
+            );
+            chart.config.y.domain = d3.extent(measure_data, d => +d[config.value_col]); //reset axis to full range
 
-    chart.controls.wrap.selectAll('.control-group')
-      .filter(f => f.option === 'y.domain[0]')
-      .select('input')
-      .property("value",chart.config.y.domain[0])
+            chart.controls.wrap
+                .selectAll('.control-group')
+                .filter(f => f.option === 'y.domain[0]')
+                .select('input')
+                .property('value', chart.config.y.domain[0]);
 
-    chart.controls.wrap.selectAll('.control-group')
-      .filter(f => f.option === 'y.domain[1]')
-      .select('input')
-      .property("value",chart.config.y.domain[1])
+            chart.controls.wrap
+                .selectAll('.control-group')
+                .filter(f => f.option === 'y.domain[1]')
+                .select('input')
+                .property('value', chart.config.y.domain[1]);
 
-    chart.draw()
-  })
+            chart.draw();
+        });
 
-  //Add div for participant counts.
-    this.controls.wrap
-        .append('p')
-        .classed('annote', true);
+    //Add div for participant counts.
+    this.controls.wrap.append('p').classed('annote', true);
 
     //Add wrapper for small multiples.
     this.wrap.append('div').attr('class', 'multiples');

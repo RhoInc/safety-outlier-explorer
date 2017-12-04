@@ -1,5 +1,5 @@
 import updateSubjectCount from './util/updateSubjectCount';
-import { updateYDomain } from './util/updateYDomain'
+import { updateYDomain } from './util/updateYDomain';
 
 export default function onDraw() {
     //Annotate sample and population counts.
@@ -18,6 +18,6 @@ export default function onDraw() {
         this.y_dom[1] = this.y_dom[1] + jitter;
     }
 
-  //update the y domain using the custom controsl
-  updateYDomain(this)
+    //update the y domain using the custom controsl
+    updateYDomain(this);
 }

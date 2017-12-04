@@ -64,10 +64,10 @@ const defaultSettings = {
             per: null, //set in syncSettings()
             type: 'line',
             attributes: {
-                'stroke-width': .5,
-                'stroke-opacity': .5 ,
-                'stroke': '#999',
-                 'clip-path':'url(#1)'
+                'stroke-width': 0.5,
+                'stroke-opacity': 0.5,
+                stroke: '#999',
+                'clip-path': 'url(#1)'
             },
             tooltip: null //set in syncSettings()
         },
@@ -76,10 +76,10 @@ const defaultSettings = {
             type: 'circle',
             radius: 2,
             attributes: {
-                'stroke-width': .5,
-                'stroke-opacity': .5,
+                'stroke-width': 0.5,
+                'stroke-opacity': 0.5,
                 'fill-opacity': 1,
-                 'clip-path':'url(#1)'
+                'clip-path': 'url(#1)'
             },
             tooltip: null //set in syncSettings()
         }
@@ -131,10 +131,10 @@ export function syncSettings(settings) {
 
 // Default Control objects
 export const controlInputs = [
-    {label: 'Measure', type: 'subsetter', start: null},
-    {type: 'dropdown', label: 'X-axis', option: 'x.column', require: true},
-    {type: 'number', label: 'Y-axis - Lower Limit', option: 'y.domain[0]', require: true},
-    {type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true}
+    { label: 'Measure', type: 'subsetter', start: null },
+    { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true },
+    { type: 'number', label: 'Y-axis - Lower Limit', option: 'y.domain[0]', require: true },
+    { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true }
 ];
 
 // Map values from settings to control inputs
