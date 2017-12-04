@@ -2,10 +2,9 @@ import { set } from 'd3';
 import { getValType } from './util/getValType';
 
 export default function onInit() {
-    const config = this.config;
-    const allMeasures = set(this.raw_data.map(m => m[config.measure_col])).values();
-    this.controls.config.inputs.filter(f => f.value_col === config.measure_col)[0].start =
-        config.start_value || allMeasures[0];
+    const context = this,
+        config = this.config,
+        allMeasures = set(this.raw_data.map(m => m[config.measure_col])).values();
 
     //warning for non-numeric endpoints
     var catMeasures = allMeasures.filter(f => {
@@ -15,9 +14,9 @@ export default function onInit() {
     });
     if (catMeasures.length) {
         console.warn(
-            catMeasures.length +
-                ' non-numeric endpoints have been removed: ' +
-                catMeasures.join(', ')
+            `${catMeasures.length}${''} non-numeric endpoint${
+                catMeasures.length > 1 ? 's have' : ' has'
+            }${''} been removed:${catMeasures.join(', ')}`
         );
     }
 
@@ -27,6 +26,9 @@ export default function onInit() {
 
         return getValType(measureVals, config.value_col) === 'continuous';
     });
+
+    this.controls.config.inputs.filter(f => f.value_col === config.measure_col)[0].start =
+        config.start_value || numMeasures[0];
 
     //count the number of unique ids in the data set
     this.populationCount = set(this.raw_data.map(d => d[this.config.id_col])).values().length;

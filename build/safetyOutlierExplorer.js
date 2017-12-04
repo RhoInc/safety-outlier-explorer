@@ -238,18 +238,15 @@
     function onInit() {
         var _this = this;
 
-        var config = this.config;
-        var allMeasures = d3
-            .set(
-                this.raw_data.map(function(m) {
-                    return m[config.measure_col];
-                })
-            )
-            .values();
-        this.controls.config.inputs.filter(function(f) {
-            return f.value_col === config.measure_col;
-        })[0].start =
-            config.start_value || allMeasures[0];
+        var context = this,
+            config = this.config,
+            allMeasures = d3
+                .set(
+                    this.raw_data.map(function(m) {
+                        return m[config.measure_col];
+                    })
+                )
+                .values();
 
         //warning for non-numeric endpoints
         var catMeasures = allMeasures.filter(function(f) {
@@ -262,7 +259,9 @@
         if (catMeasures.length) {
             console.warn(
                 catMeasures.length +
-                    ' non-numeric endpoints have been removed: ' +
+                    ' non-numeric endpoint' +
+                    (catMeasures.length > 1 ? 's have' : ' has') +
+                    ' been removed:' +
                     catMeasures.join(', ')
             );
         }
@@ -275,6 +274,11 @@
 
             return getValType(measureVals, config.value_col) === 'continuous';
         });
+
+        this.controls.config.inputs.filter(function(f) {
+            return f.value_col === config.measure_col;
+        })[0].start =
+            config.start_value || numMeasures[0];
 
         //count the number of unique ids in the data set
         this.populationCount = d3
