@@ -1,5 +1,4 @@
 import { select } from 'd3';
-import { dataOps } from 'webcharts';
 import addBoxPlot from './util/addBoxPlot';
 import smallMult from './smallMultiples';
 import adjustTicks from './util/adjustTicks';

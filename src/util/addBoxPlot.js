@@ -9,7 +9,7 @@ export default function addBoxPlot(
     boxPlotWidth,
     boxColor,
     boxInsideColor,
-    format,
+    fmt,
     horizontal
 ) {
     //set default orientation to "horizontal"
@@ -115,7 +115,7 @@ export default function addBoxPlot(
         .style('fill', boxColor)
         .style('stroke', 'None');
 
-    var formatx = format ? format(format) : format('.2f');
+    var formatx = fmt ? format(fmt) : format('.2f');
 
     boxplot
         .selectAll('.boxplot')

@@ -488,7 +488,7 @@
         boxPlotWidth,
         boxColor,
         boxInsideColor,
-        format$$1,
+        fmt,
         horizontal
     ) {
         //set default orientation to "horizontal"
@@ -588,7 +588,7 @@
             .style('fill', boxColor)
             .style('stroke', 'None');
 
-        var formatx = format$$1 ? format$$1(format$$1) : format$$1('.2f');
+        var formatx = fmt ? d3.format(fmt) : d3.format('.2f');
 
         boxplot
             .selectAll('.boxplot')

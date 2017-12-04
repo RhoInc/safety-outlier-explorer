@@ -2,7 +2,7 @@ import './util/object-assign';
 import defaultSettings from './defaultSettings';
 import { controlInputs, syncControlInputs, syncSettings } from './defaultSettings';
 
-import { createChart, createControls, createTable } from 'webcharts';
+import { createChart, createControls } from 'webcharts';
 
 import onInit from './onInit';
 import onLayout from './onLayout';
