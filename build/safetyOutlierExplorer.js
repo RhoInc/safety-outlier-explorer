@@ -58,8 +58,8 @@
                 type: 'ordinal',
                 label: 'Visit',
                 rotate_tick_labels: true,
-                vertical_space: 100 // Specify vertical space for rotated tick labels.  Maps to [margin.bottom].
-            }
+                vertical_space: 100
+            } // Specify vertical space for rotated tick labels.  Maps to [margin.bottom].
         ],
         measure_col: 'TEST',
         value_col: 'STRESN',
@@ -179,7 +179,7 @@
     var controlInputs = [
         { label: 'Measure', type: 'subsetter', start: null },
         { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true },
-        { type: 'number', label: 'Y-axis - Lower Limit', option: 'y.domain[0]', require: true },
+        { type: 'number', label: 'Lower Limit', option: 'y.domain[0]', require: true },
         { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true }
     ];
 
@@ -367,44 +367,58 @@
 
             _this.draw();
         });
+
         //Add a button to reset the y-domain
-        var resetDiv = this.controls.wrap
-            .append('div')
-            .attr('class', 'control-group')
-            .datum({ label: 'reset_y', value_col: null, option: null });
-        resetDiv
-            .append('span')
-            .attr('class', 'control-label')
-            .html("Reset to [<span class='min'></span> - <span class='max'></span>]");
-        resetDiv
-            .append('button')
-            .text('Reset Y-axis')
-            .on('click', function() {
-                var measure_data = chart.raw_data.filter(function(d) {
-                    return d[config.measure_col] === chart.currentMeasure;
+        var resetContainer = this.controls.wrap
+                .insert('div', '.control-group:nth-child(3)')
+                .classed('control-group y-axis', true)
+                .datum({
+                    type: 'button',
+                    option: 'y.domain',
+                    label: 'Y-axis:'
+                }),
+            resetLabel = resetContainer
+                .append('span')
+                .attr('class', 'control-label')
+                .style('text-align', 'right')
+                .text('Y-axis:'),
+            resetButton = resetContainer
+                .append('button')
+                .text('Reset Limits')
+                .on('click', function() {
+                    var measure_data = chart.raw_data.filter(function(d) {
+                        return d[config.measure_col] === chart.currentMeasure;
+                    });
+                    chart.config.y.domain = d3.extent(measure_data, function(d) {
+                        return +d[config.value_col];
+                    }); //reset axis to full range
+
+                    chart.controls.wrap
+                        .selectAll('.control-group')
+                        .filter(function(f) {
+                            return f.option === 'y.domain[0]';
+                        })
+                        .select('input')
+                        .property('value', chart.config.y.domain[0]);
+
+                    chart.controls.wrap
+                        .selectAll('.control-group')
+                        .filter(function(f) {
+                            return f.option === 'y.domain[1]';
+                        })
+                        .select('input')
+                        .property('value', chart.config.y.domain[1]);
+
+                    chart.draw();
                 });
-                chart.config.y.domain = d3.extent(measure_data, function(d) {
-                    return +d[config.value_col];
-                }); //reset axis to full range
 
-                chart.controls.wrap
-                    .selectAll('.control-group')
-                    .filter(function(f) {
-                        return f.option === 'y.domain[0]';
-                    })
-                    .select('input')
-                    .property('value', chart.config.y.domain[0]);
-
-                chart.controls.wrap
-                    .selectAll('.control-group')
-                    .filter(function(f) {
-                        return f.option === 'y.domain[1]';
-                    })
-                    .select('input')
-                    .property('value', chart.config.y.domain[1]);
-
-                chart.draw();
-            });
+        //Add y-axis class to y-axis limit controls.
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(d) {
+                return ['Lower Limit', 'Upper Limit'].indexOf(d.label) > -1;
+            })
+            .classed('y-axis', true);
 
         //Add div for participant counts.
         this.controls.wrap.append('p').classed('annote', true);
@@ -460,17 +474,16 @@
             this.config.y.domain = d3$1.extent(measure_data, function(d) {
                 return +d[config.value_col];
             });
-
-            //update label for the reset button
-            var resetLabel = this.controls.wrap
-                .selectAll('.control-group')
-                .filter(function(f) {
-                    return f.label === 'reset_y';
-                })
-                .select('.control-label');
-
-            resetLabel.select('.min').text(this.config.y.domain[0]);
-            resetLabel.select('.max').text(this.config.y.domain[1]);
+            this.controls.wrap
+                .selectAll('.y-axis')
+                .property(
+                    'title',
+                    'Initial Limits: [' +
+                        this.config.y.domain[0] +
+                        ' - ' +
+                        this.config.y.domain[1] +
+                        ']'
+                );
 
             //Set y-axis domain controls.
             this.controls.wrap

@@ -31,15 +31,12 @@ export default function onPreprocess() {
     if (changedMeasureFlag) {
         //reset axis to full range when measure changes
         this.config.y.domain = extent(measure_data, d => +d[config.value_col]);
-
-        //update label for the reset button
-        var resetLabel = this.controls.wrap
-            .selectAll('.control-group')
-            .filter(f => f.label === 'reset_y')
-            .select('.control-label');
-
-        resetLabel.select('.min').text(this.config.y.domain[0]);
-        resetLabel.select('.max').text(this.config.y.domain[1]);
+        this.controls.wrap
+            .selectAll('.y-axis')
+            .property(
+                'title',
+                `Initial Limits: [${this.config.y.domain[0]} - ${this.config.y.domain[1]}]`
+            );
 
         //Set y-axis domain controls.
         this.controls.wrap
