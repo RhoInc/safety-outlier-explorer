@@ -1,9 +1,8 @@
-import { nest } from 'd3';
-
 export default function defineMeasureData() {
-    this.measure_data = this.raw_data.filter(
+    this.measure_data = this.initial_data.filter(
         d => d[this.config.measure_col] === this.currentMeasure
     );
+    this.raw_data = this.measure_data.filter(d => this.config.unscheduled_visits || !d.unscheduled);
     this.filtered_measure_data = this.measure_data.filter(d => {
         let filtered = false;
 
@@ -19,9 +18,4 @@ export default function defineMeasureData() {
 
         return !filtered;
     });
-    this.nested_measure_data = nest()
-        .key(d => d[this.config.x.column])
-        .key(d => d[this.config.color_by])
-        .rollup(d => d.map(m => +m[this.config.y.column]))
-        .entries(this.filtered_measure_data);
 }

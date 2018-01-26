@@ -1,3 +1,5 @@
+import '../util/object-assign';
+import clone from '../util/clone';
 import { min, max } from 'd3';
 import { createChart, multiply } from 'webcharts';
 import rangePolygon from './rangePolygon';
@@ -11,7 +13,11 @@ export default function smallMultiples(id, chart) {
         .remove();
 
     //Define small multiples settings.
-    let multiples_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
+    const multiples_settings = Object.assign(
+        {},
+        clone(chart.config),
+        clone(Object.getPrototypeOf(chart.config))
+    );
     multiples_settings.x.domain = null;
     multiples_settings.y.domain = null;
     multiples_settings.resizable = false;
@@ -133,7 +139,9 @@ export default function smallMultiples(id, chart) {
         }
     });
 
-    const ptData = chart.raw_data.filter(f => f[chart.config.id_col] === id[chart.config.id_col]);
+    const ptData = chart.initial_data.filter(
+        f => f[chart.config.id_col] === id[chart.config.id_col]
+    );
 
     multiply(multiples, ptData, chart.config.measure_col);
 }

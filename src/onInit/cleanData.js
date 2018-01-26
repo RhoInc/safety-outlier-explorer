@@ -15,6 +15,7 @@ export default function cleanData() {
                 nRemoved > 1 ? 's have' : ' has'
             } been removed.`
         );
+    this.initial_data = clean;
     this.raw_data = clean;
 
     //Attach array of continuous measures to chart object.
