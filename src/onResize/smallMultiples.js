@@ -1,7 +1,7 @@
 import { min, max } from 'd3';
 import { createChart, multiply } from 'webcharts';
-import rangePolygon from './util/rangePolygon';
-import adjustTicks from './util/adjustTicks';
+import rangePolygon from './rangePolygon';
+import adjustTicks from './adjustTicks';
 
 export default function smallMultiples(id, chart) {
     //Clear current multiples.

@@ -1,7 +1,7 @@
 import { select } from 'd3';
-import addBoxPlot from './util/addBoxPlot';
-import smallMult from './smallMultiples';
-import adjustTicks from './util/adjustTicks';
+import addBoxPlot from './onResize/addBoxPlot';
+import smallMult from './onResize/smallMultiples';
+import adjustTicks from './onResize/adjustTicks';
 
 export default function onResize() {
     let chart = this;

@@ -1,6 +1,6 @@
 import { extent } from 'd3';
 
-export default function addResetButton() {
+export default function addYdomainResetButton() {
     const context = this,
         resetContainer = this.controls.wrap
             .insert('div', '#lower-limit')

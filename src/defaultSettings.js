@@ -15,8 +15,6 @@ const defaultSettings = {
             type: 'linear',
             value_col: 'DY',
             label: 'Study Day',
-            order_col: null,
-            order: null,
             rotate_tick_labels: false,
             vertical_space: 0
         }
