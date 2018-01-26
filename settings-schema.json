@@ -1,0 +1,173 @@
+{"title": "settings"
+,"description": "JSON schema for the configuration of safety-outlier-explorer"
+,"overview": "The most straightforward way to customize the Safety Outlier Explorer is by using a configuration object whose properties describe the behavior and appearance of the chart. Since the Safety Outlier Explorer is a Webcharts `chart` object, many default Webcharts settings are set in the [defaultSettings.js file](https://github.com/RhoInc/safety-outlier-explorer/blob/master/src/defaultSettings.js) as [described below](#Webcharts-Settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the Safety Outlier Explorer to facilitate data mapping and other custom functionality. These custom settings are described in detail below. All defaults can be overwritten by users."
+,"version": "2.2.0"
+,"type": "object"
+,"properties":
+    {"id_col":
+        {"title": "ID"
+        ,"description": "unique identifier variable name"
+        ,"default": "USUBJID"
+        ,"type": "string"
+        }
+    ,"time_cols":
+        {"title": "Time settings"
+        ,"description": "visit metadata"
+        ,"type": "array"
+        ,"items":
+            {"type": "object"
+            ,"properties":
+                {"value_col":
+                    {"title": "Visit variable name"
+                    ,"default": "VISIT"
+                    ,"type": "string"
+                    }
+                ,"label":
+                    {"title": "Visit variable label"
+                    ,"default":  "Visit"
+                    ,"type": "string"
+                    }
+                ,"order_col":
+                    {"title": "Visit ordering variable name"
+                    ,"default":  "VISITNUM"
+                    ,"type": "string"
+                    }
+                ,"order":
+                    {"title": "Visit order"
+                    ,"type": "array"
+                    ,"items":
+                        {"title": "Visit value"
+                        ,"type": "string"
+                        }
+                    }
+                ,"rotate_tick_labels":
+                    {"title": "Rotate tick labels 45 degrees?"
+                    ,"default":  true
+                    ,"type": "boolean"
+                    }
+                ,"vertical_space":
+                    {"title": "Rotated tick label spacing"
+                    ,"default":  100
+                    ,"type": "number"
+                    }
+                }
+            }
+        }
+    ,"measure_col":
+        {"title": "Measure"
+        ,"description": "measure variable name"
+        ,"default": "TEST"
+        ,"type": "string"
+        }
+    ,"unit_col":
+        {"title": "Unit"
+        ,"description": "measure unit variable name"
+        ,"default": "STRESU"
+        ,"type": "string"
+        }
+    ,"value_col":
+        {"title": "Result"
+        ,"description": "result variable name"
+        ,"default": "STRESN"
+        ,"type": "string"
+        }
+    ,"normal_col_low":
+        {"title": "Lower Limit of Normal"
+        ,"description": "LLN variable name"
+        ,"default": "STNRLO"
+        ,"type": "string"
+        }
+    ,"normal_col_high":
+        {"title": "Upper Limit of Normal"
+        ,"description": "ULN variable name"
+        ,"default": "STNRHI"
+        ,"type": "string"
+        }
+    ,"start_value":
+        {"title": "Initially Displayed Measure"
+        ,"description": "value of measure to display initially"
+        ,"type": "string"
+        }
+    ,"filters":
+        {"title": "Filters"
+        ,"description": "an array of filter variables and associated metadata"
+        ,"type": "array"
+        ,"items":
+            {"type": "object"
+            ,"properties":
+                {"value_col":
+                    {"title": "Variable name"
+                    ,"type": "string"
+                    }
+                ,"label":
+                    {"title": "Variable label"
+                    ,"type": "string"
+                    }
+                }
+            }
+        }
+    ,"details":
+        {"title": "Participant details"
+        ,"description": "an array of ID-level variables and associated metadata"
+        ,"type": "array"
+        ,"items":
+            {"type": "object"
+            ,"properties":
+                {"value_col":
+                    {"title": "Variable name"
+                    ,"type": "string"
+                    ,"default": "AGE"
+                    }
+                ,"label":
+                    {"title": "Variable label"
+                    ,"type": "string"
+                    ,"default": "Age"
+                    }
+                }
+            }
+        }
+    ,"multiples_sizing":
+        {"title": "Dimensions of small multiples"
+        ,"description": "width and height of small multiples"
+        ,"type": "object"
+        ,"properties":
+            {"width":
+                {"title": "Width"
+                ,"default": 300
+                ,"type": "number"
+                }
+            ,"height":
+                {"title": "Height"
+                ,"default": 100
+                ,"type": "number"
+                }
+            }
+        }
+    ,"visits_without_data":
+        {"title": "Display visits without data?"
+        ,"description": "controls display of visits without data for the current measure"
+        ,"default":  false
+        ,"type": "boolean"
+        }
+    ,"unscheduled_visits":
+        {"title": "Display unscheduled visits?"
+        ,"description": "controls display of unscheduled visits"
+        ,"default":  false
+        ,"type": "boolean"
+        }
+    ,"unscheduled_visit_pattern":
+        {"title": "Unscheduled Visit Pattern"
+        ,"description": "a regular expression that identifies unscheduled visits"
+        ,"default": "/unscheduled|early termination/i"
+        ,"type": "string"
+        }
+    ,"unscheduled_visits_values":
+        {"title": "Unscheduled Visit List"
+        ,"description": "an array of strings that identify unscheduled visits; overrides unscheduled_visit_pattern"
+        ,"type": "array"
+        ,"items":
+            {"type": "string"
+            }
+        }
+    }
+}

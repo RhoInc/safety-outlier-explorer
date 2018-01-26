@@ -1,5 +1,6 @@
-const defaultSettings = {
-    //Custom settings for this template
+import merge from './util/merge';
+
+export const rendererSettings = {
     id_col: 'USUBJID',
     time_cols: [
         {
@@ -20,8 +21,8 @@ const defaultSettings = {
         }
     ],
     measure_col: 'TEST',
-    value_col: 'STRESN',
     unit_col: 'STRESU',
+    value_col: 'STRESN',
     normal_col_low: 'STNRLO',
     normal_col_high: 'STNRHI',
     start_value: null,
@@ -39,9 +40,10 @@ const defaultSettings = {
     visits_without_data: false,
     unscheduled_visits: false,
     unscheduled_visit_pattern: /unscheduled|early termination/i,
-    unscheduled_visit_values: null, // takes precedence over unscheduled_visit_pattern
+    unscheduled_visit_values: null // takes precedence over unscheduled_visit_pattern
+};
 
-    //Standard webCharts settings
+export const webchartsSettings = {
     x: {
         column: null, //set in syncSettings()
         type: null, //set in syncSettings()
@@ -84,6 +86,8 @@ const defaultSettings = {
     margin: { right: 20 }, //create space for box plot
     aspect: 3
 };
+
+export default merge(rendererSettings, webchartsSettings);
 
 // Replicate settings in multiple places in the settings object
 export function syncSettings(settings) {
@@ -161,5 +165,3 @@ export function syncControlInputs(controlInputs, settings) {
 
     return controlInputs;
 }
-
-export default defaultSettings;
