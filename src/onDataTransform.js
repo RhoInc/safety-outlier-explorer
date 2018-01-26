@@ -1,4 +1,4 @@
-export default function onDataTransform() {
+export default function onDatatransform() {
     //Define y-axis label.
     const measure = this.filters.filter(filter => filter.col === this.config.measure_col)[0].val;
     const measureData = this.raw_data.filter(d => d[this.config.measure_col] === measure);

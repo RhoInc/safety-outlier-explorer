@@ -3,7 +3,7 @@
         ? (module.exports = factory(require('webcharts'), require('d3')))
         : typeof define === 'function' && define.amd
           ? define(['webcharts', 'd3'], factory)
-          : (global.safetyOutlierExplorer = factory(global.webCharts, global.d3));
+          : (global['safety-outlier-explorer'] = factory(global.webCharts, global.d3));
 })(this, function(webcharts, d3$1) {
     'use strict';
 
@@ -501,22 +501,6 @@
                 .select('input')
                 .property('value', this.config.y.domain[1]);
         }
-    }
-
-    function onDataTransform() {
-        var _this = this;
-
-        //Define y-axis label.
-        var measure = this.filters.filter(function(filter) {
-            return filter.col === _this.config.measure_col;
-        })[0].val;
-        var measureData = this.raw_data.filter(function(d) {
-            return d[_this.config.measure_col] === measure;
-        });
-        this.config.y.label =
-            measureData[0][this.config.measure_col] +
-            ' (' +
-            (measureData[0][this.config.unit_col] + ')');
     }
 
     /*------------------------------------------------------------------------------------------------\
