@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 (function (global, factory) {
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('webcharts'), require('d3')) :
 	typeof define === 'function' && define.amd ? define(['webcharts', 'd3'], factory) :
@@ -12,6 +13,25 @@ if (typeof Object.assign != 'function') {
             if (target === undefined || target === null) {
                 throw new TypeError('Cannot convert undefined or null to object');
             }
+=======
+(function(global, factory) {
+    typeof exports === 'object' && typeof module !== 'undefined'
+        ? (module.exports = factory(require('webcharts'), require('d3')))
+        : typeof define === 'function' && define.amd
+          ? define(['webcharts', 'd3'], factory)
+          : (global['safety-outlier-explorer'] = factory(global.webCharts, global.d3));
+})(this, function(webcharts, d3$1) {
+    'use strict';
+
+    if (typeof Object.assign != 'function') {
+        (function() {
+            Object.assign = function(target) {
+                'use strict';
+
+                if (target === undefined || target === null) {
+                    throw new TypeError('Cannot convert undefined or null to object');
+                }
+>>>>>>> v2.2.0-dev
 
             var output = Object(target);
             for (var index = 1; index < arguments.length; index++) {
@@ -353,6 +373,7 @@ function onPreprocess() {
         });
     }
 
+<<<<<<< HEAD
     //Set y-axis domain.
     if (changedMeasureFlag) {
         //reset axis to full range when measure changes
@@ -385,6 +406,9 @@ function onDataTransform() {
 }
 
 /*------------------------------------------------------------------------------------------------\
+=======
+    /*------------------------------------------------------------------------------------------------\
+>>>>>>> v2.2.0-dev
   Annotate number of participants based on current filters, number of participants in all, and
   the corresponding percentage.
   Inputs:
