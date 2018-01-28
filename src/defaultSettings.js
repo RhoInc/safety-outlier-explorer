@@ -39,7 +39,7 @@ export const rendererSettings = {
     },
     visits_without_data: false,
     unscheduled_visits: false,
-    unscheduled_visit_pattern: /unscheduled|early termination/i,
+    unscheduled_visit_pattern: '/unscheduled|early termination/i',
     unscheduled_visit_values: null // takes precedence over unscheduled_visit_pattern
 };
 
@@ -126,6 +126,19 @@ export function syncSettings(settings) {
 
     settings.rotate_x_tick_labels = time_col.rotate_tick_labels;
 
+    //Convert unscheduled_visit_pattern from string to regular expression.
+    if (
+        typeof settings.unscheduled_visit_pattern === 'string' &&
+        settings.unscheduled_visit_pattern !== ''
+    ) {
+        const flags = settings.unscheduled_visit_pattern.replace(/.*?\/([gimy]*)$/, '$1'),
+            pattern = settings.unscheduled_visit_pattern.replace(
+                new RegExp('^/(.*?)/' + flags + '$'),
+                '$1'
+            );
+        settings.unscheduled_visit_regex = new RegExp(pattern, flags);
+    }
+
     return settings;
 }
 
@@ -162,6 +175,13 @@ export function syncControlInputs(controlInputs, settings) {
                 controlInputs.splice(4 + i, 0, thisFilter);
         });
     }
+
+    //Remove unscheduled visit control if unscheduled visit pattern is unscpecified.
+    if (!settings.unscheduled_visit_regex)
+        controlInputs.splice(
+            controlInputs.map(controlInput => controlInput.label).indexOf('Unscheduled visits'),
+            1
+        );
 
     return controlInputs;
 }
