@@ -1,6 +1,7 @@
 import { set, ascending } from 'd3';
 
 export default function defineVisitOrder() {
+    //ordinal
     this.config.time_cols.filter(time_col => time_col.type === 'ordinal').forEach(time_settings => {
         let visits, visitOrder;
 
@@ -40,5 +41,8 @@ export default function defineVisitOrder() {
         } else
             //Otherwise use data-driven visit order.
             time_settings.order = visitOrder;
+
+        //Define domain.
+        time_settings.domain = time_settings.order;
     });
 }

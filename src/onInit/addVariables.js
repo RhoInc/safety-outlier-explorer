@@ -1,7 +1,5 @@
 export default function addVariables() {
-    const ordinalTimeSettings = this.config.time_cols
-        .filter(time_col => time_col.type === 'ordinal')
-        .pop();
+    const ordinalTimeSettings = this.config.time_cols.find(time_col => time_col.type === 'ordinal');
 
     this.raw_data.forEach(d => {
         //Identify unscheduled visits.
