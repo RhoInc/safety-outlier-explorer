@@ -565,7 +565,6 @@
                         .map(function(visit) {
                             return visit.split('|')[1];
                         });
-                    console.log(visits);
                 } else {
                     //Otherwise sort a unique set of visits alphanumerically.
                     //Define a unique set of visits.

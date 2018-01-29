@@ -22,7 +22,6 @@ export default function defineVisitOrder() {
                     return diff ? diff : ascending(a, b);
                 })
                 .map(visit => visit.split('|')[1]);
-            console.log(visits);
         } else {
             //Otherwise sort a unique set of visits alphanumerically.
             //Define a unique set of visits.
