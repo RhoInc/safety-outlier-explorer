@@ -5,6 +5,6 @@ export default function labelXaxisOptions() {
         .selectAll('option')
         .property(
             'label',
-            d => this.config.time_cols.filter(time_col => time_col.value_col === d)[0].label
+            d => this.config.time_cols.find(time_col => time_col.value_col === d).label
         );
 }

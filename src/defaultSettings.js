@@ -44,14 +44,14 @@ const defaultSettings = {
     x: {
         column: null, //set in syncSettings()
         type: null, //set in syncSettings()
-        behavior: 'flex'
+        behavior: 'raw'
     },
     y: {
         column: null, //set in syncSettings()
         stat: 'mean',
         type: 'linear',
         label: 'Value',
-        behavior: 'flex',
+        behavior: 'raw',
         format: '0.2f'
     },
     marks: [
@@ -135,10 +135,10 @@ export const controlInputs = [
 
 // Map values from settings to control inputs
 export function syncControlInputs(controlInputs, settings) {
-    let labTestControl = controlInputs.filter(d => d.label === 'Measure')[0];
+    const labTestControl = controlInputs.find(d => d.label === 'Measure');
     labTestControl.value_col = settings.measure_col;
 
-    let xAxisControl = controlInputs.filter(d => d.label === 'X-axis')[0];
+    const xAxisControl = controlInputs.find(d => d.label === 'X-axis');
     xAxisControl.values = settings.time_cols.map(d => d.value_col);
 
     if (settings.filters) {

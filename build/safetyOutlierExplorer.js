@@ -32,6 +32,50 @@
         })();
     }
 
+    if (!Array.prototype.find) {
+        Object.defineProperty(Array.prototype, 'find', {
+            value: function value(predicate) {
+                // 1. Let O be ? ToObject(this value).
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, "length")).
+                var len = o.length >>> 0;
+
+                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+                if (typeof predicate !== 'function') {
+                    throw new TypeError('predicate must be a function');
+                }
+
+                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                var thisArg = arguments[1];
+
+                // 5. Let k be 0.
+                var k = 0;
+
+                // 6. Repeat, while k < len
+                while (k < len) {
+                    // a. Let Pk be ! ToString(k).
+                    // b. Let kValue be ? Get(O, Pk).
+                    // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                    // d. If testResult is true, return kValue.
+                    var kValue = o[k];
+                    if (predicate.call(thisArg, kValue, k, o)) {
+                        return kValue;
+                    }
+                    // e. Increase k by 1.
+                    k++;
+                }
+
+                // 7. Return undefined.
+                return undefined;
+            }
+        });
+    }
+
     var defaultSettings = {
         //Custom settings for this template
         id_col: 'USUBJID',
@@ -78,14 +122,14 @@
         x: {
             column: null, //set in syncSettings()
             type: null, //set in syncSettings()
-            behavior: 'flex'
+            behavior: 'raw'
         },
         y: {
             column: null, //set in syncSettings()
             stat: 'mean',
             type: 'linear',
             label: 'Value',
-            behavior: 'flex',
+            behavior: 'raw',
             format: '0.2f'
         },
         marks: [
@@ -186,14 +230,14 @@
 
     // Map values from settings to control inputs
     function syncControlInputs(controlInputs, settings) {
-        var labTestControl = controlInputs.filter(function(d) {
+        var labTestControl = controlInputs.find(function(d) {
             return d.label === 'Measure';
-        })[0];
+        });
         labTestControl.value_col = settings.measure_col;
 
-        var xAxisControl = controlInputs.filter(function(d) {
+        var xAxisControl = controlInputs.find(function(d) {
             return d.label === 'X-axis';
-        })[0];
+        });
         xAxisControl.values = settings.time_cols.map(function(d) {
             return d.value_col;
         });
@@ -270,11 +314,9 @@
     function addVariables() {
         var _this = this;
 
-        var ordinalTimeSettings = this.config.time_cols
-            .filter(function(time_col) {
-                return time_col.type === 'ordinal';
-            })
-            .pop();
+        var ordinalTimeSettings = this.config.time_cols.find(function(time_col) {
+            return time_col.type === 'ordinal';
+        });
 
         this.raw_data.forEach(function(d) {
             //Identify unscheduled visits.
@@ -296,6 +338,7 @@
     function defineVisitOrder() {
         var _this = this;
 
+        //ordinal
         this.config.time_cols
             .filter(function(time_col) {
                 return time_col.type === 'ordinal';
@@ -357,6 +400,9 @@
                 } else
                     //Otherwise use data-driven visit order.
                     time_settings.order = visitOrder;
+
+                //Define domain.
+                time_settings.domain = time_settings.order;
             });
     }
 
@@ -394,9 +440,9 @@
     }
 
     function setInitialMeasure() {
-        this.controls.config.inputs.filter(function(input) {
+        this.controls.config.inputs.find(function(input) {
             return input.label === 'Measure';
-        })[0].start =
+        }).start =
             this.config.start_value || this.measures[0];
     }
 
@@ -436,9 +482,9 @@
             })
             .selectAll('option')
             .property('label', function(d) {
-                return _this.config.time_cols.filter(function(time_col) {
+                return _this.config.time_cols.find(function(time_col) {
                     return time_col.value_col === d;
-                })[0].label;
+                }).label;
             });
     }
 
@@ -550,23 +596,6 @@
         this.raw_data = this.measure_data.filter(function(d) {
             return _this.config.unscheduled_visits || !d.unscheduled;
         });
-        this.filtered_measure_data = this.measure_data.filter(function(d) {
-            var filtered = false;
-
-            _this.filters
-                .filter(function(filter) {
-                    return filter.value_col !== _this.config.measure_col;
-                })
-                .forEach(function(filter) {
-                    if (filtered === false && filter.val !== 'All')
-                        filtered =
-                            filter.val instanceof Array
-                                ? filter.val.indexOf(d[filter.col]) < 0
-                                : filter.val !== d[filter.col];
-                });
-
-            return !filtered;
-        });
     }
 
     function removeUnscheduledVisits() {
@@ -587,17 +616,11 @@
     function setXdomain() {
         var _this = this;
 
-        this.config.time_settings = this.config.time_cols
-            .filter(function(time_col) {
-                return time_col.value_col === _this.config.x.column;
-            })
-            .pop();
+        this.config.time_settings = this.config.time_cols.find(function(time_col) {
+            return time_col.value_col === _this.config.x.column;
+        });
         Object.assign(this.config.x, this.config.time_settings);
-        if (this.config.x.type === 'ordinal') this.config.x.domain = this.config.x.order;
-        else
-            this.config.x.domain = d3.extent(this.measure_data, function(d) {
-                return +d[_this.config.x.column];
-            });
+        if (this.config.x.type === 'linear') delete this.config.x.domain;
 
         //Remove unscheduled visits from x-domain if x-type is ordinal.
         if (this.config.x.type === 'ordinal') removeUnscheduledVisits.call(this);
@@ -1197,9 +1220,9 @@
             this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
 
             //Set y-label to measure unit.
-            this.config.y.label = this.raw_data.filter(function(d) {
+            this.config.y.label = this.raw_data.find(function(d) {
                 return d[_this.config.measure_col] === _this.wrap.select('.wc-chart-title').text();
-            })[0][this.config.unit_col];
+            })[this.config.unit_col];
         });
 
         multiples.on('preprocess', function() {
@@ -1321,16 +1344,16 @@
         this.svg
             .selectAll('.line')
             .on('mouseover', function(d) {
-                var id = chart.raw_data.filter(function(di) {
+                var id = chart.raw_data.find(function(di) {
                     return di[config.id_col] === d.values[0].values.raw[0][config.id_col];
-                })[0];
+                });
                 highlight(id);
             })
             .on('mouseout', clearHighlight)
             .on('click', function(d) {
-                var id = chart.raw_data.filter(function(di) {
+                var id = chart.raw_data.find(function(di) {
                     return di[config.id_col] === d.values[0].values.raw[0][config.id_col];
-                })[0];
+                });
 
                 //Un-select all lines and points.
                 chart.svg.selectAll('.line').classed('selected', false);
@@ -1353,16 +1376,16 @@
         this.svg
             .selectAll('.point')
             .on('mouseover', function(d) {
-                var id = chart.raw_data.filter(function(di) {
+                var id = chart.raw_data.find(function(di) {
                     return di[config.id_col] === d.values.raw[0][config.id_col];
-                })[0];
+                });
                 highlight(id);
             })
             .on('mouseout', clearHighlight)
             .on('click', function(d) {
-                var id = chart.raw_data.filter(function(di) {
+                var id = chart.raw_data.find(function(di) {
                     return di[config.id_col] === d.values.raw[0][config.id_col];
-                })[0];
+                });
 
                 //Un-select all lines and points.
                 chart.svg.selectAll('.line').classed('selected', false);

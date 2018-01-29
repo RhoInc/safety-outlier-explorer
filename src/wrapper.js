@@ -1,4 +1,5 @@
 import './util/object-assign';
+import './util/array-find';
 import defaultSettings from './defaultSettings';
 import { controlInputs, syncControlInputs, syncSettings } from './defaultSettings';
 

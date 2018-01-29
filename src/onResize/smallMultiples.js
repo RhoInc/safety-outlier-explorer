@@ -81,9 +81,9 @@ export default function smallMultiples(id, chart) {
         this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
 
         //Set y-label to measure unit.
-        this.config.y.label = this.raw_data.filter(
+        this.config.y.label = this.raw_data.find(
             d => d[this.config.measure_col] === this.wrap.select('.wc-chart-title').text()
-        )[0][this.config.unit_col];
+        )[this.config.unit_col];
     });
 
     multiples.on('preprocess', function() {
