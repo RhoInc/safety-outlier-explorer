@@ -613,7 +613,7 @@
                 return (
                     d3
                         .set(
-                            _this.filtered_measure_data.map(function(d) {
+                            _this.raw_data.map(function(d) {
                                 return d[_this.config.time_settings.value_col];
                             })
                         )
