@@ -36,16 +36,16 @@ export default function onResize() {
     this.svg
         .selectAll('.line')
         .on('mouseover', function(d) {
-            const id = chart.raw_data.filter(
+            const id = chart.raw_data.find(
                 di => di[config.id_col] === d.values[0].values.raw[0][config.id_col]
-            )[0];
+            );
             highlight(id);
         })
         .on('mouseout', clearHighlight)
         .on('click', function(d) {
-            const id = chart.raw_data.filter(
+            const id = chart.raw_data.find(
                 di => di[config.id_col] === d.values[0].values.raw[0][config.id_col]
-            )[0];
+            );
 
             //Un-select all lines and points.
             chart.svg.selectAll('.line').classed('selected', false);
@@ -66,16 +66,16 @@ export default function onResize() {
     this.svg
         .selectAll('.point')
         .on('mouseover', function(d) {
-            const id = chart.raw_data.filter(
+            const id = chart.raw_data.find(
                 di => di[config.id_col] === d.values.raw[0][config.id_col]
-            )[0];
+            );
             highlight(id);
         })
         .on('mouseout', clearHighlight)
         .on('click', function(d) {
-            const id = chart.raw_data.filter(
+            const id = chart.raw_data.find(
                 di => di[config.id_col] === d.values.raw[0][config.id_col]
-            )[0];
+            );
 
             //Un-select all lines and points.
             chart.svg.selectAll('.line').classed('selected', false);
