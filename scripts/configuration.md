@@ -19,37 +19,71 @@ unique identifier variable name
 
 visit metadata
 
-**default:** none
+**default:** 
+```
+[
+  {
+    "type": "ordinal",
+    "value_col": "VISIT",
+    "label": "Visit",
+    "order_col": "VISITNUM",
+    "order": null,
+    "rotate_tick_labels": true,
+    "vertical_space": 100
+  },
+  {
+    "type": "linear",
+    "value_col": "DY",
+    "label": "Study Day",
+    "order_col": "DY",
+    "order": null,
+    "rotate_tick_labels": false,
+    "vertical_space": 0
+  }
+]
+```
 
 ### settings.time_cols[].value_col
 `string`
 
-Visit variable name
+undefined
+
+**default:** `"VISIT"`
 
 ### settings.time_cols[].label
 `string`
 
-Visit variable label
+undefined
+
+**default:** `"Visit"`
 
 ### settings.time_cols[].order_col
 `string`
 
-Visit ordering variable name
+undefined
+
+**default:** `"VISITNUM"`
 
 ### settings.time_cols[].order
 `array`
 
-Visit order
+undefined
+
+**default:** none
 
 ### settings.time_cols[].rotate_tick_labels
 `boolean`
 
-Rotate tick labels 45 degrees?
+undefined
+
+**default:** `true`
 
 ### settings.time_cols[].vertical_space
 `number`
 
-Rotated tick label spacing
+undefined
+
+**default:** `100`
 
 
 
@@ -117,12 +151,16 @@ an array of filter variables and associated metadata
 ### settings.filters[].value_col
 `string`
 
-Variable name
+undefined
+
+**default:** none
 
 ### settings.filters[].label
 `string`
 
-Variable label
+undefined
+
+**default:** none
 
 
 
@@ -131,17 +169,37 @@ Variable label
 
 an array of ID-level variables and associated metadata
 
-**default:** none
+**default:** 
+```
+[
+  {
+    "value_col": "AGE",
+    "label": "Age"
+  },
+  {
+    "value_col": "SEX",
+    "label": "Sex"
+  },
+  {
+    "value_col": "RACE",
+    "label": "Race"
+  }
+]
+```
 
 ### settings.details[].value_col
 `string`
 
-Variable name
+undefined
+
+**default:** `"AGE"`
 
 ### settings.details[].label
 `string`
 
-Variable label
+undefined
+
+**default:** `"Age"`
 
 
 
@@ -150,19 +208,19 @@ Variable label
 
 width and height of small multiples
 
-## settings.multiples_sizing.width
+### settings.multiples_sizing.width
 `number`
 
-Width
+undefined
 
-**default:** `"300"`
+**default:** `300`
 
-## settings.multiples_sizing.height
+### settings.multiples_sizing.height
 `number`
 
-Height
+undefined
 
-**default:** `"100"`
+**default:** `100`
 
 
 
@@ -171,7 +229,7 @@ Height
 
 controls display of visits without data for the current measure
 
-**default:** none
+**default:** `false`
 
 
 
@@ -180,7 +238,7 @@ controls display of visits without data for the current measure
 
 controls display of unscheduled visits
 
-**default:** none
+**default:** `false`
 
 
 

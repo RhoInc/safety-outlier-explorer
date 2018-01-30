@@ -5,166 +5,193 @@
 ,"type": "object"
 ,"properties":
     {"id_col":
-        {"title": "ID"
+        {"type": "string"
+        ,"title": "ID"
         ,"description": "unique identifier variable name"
         ,"default": "USUBJID"
-        ,"type": "string"
         }
     ,"time_cols":
-        {"title": "Time settings"
+        {"type": "array"
+        ,"title": "Time settings"
         ,"description": "visit metadata"
-        ,"type": "array"
+        ,"defaultObject": 
+            [
+                {
+                    "type": "ordinal",
+                    "value_col": "VISIT",
+                    "label": "Visit",
+                    "order_col": "VISITNUM",
+                    "order": null,
+                    "rotate_tick_labels": true,
+                    "vertical_space": 100
+                },
+                {
+                    "type": "linear",
+                    "value_col": "DY",
+                    "label": "Study Day",
+                    "order_col": "DY",
+                    "order": null,
+                    "rotate_tick_labels": false,
+                    "vertical_space": 0
+                }
+            ]
         ,"items":
             {"type": "object"
             ,"properties":
                 {"value_col":
-                    {"title": "Visit variable name"
+                    {"type": "string"
+                    ,"title": "Visit variable name"
                     ,"default": "VISIT"
-                    ,"type": "string"
                     }
                 ,"label":
-                    {"title": "Visit variable label"
+                    {"type": "string"
+                    ,"title": "Visit variable label"
                     ,"default":  "Visit"
-                    ,"type": "string"
                     }
                 ,"order_col":
-                    {"title": "Visit ordering variable name"
+                    {"type": "string"
+                    ,"title": "Visit ordering variable name"
                     ,"default":  "VISITNUM"
-                    ,"type": "string"
                     }
                 ,"order":
-                    {"title": "Visit order"
-                    ,"type": "array"
+                    {"type": "array"
+                    ,"title": "Visit order"
                     ,"items":
-                        {"title": "Visit value"
-                        ,"type": "string"
+                        {"type": "string"
+                        ,"title": "Visit value"
                         }
                     }
                 ,"rotate_tick_labels":
-                    {"title": "Rotate tick labels 45 degrees?"
+                    {"type": "boolean"
+                    ,"title": "Rotate tick labels 45 degrees?"
                     ,"default":  true
-                    ,"type": "boolean"
                     }
                 ,"vertical_space":
-                    {"title": "Rotated tick label spacing"
+                    {"type": "number"
+                    ,"title": "Rotated tick label spacing"
                     ,"default":  100
-                    ,"type": "number"
                     }
                 }
             }
         }
     ,"measure_col":
-        {"title": "Measure"
+        {"type": "string"
+        ,"title": "Measure"
         ,"description": "measure variable name"
         ,"default": "TEST"
-        ,"type": "string"
         }
     ,"unit_col":
-        {"title": "Unit"
+        {"type": "string"
+        ,"title": "Unit"
         ,"description": "measure unit variable name"
         ,"default": "STRESU"
-        ,"type": "string"
         }
     ,"value_col":
-        {"title": "Result"
+        {"type": "string"
+        ,"title": "Result"
         ,"description": "result variable name"
         ,"default": "STRESN"
-        ,"type": "string"
         }
     ,"normal_col_low":
-        {"title": "Lower Limit of Normal"
+        {"type": "string"
+        ,"title": "Lower Limit of Normal"
         ,"description": "LLN variable name"
         ,"default": "STNRLO"
-        ,"type": "string"
         }
     ,"normal_col_high":
-        {"title": "Upper Limit of Normal"
+        {"type": "string"
+        ,"title": "Upper Limit of Normal"
         ,"description": "ULN variable name"
         ,"default": "STNRHI"
-        ,"type": "string"
         }
     ,"start_value":
-        {"title": "Initially Displayed Measure"
+        {"type": "string"
+        ,"title": "Initially Displayed Measure"
         ,"description": "value of measure to display initially"
-        ,"type": "string"
         }
     ,"filters":
-        {"title": "Filters"
+        {"type": "array"
+        ,"title": "Filters"
         ,"description": "an array of filter variables and associated metadata"
-        ,"type": "array"
         ,"items":
             {"type": "object"
             ,"properties":
                 {"value_col":
-                    {"title": "Variable name"
-                    ,"type": "string"
+                    {"type": "string"
+                    ,"title": "Variable name"
                     }
                 ,"label":
-                    {"title": "Variable label"
-                    ,"type": "string"
+                    {"type": "string"
+                    ,"title": "Variable label"
                     }
                 }
             }
         }
     ,"details":
-        {"title": "Participant details"
+        {"type": "array"
+        ,"title": "Participant details"
         ,"description": "an array of ID-level variables and associated metadata"
-        ,"type": "array"
+        ,"defaultObject":
+            [
+                { "value_col": "AGE" , "label": "Age"  },
+                { "value_col": "SEX" , "label": "Sex"  },
+                { "value_col": "RACE", "label": "Race" }
+            ]
         ,"items":
             {"type": "object"
             ,"properties":
                 {"value_col":
-                    {"title": "Variable name"
-                    ,"type": "string"
+                    {"type": "string"
+                    ,"title": "Variable name"
                     ,"default": "AGE"
                     }
                 ,"label":
-                    {"title": "Variable label"
-                    ,"type": "string"
+                    {"type": "string"
+                    ,"title": "Variable label"
                     ,"default": "Age"
                     }
                 }
             }
         }
     ,"multiples_sizing":
-        {"title": "Dimensions of small multiples"
+        {"type": "object"
+        ,"title": "Dimensions of small multiples"
         ,"description": "width and height of small multiples"
-        ,"type": "object"
         ,"properties":
             {"width":
-                {"title": "Width"
+                {"type": "number"
+                ,"title": "Width"
                 ,"default": 300
-                ,"type": "number"
                 }
             ,"height":
-                {"title": "Height"
+                {"type": "number"
+                ,"title": "Height"
                 ,"default": 100
-                ,"type": "number"
                 }
             }
         }
     ,"visits_without_data":
-        {"title": "Display visits without data?"
+        {"type": "boolean"
+        ,"title": "Display visits without data?"
         ,"description": "controls display of visits without data for the current measure"
         ,"default":  false
-        ,"type": "boolean"
         }
     ,"unscheduled_visits":
-        {"title": "Display unscheduled visits?"
+        {"type": "boolean"
+        ,"title": "Display unscheduled visits?"
         ,"description": "controls display of unscheduled visits"
         ,"default":  false
-        ,"type": "boolean"
         }
     ,"unscheduled_visit_pattern":
-        {"title": "Unscheduled Visit Pattern"
+        {"type": "string"
+        ,"title": "Unscheduled Visit Pattern"
         ,"description": "a regular expression that identifies unscheduled visits"
         ,"default": "/unscheduled|early termination/i"
-        ,"type": "string"
         }
     ,"unscheduled_visits_values":
-        {"title": "Unscheduled Visit List"
+        {"type": "array"
+        ,"title": "Unscheduled Visit List"
         ,"description": "an array of strings that identify unscheduled visits; overrides unscheduled_visit_pattern"
-        ,"type": "array"
         ,"items":
             {"type": "string"
             }
