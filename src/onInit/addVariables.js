@@ -9,8 +9,8 @@ export default function addVariables() {
                 d.unscheduled =
                     this.config.unscheduled_visit_values.indexOf(d[ordinalTimeSettings.value_col]) >
                     -1;
-            else if (this.config.unscheduled_visit_regex)
-                d.unscheduled = this.config.unscheduled_visit_regex.test(
+            else if (this.config.unscheduled_visit_pattern)
+                d.unscheduled = this.config.unscheduled_visit_pattern.test(
                     d[ordinalTimeSettings.value_col]
                 );
         }
