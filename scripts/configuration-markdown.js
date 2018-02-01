@@ -92,7 +92,7 @@ function setDefault(setting) {
             });
 
 /*------------------------------------------------------------------------------------------------\
-  Renderer-specific settings
+  Webcharts settings
 \------------------------------------------------------------------------------------------------*/
 
     var webchartsSettingsFlag = 0,
@@ -111,7 +111,7 @@ function setDefault(setting) {
         webchartsSettings.push('}');
 
     markdown.push(``);
-    markdown.push(`# Webcharts-specific settings`);
+    markdown.push(`# Webcharts settings`);
     markdown.push(`The object below contains each Webcharts setting as of version ${schema.version}.`);
     markdown.push(``);
     markdown.push('```');

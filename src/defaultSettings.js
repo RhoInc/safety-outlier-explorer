@@ -1,6 +1,4 @@
-import merge from './util/merge';
-
-export const rendererSettings = {
+export const rendererSpecificSettings = {
     id_col: 'USUBJID',
     time_cols: [
         {
@@ -87,7 +85,7 @@ export const webchartsSettings = {
     aspect: 3
 };
 
-export default merge(rendererSettings, webchartsSettings);
+export default Object.assign({}, rendererSpecificSettings, webchartsSettings);
 
 // Replicate settings in multiple places in the settings object
 export function syncSettings(settings) {
