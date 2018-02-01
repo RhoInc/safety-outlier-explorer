@@ -4,10 +4,7 @@ export default function rangePolygon(chart) {
     var area = svg
         .area()
         .x(function(d) {
-            return (
-                chart.x(d['TIME']) +
-                (chart.config.x.type === 'ordinal' ? chart.x.rangeBand() / 2 : 0)
-            );
+            return chart.x(d['TIME']);
         })
         .y0(function(d) {
             var lbornlo = d['STNRLO'];

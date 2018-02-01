@@ -3,21 +3,29 @@ const defaultSettings = {
     id_col: 'USUBJID',
     time_cols: [
         {
-            type: 'ordinal',
-            value_col: 'VISIT',
-            label: 'Visit',
-            order_col: 'VISITNUM',
-            order: null,
-            rotate_tick_labels: true,
-            vertical_space: 100
-        },
-        {
-            type: 'linear',
             value_col: 'DY',
+            order: null,
+            type: 'linear',
             label: 'Study Day',
             rotate_tick_labels: false,
             vertical_space: 0
-        }
+        },
+        {
+            value_col: 'VISITN',
+            order: null,
+            type: 'ordinal',
+            label: 'Visit Number',
+            rotate_tick_labels: false,
+            vertical_space: 0
+        },
+        {
+            value_col: 'VISIT',
+            order: null,
+            type: 'ordinal',
+            label: 'Visit',
+            rotate_tick_labels: true,
+            vertical_space: 100
+        } // Specify vertical space for rotated tick labels.  Maps to [margin.bottom].
     ],
     measure_col: 'TEST',
     value_col: 'STRESN',
@@ -36,23 +44,19 @@ const defaultSettings = {
         width: 300,
         height: 100
     },
-    visits_without_data: false,
-    unscheduled_visits: false,
-    unscheduled_visit_pattern: /unscheduled|early termination/i,
-    unscheduled_visit_values: null, // takes precedence over unscheduled_visit_pattern
 
     //Standard webCharts settings
     x: {
         column: null, //set in syncSettings()
         type: null, //set in syncSettings()
-        behavior: 'raw'
+        behavior: 'flex'
     },
     y: {
         column: null, //set in syncSettings()
         stat: 'mean',
         type: 'linear',
         label: 'Value',
-        behavior: 'raw',
+        behavior: 'flex',
         format: '0.2f'
     },
     marks: [
@@ -130,17 +134,15 @@ export const controlInputs = [
     { label: 'Measure', type: 'subsetter', start: null },
     { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true },
     { type: 'number', label: 'Lower Limit', option: 'y.domain[0]', require: true },
-    { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true },
-    { type: 'checkbox', inline: true, option: 'visits_without_data', label: 'Visits without data' },
-    { type: 'checkbox', inline: true, option: 'unscheduled_visits', label: 'Unscheduled visits' }
+    { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true }
 ];
 
 // Map values from settings to control inputs
 export function syncControlInputs(controlInputs, settings) {
-    const labTestControl = controlInputs.find(d => d.label === 'Measure');
+    let labTestControl = controlInputs.filter(d => d.label === 'Measure')[0];
     labTestControl.value_col = settings.measure_col;
 
-    const xAxisControl = controlInputs.find(d => d.label === 'X-axis');
+    let xAxisControl = controlInputs.filter(d => d.label === 'X-axis')[0];
     xAxisControl.values = settings.time_cols.map(d => d.value_col);
 
     if (settings.filters) {
@@ -155,7 +157,7 @@ export function syncControlInputs(controlInputs, settings) {
                 .filter(f => f.type == 'subsetter')
                 .map(m => m.value_col);
             if (current_value_cols.indexOf(thisFilter.value_col) == -1)
-                controlInputs.splice(4 + i, 0, thisFilter);
+                controlInputs.push(thisFilter);
         });
     }
 
