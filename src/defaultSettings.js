@@ -36,6 +36,7 @@ const defaultSettings = {
         width: 300,
         height: 100
     },
+    visits_without_data: false,
     unscheduled_visits: false,
     unscheduled_visit_pattern: /unscheduled|early termination/i,
     unscheduled_visit_values: null, // takes precedence over unscheduled_visit_pattern
@@ -130,6 +131,7 @@ export const controlInputs = [
     { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true },
     { type: 'number', label: 'Lower Limit', option: 'y.domain[0]', require: true },
     { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true },
+    { type: 'checkbox', inline: true, option: 'visits_without_data', label: 'Visits without data' },
     { type: 'checkbox', inline: true, option: 'unscheduled_visits', label: 'Unscheduled visits' }
 ];
 
