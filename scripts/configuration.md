@@ -43,6 +43,13 @@ visit metadata
 ]
 ```
 
+### settings.time_cols[].type
+`string`
+
+undefined
+
+**default:** `"ordinal"`
+
 ### settings.time_cols[].value_col
 `string`
 

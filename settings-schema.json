@@ -38,7 +38,12 @@
         ,"items":
             {"type": "object"
             ,"properties":
-                {"value_col":
+                {"type":
+                    {"type": "string"
+                    ,"title": "Visit variable data type"
+                    ,"default": "ordinal"
+                    }
+                ,"value_col":
                     {"type": "string"
                     ,"title": "Visit variable name"
                     ,"default": "VISIT"
