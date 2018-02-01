@@ -1,6 +1,5 @@
-import merge from './util/merge';
-
-export const rendererSettings = {
+const defaultSettings = {
+    //Custom settings for this template
     id_col: 'USUBJID',
     time_cols: [
         {
@@ -21,8 +20,8 @@ export const rendererSettings = {
         }
     ],
     measure_col: 'TEST',
-    unit_col: 'STRESU',
     value_col: 'STRESN',
+    unit_col: 'STRESU',
     normal_col_low: 'STNRLO',
     normal_col_high: 'STNRHI',
     start_value: null,
@@ -39,11 +38,10 @@ export const rendererSettings = {
     },
     visits_without_data: false,
     unscheduled_visits: false,
-    unscheduled_visit_pattern: '/unscheduled|early termination/i',
-    unscheduled_visit_values: null // takes precedence over unscheduled_visit_pattern
-};
+    unscheduled_visit_pattern: /unscheduled|early termination/i,
+    unscheduled_visit_values: null, // takes precedence over unscheduled_visit_pattern
 
-export const webchartsSettings = {
+    //Standard webCharts settings
     x: {
         column: null, //set in syncSettings()
         type: null, //set in syncSettings()
@@ -87,8 +85,6 @@ export const webchartsSettings = {
     aspect: 3
 };
 
-export default merge(rendererSettings, webchartsSettings);
-
 // Replicate settings in multiple places in the settings object
 export function syncSettings(settings) {
     const time_col = settings.time_cols[0];
@@ -125,19 +121,6 @@ export function syncSettings(settings) {
         };
 
     settings.rotate_x_tick_labels = time_col.rotate_tick_labels;
-
-    //Convert unscheduled_visit_pattern from string to regular expression.
-    if (
-        typeof settings.unscheduled_visit_pattern === 'string' &&
-        settings.unscheduled_visit_pattern !== ''
-    ) {
-        const flags = settings.unscheduled_visit_pattern.replace(/.*?\/([gimy]*)$/, '$1'),
-            pattern = settings.unscheduled_visit_pattern.replace(
-                new RegExp('^/(.*?)/' + flags + '$'),
-                '$1'
-            );
-        settings.unscheduled_visit_regex = new RegExp(pattern, flags);
-    }
 
     return settings;
 }
@@ -176,12 +159,7 @@ export function syncControlInputs(controlInputs, settings) {
         });
     }
 
-    //Remove unscheduled visit control if unscheduled visit pattern is unscpecified.
-    if (!settings.unscheduled_visit_regex)
-        controlInputs.splice(
-            controlInputs.map(controlInput => controlInput.label).indexOf('Unscheduled visits'),
-            1
-        );
-
     return controlInputs;
 }
+
+export default defaultSettings;
