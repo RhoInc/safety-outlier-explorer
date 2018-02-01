@@ -1,4 +1,5 @@
 import './util/object-assign';
+import './util/array-find';
 import defaultSettings from './defaultSettings';
 import { controlInputs, syncControlInputs, syncSettings } from './defaultSettings';
 
@@ -7,7 +8,7 @@ import { createChart, createControls } from 'webcharts';
 import onInit from './onInit';
 import onLayout from './onLayout';
 import onPreprocess from './onPreprocess';
-import onDataTransform from './onDataTransform';
+import onDatatransform from './onDatatransform';
 import onDraw from './onDraw';
 import onResize from './onResize';
 
@@ -27,7 +28,7 @@ export default function safetyOutlierExplorer(element, settings) {
     chart.on('init', onInit);
     chart.on('layout', onLayout);
     chart.on('preprocess', onPreprocess);
-    chart.on('datatransform', onDataTransform);
+    chart.on('datatransform', onDatatransform);
     chart.on('draw', onDraw);
     chart.on('resize', onResize);
 

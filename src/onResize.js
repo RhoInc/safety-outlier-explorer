@@ -1,7 +1,7 @@
 import { select } from 'd3';
-import addBoxPlot from './util/addBoxPlot';
-import smallMult from './smallMultiples';
-import adjustTicks from './util/adjustTicks';
+import addBoxPlot from './onResize/addBoxPlot';
+import smallMult from './onResize/smallMultiples';
+import adjustTicks from './onResize/adjustTicks';
 
 export default function onResize() {
     let chart = this;
@@ -36,16 +36,16 @@ export default function onResize() {
     this.svg
         .selectAll('.line')
         .on('mouseover', function(d) {
-            const id = chart.raw_data.filter(
+            const id = chart.raw_data.find(
                 di => di[config.id_col] === d.values[0].values.raw[0][config.id_col]
-            )[0];
+            );
             highlight(id);
         })
         .on('mouseout', clearHighlight)
         .on('click', function(d) {
-            const id = chart.raw_data.filter(
+            const id = chart.raw_data.find(
                 di => di[config.id_col] === d.values[0].values.raw[0][config.id_col]
-            )[0];
+            );
 
             //Un-select all lines and points.
             chart.svg.selectAll('.line').classed('selected', false);
@@ -66,16 +66,16 @@ export default function onResize() {
     this.svg
         .selectAll('.point')
         .on('mouseover', function(d) {
-            const id = chart.raw_data.filter(
+            const id = chart.raw_data.find(
                 di => di[config.id_col] === d.values.raw[0][config.id_col]
-            )[0];
+            );
             highlight(id);
         })
         .on('mouseout', clearHighlight)
         .on('click', function(d) {
-            const id = chart.raw_data.filter(
+            const id = chart.raw_data.find(
                 di => di[config.id_col] === d.values.raw[0][config.id_col]
-            )[0];
+            );
 
             //Un-select all lines and points.
             chart.svg.selectAll('.line').classed('selected', false);

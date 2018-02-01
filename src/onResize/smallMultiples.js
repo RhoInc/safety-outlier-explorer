@@ -1,7 +1,9 @@
+import '../util/object-assign';
+import clone from '../util/clone';
 import { min, max } from 'd3';
 import { createChart, multiply } from 'webcharts';
-import rangePolygon from './util/rangePolygon';
-import adjustTicks from './util/adjustTicks';
+import rangePolygon from './rangePolygon';
+import adjustTicks from './adjustTicks';
 
 export default function smallMultiples(id, chart) {
     //Clear current multiples.
@@ -11,7 +13,11 @@ export default function smallMultiples(id, chart) {
         .remove();
 
     //Define small multiples settings.
-    let multiples_settings = Object.assign({}, chart.config, Object.getPrototypeOf(chart.config));
+    const multiples_settings = Object.assign(
+        {},
+        clone(chart.config),
+        clone(Object.getPrototypeOf(chart.config))
+    );
     multiples_settings.x.domain = null;
     multiples_settings.y.domain = null;
     multiples_settings.resizable = false;
@@ -75,9 +81,9 @@ export default function smallMultiples(id, chart) {
         this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
 
         //Set y-label to measure unit.
-        this.config.y.label = this.raw_data.filter(
+        this.config.y.label = this.raw_data.find(
             d => d[this.config.measure_col] === this.wrap.select('.wc-chart-title').text()
-        )[0][this.config.unit_col];
+        )[this.config.unit_col];
     });
 
     multiples.on('preprocess', function() {
@@ -133,7 +139,9 @@ export default function smallMultiples(id, chart) {
         }
     });
 
-    const ptData = chart.raw_data.filter(f => f[chart.config.id_col] === id[chart.config.id_col]);
+    const ptData = chart.initial_data.filter(
+        f => f[chart.config.id_col] === id[chart.config.id_col]
+    );
 
     multiply(multiples, ptData, chart.config.measure_col);
 }

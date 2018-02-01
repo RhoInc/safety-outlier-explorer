@@ -1,53 +1,26 @@
-import { set } from 'd3';
-import { getValType } from './util/getValType';
+import countParticipants from './onInit/countParticipants';
+import cleanData from './onInit/cleanData';
+import addVariables from './onInit/addVariables';
+import defineVisitOrder from './onInit/defineVisitOrder';
+import checkFilters from './onInit/checkFilters';
+import setInitialMeasure from './onInit/setInitialMeasure';
 
 export default function onInit() {
-    const context = this,
-        config = this.config,
-        allMeasures = set(this.raw_data.map(m => m[config.measure_col])).values();
+    // 1. Count total participants prior to data cleaning.
+    countParticipants.call(this);
 
-    //warning for non-numeric endpoints
-    var catMeasures = allMeasures.filter(f => {
-        var measureVals = this.raw_data.filter(d => d[config.measure_col] === f);
+    // 2. Drop missing values and remove measures with any non-numeric results.
+    cleanData.call(this);
 
-        return getValType(measureVals, config.value_col) !== 'continuous';
-    });
-    if (catMeasures.length) {
-        console.warn(
-            `${catMeasures.length}${''} non-numeric endpoint${
-                catMeasures.length > 1 ? 's have' : ' has'
-            }${''} been removed:${catMeasures.join(', ')}`
-        );
-    }
+    // 3a Define additional variables.
+    addVariables.call(this);
 
-    //delete non-numeric endpoints
-    var numMeasures = allMeasures.filter(f => {
-        var measureVals = this.raw_data.filter(d => d[config.measure_col] === f);
+    // 3b Define ordered x-axis domain with visit order variable.
+    defineVisitOrder.call(this);
 
-        return getValType(measureVals, config.value_col) === 'continuous';
-    });
+    // 3c Remove filters for nonexistent or single-level variables.
+    checkFilters.call(this);
 
-    this.controls.config.inputs.filter(f => f.value_col === config.measure_col)[0].start =
-        config.start_value || numMeasures[0];
-
-    //count the number of unique ids in the data set
-    this.populationCount = set(this.raw_data.map(d => d[this.config.id_col])).values().length;
-    this.raw_data = this.raw_data.filter(f => numMeasures.indexOf(f[config.measure_col]) > -1);
-
-    // Remove filters for variables with 0 or 1 levels
-    var chart = this;
-
-    this.controls.config.inputs = this.controls.config.inputs.filter(function(d) {
-        if (d.type != 'subsetter') {
-            return true;
-        } else {
-            var levels = set(chart.raw_data.map(f => f[d.value_col])).values();
-            if (levels.length < 2) {
-                console.warn(
-                    d.value_col + ' filter not shown since the variable has less than 2 levels'
-                );
-            }
-            return levels.length >= 2;
-        }
-    });
+    // 3d Choose the start value for the Test filter
+    setInitialMeasure.call(this);
 }
