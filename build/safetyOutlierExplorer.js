@@ -76,8 +76,208 @@
         });
     }
 
-    var defaultSettings = {
-        //Custom settings for this template
+    var _typeof =
+        typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
+            ? function(obj) {
+                  return typeof obj;
+              }
+            : function(obj) {
+                  return obj &&
+                      typeof Symbol === 'function' &&
+                      obj.constructor === Symbol &&
+                      obj !== Symbol.prototype
+                      ? 'symbol'
+                      : typeof obj;
+              };
+
+    var asyncGenerator = (function() {
+        function AwaitValue(value) {
+            this.value = value;
+        }
+
+        function AsyncGenerator(gen) {
+            var front, back;
+
+            function send(key, arg) {
+                return new Promise(function(resolve, reject) {
+                    var request = {
+                        key: key,
+                        arg: arg,
+                        resolve: resolve,
+                        reject: reject,
+                        next: null
+                    };
+
+                    if (back) {
+                        back = back.next = request;
+                    } else {
+                        front = back = request;
+                        resume(key, arg);
+                    }
+                });
+            }
+
+            function resume(key, arg) {
+                try {
+                    var result = gen[key](arg);
+                    var value = result.value;
+
+                    if (value instanceof AwaitValue) {
+                        Promise.resolve(value.value).then(
+                            function(arg) {
+                                resume('next', arg);
+                            },
+                            function(arg) {
+                                resume('throw', arg);
+                            }
+                        );
+                    } else {
+                        settle(result.done ? 'return' : 'normal', result.value);
+                    }
+                } catch (err) {
+                    settle('throw', err);
+                }
+            }
+
+            function settle(type, value) {
+                switch (type) {
+                    case 'return':
+                        front.resolve({
+                            value: value,
+                            done: true
+                        });
+                        break;
+
+                    case 'throw':
+                        front.reject(value);
+                        break;
+
+                    default:
+                        front.resolve({
+                            value: value,
+                            done: false
+                        });
+                        break;
+                }
+
+                front = front.next;
+
+                if (front) {
+                    resume(front.key, front.arg);
+                } else {
+                    back = null;
+                }
+            }
+
+            this._invoke = send;
+
+            if (typeof gen.return !== 'function') {
+                this.return = undefined;
+            }
+        }
+
+        if (typeof Symbol === 'function' && Symbol.asyncIterator) {
+            AsyncGenerator.prototype[Symbol.asyncIterator] = function() {
+                return this;
+            };
+        }
+
+        AsyncGenerator.prototype.next = function(arg) {
+            return this._invoke('next', arg);
+        };
+
+        AsyncGenerator.prototype.throw = function(arg) {
+            return this._invoke('throw', arg);
+        };
+
+        AsyncGenerator.prototype.return = function(arg) {
+            return this._invoke('return', arg);
+        };
+
+        return {
+            wrap: function(fn) {
+                return function() {
+                    return new AsyncGenerator(fn.apply(this, arguments));
+                };
+            },
+            await: function(value) {
+                return new AwaitValue(value);
+            }
+        };
+    })();
+
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
+    var propIsEnumerable = Object.prototype.propertyIsEnumerable;
+
+    function toObject(val) {
+        if (val === null || val === undefined) {
+            throw new TypeError('Cannot convert undefined or null to object');
+        }
+
+        return Object(val);
+    }
+
+    function isObj(x) {
+        var type = typeof x === 'undefined' ? 'undefined' : _typeof(x);
+        return x !== null && (type === 'object' || type === 'function');
+    }
+
+    function assignKey(to, from, key) {
+        var val = from[key];
+
+        if (val === undefined) {
+            return;
+        }
+
+        if (hasOwnProperty.call(to, key)) {
+            if (to[key] === undefined) {
+                throw new TypeError('Cannot convert undefined or null to object (' + key + ')');
+            }
+        }
+
+        if (!hasOwnProperty.call(to, key) || !isObj(val)) to[key] = val;
+        else if (val instanceof Array)
+            to[key] = from[key]; // figure out how to merge arrays without converting them into objects
+        else to[key] = assign(Object(to[key]), from[key]);
+    }
+
+    function assign(to, from) {
+        if (to === from) {
+            return to;
+        }
+
+        from = Object(from);
+
+        for (var key in from) {
+            if (hasOwnProperty.call(from, key)) {
+                assignKey(to, from, key);
+            }
+        }
+
+        if (Object.getOwnPropertySymbols) {
+            var symbols = Object.getOwnPropertySymbols(from);
+
+            for (var i = 0; i < symbols.length; i++) {
+                if (propIsEnumerable.call(from, symbols[i])) {
+                    assignKey(to, from, symbols[i]);
+                }
+            }
+        }
+
+        return to;
+    }
+
+    function merge(target) {
+        target = toObject(target);
+
+        for (var s = 1; s < arguments.length; s++) {
+            assign(target, arguments[s]);
+        }
+
+        return target;
+    }
+
+    var rendererSettings = {
         id_col: 'USUBJID',
         time_cols: [
             {
@@ -98,8 +298,8 @@
             }
         ],
         measure_col: 'TEST',
-        value_col: 'STRESN',
         unit_col: 'STRESU',
+        value_col: 'STRESN',
         normal_col_low: 'STNRLO',
         normal_col_high: 'STNRHI',
         start_value: null,
@@ -116,10 +316,11 @@
         },
         visits_without_data: false,
         unscheduled_visits: false,
-        unscheduled_visit_pattern: /unscheduled|early termination/i,
-        unscheduled_visit_values: null, // takes precedence over unscheduled_visit_pattern
+        unscheduled_visit_pattern: '/unscheduled|early termination/i',
+        unscheduled_visit_values: null // takes precedence over unscheduled_visit_pattern
+    };
 
-        //Standard webCharts settings
+    var webchartsSettings = {
         x: {
             column: null, //set in syncSettings()
             type: null, //set in syncSettings()
@@ -162,6 +363,8 @@
         margin: { right: 20 }, //create space for box plot
         aspect: 3
     };
+
+    var defaultSettings = merge(rendererSettings, webchartsSettings);
 
     // Replicate settings in multiple places in the settings object
     function syncSettings(settings) {
@@ -211,6 +414,19 @@
             };
 
         settings.rotate_x_tick_labels = time_col.rotate_tick_labels;
+
+        //Convert unscheduled_visit_pattern from string to regular expression.
+        if (
+            typeof settings.unscheduled_visit_pattern === 'string' &&
+            settings.unscheduled_visit_pattern !== ''
+        ) {
+            var flags = settings.unscheduled_visit_pattern.replace(/.*?\/([gimy]*)$/, '$1'),
+                pattern = settings.unscheduled_visit_pattern.replace(
+                    new RegExp('^/(.*?)/' + flags + '$'),
+                    '$1'
+                );
+            settings.unscheduled_visit_regex = new RegExp(pattern, flags);
+        }
 
         return settings;
     }
@@ -268,6 +484,17 @@
                     controlInputs.splice(4 + i, 0, thisFilter);
             });
         }
+
+        //Remove unscheduled visit control if unscheduled visit pattern is unscpecified.
+        if (!settings.unscheduled_visit_regex)
+            controlInputs.splice(
+                controlInputs
+                    .map(function(controlInput) {
+                        return controlInput.label;
+                    })
+                    .indexOf('Unscheduled visits'),
+                1
+            );
 
         return controlInputs;
     }
@@ -334,8 +561,8 @@
                         _this.config.unscheduled_visit_values.indexOf(
                             d[ordinalTimeSettings.value_col]
                         ) > -1;
-                else if (_this.config.unscheduled_visit_pattern)
-                    d.unscheduled = _this.config.unscheduled_visit_pattern.test(
+                else if (_this.config.unscheduled_visit_regex)
+                    d.unscheduled = _this.config.unscheduled_visit_regex.test(
                         d[ordinalTimeSettings.value_col]
                     );
             }
@@ -631,9 +858,9 @@
                 this.config.x.domain = this.config.x.domain.filter(function(visit) {
                     return _this.config.unscheduled_visit_values.indexOf(visit) < 0;
                 });
-            else if (this.config.unscheduled_visit_pattern)
+            else if (this.config.unscheduled_visit_regex)
                 this.config.x.domain = this.config.x.domain.filter(function(visit) {
-                    return !_this.config.unscheduled_visit_pattern.test(visit);
+                    return !_this.config.unscheduled_visit_regex.test(visit);
                 });
         }
     }
@@ -942,136 +1169,6 @@
                 );
             });
     }
-
-    var _typeof =
-        typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
-            ? function(obj) {
-                  return typeof obj;
-              }
-            : function(obj) {
-                  return obj &&
-                      typeof Symbol === 'function' &&
-                      obj.constructor === Symbol &&
-                      obj !== Symbol.prototype
-                      ? 'symbol'
-                      : typeof obj;
-              };
-
-    var asyncGenerator = (function() {
-        function AwaitValue(value) {
-            this.value = value;
-        }
-
-        function AsyncGenerator(gen) {
-            var front, back;
-
-            function send(key, arg) {
-                return new Promise(function(resolve, reject) {
-                    var request = {
-                        key: key,
-                        arg: arg,
-                        resolve: resolve,
-                        reject: reject,
-                        next: null
-                    };
-
-                    if (back) {
-                        back = back.next = request;
-                    } else {
-                        front = back = request;
-                        resume(key, arg);
-                    }
-                });
-            }
-
-            function resume(key, arg) {
-                try {
-                    var result = gen[key](arg);
-                    var value = result.value;
-
-                    if (value instanceof AwaitValue) {
-                        Promise.resolve(value.value).then(
-                            function(arg) {
-                                resume('next', arg);
-                            },
-                            function(arg) {
-                                resume('throw', arg);
-                            }
-                        );
-                    } else {
-                        settle(result.done ? 'return' : 'normal', result.value);
-                    }
-                } catch (err) {
-                    settle('throw', err);
-                }
-            }
-
-            function settle(type, value) {
-                switch (type) {
-                    case 'return':
-                        front.resolve({
-                            value: value,
-                            done: true
-                        });
-                        break;
-
-                    case 'throw':
-                        front.reject(value);
-                        break;
-
-                    default:
-                        front.resolve({
-                            value: value,
-                            done: false
-                        });
-                        break;
-                }
-
-                front = front.next;
-
-                if (front) {
-                    resume(front.key, front.arg);
-                } else {
-                    back = null;
-                }
-            }
-
-            this._invoke = send;
-
-            if (typeof gen.return !== 'function') {
-                this.return = undefined;
-            }
-        }
-
-        if (typeof Symbol === 'function' && Symbol.asyncIterator) {
-            AsyncGenerator.prototype[Symbol.asyncIterator] = function() {
-                return this;
-            };
-        }
-
-        AsyncGenerator.prototype.next = function(arg) {
-            return this._invoke('next', arg);
-        };
-
-        AsyncGenerator.prototype.throw = function(arg) {
-            return this._invoke('throw', arg);
-        };
-
-        AsyncGenerator.prototype.return = function(arg) {
-            return this._invoke('return', arg);
-        };
-
-        return {
-            wrap: function(fn) {
-                return function() {
-                    return new AsyncGenerator(fn.apply(this, arguments));
-                };
-            },
-            await: function(value) {
-                return new AwaitValue(value);
-            }
-        };
-    })();
 
     /*------------------------------------------------------------------------------------------------\
   Clone a variable (http://stackoverflow.com/a/728694).
