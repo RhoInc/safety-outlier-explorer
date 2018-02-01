@@ -32,6 +32,50 @@
         })();
     }
 
+    if (!Array.prototype.find) {
+        Object.defineProperty(Array.prototype, 'find', {
+            value: function value(predicate) {
+                // 1. Let O be ? ToObject(this value).
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, "length")).
+                var len = o.length >>> 0;
+
+                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+                if (typeof predicate !== 'function') {
+                    throw new TypeError('predicate must be a function');
+                }
+
+                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                var thisArg = arguments[1];
+
+                // 5. Let k be 0.
+                var k = 0;
+
+                // 6. Repeat, while k < len
+                while (k < len) {
+                    // a. Let Pk be ! ToString(k).
+                    // b. Let kValue be ? Get(O, Pk).
+                    // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                    // d. If testResult is true, return kValue.
+                    var kValue = o[k];
+                    if (predicate.call(thisArg, kValue, k, o)) {
+                        return kValue;
+                    }
+                    // e. Increase k by 1.
+                    k++;
+                }
+
+                // 7. Return undefined.
+                return undefined;
+            }
+        });
+    }
+
     var defaultSettings = {
         //Custom settings for this template
         id_col: 'USUBJID',
@@ -70,19 +114,22 @@
             width: 300,
             height: 100
         },
+        unscheduled_visits: false,
+        unscheduled_visit_pattern: /unscheduled|early termination/i,
+        unscheduled_visit_values: null, // takes precedence over unscheduled_visit_pattern
 
         //Standard webCharts settings
         x: {
             column: null, //set in syncSettings()
             type: null, //set in syncSettings()
-            behavior: 'flex'
+            behavior: 'raw'
         },
         y: {
             column: null, //set in syncSettings()
             stat: 'mean',
             type: 'linear',
             label: 'Value',
-            behavior: 'flex',
+            behavior: 'raw',
             format: '0.2f'
         },
         marks: [
@@ -172,19 +219,25 @@
         { label: 'Measure', type: 'subsetter', start: null },
         { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true },
         { type: 'number', label: 'Lower Limit', option: 'y.domain[0]', require: true },
-        { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true }
+        { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true },
+        {
+            type: 'checkbox',
+            inline: true,
+            option: 'unscheduled_visits',
+            label: 'Unscheduled visits'
+        }
     ];
 
     // Map values from settings to control inputs
     function syncControlInputs(controlInputs, settings) {
-        var labTestControl = controlInputs.filter(function(d) {
+        var labTestControl = controlInputs.find(function(d) {
             return d.label === 'Measure';
-        })[0];
+        });
         labTestControl.value_col = settings.measure_col;
 
-        var xAxisControl = controlInputs.filter(function(d) {
+        var xAxisControl = controlInputs.find(function(d) {
             return d.label === 'X-axis';
-        })[0];
+        });
         xAxisControl.values = settings.time_cols.map(function(d) {
             return d.value_col;
         });
@@ -205,7 +258,7 @@
                         return m.value_col;
                     });
                 if (current_value_cols.indexOf(thisFilter.value_col) == -1)
-                    controlInputs.push(thisFilter);
+                    controlInputs.splice(4 + i, 0, thisFilter);
             });
         }
 
@@ -244,6 +297,7 @@
                     (nRemoved > 1 ? 's have' : ' has') +
                     ' been removed.'
             );
+        this.initial_data = clean;
         this.raw_data = clean;
 
         //Attach array of continuous measures to chart object.
@@ -260,23 +314,31 @@
     function addVariables() {
         var _this = this;
 
+        var ordinalTimeSettings = this.config.time_cols.find(function(time_col) {
+            return time_col.type === 'ordinal';
+        });
+
         this.raw_data.forEach(function(d) {
-            d.NONE = 'All Participants'; // placeholder variable for non-grouped comparisons
-            d.unscheduled = _this.config.unscheduled_visit_values
-                ? _this.config.unscheduled_visit_values.indexOf(
-                      d[_this.config.time_settings.value_col]
-                  ) > -1
-                : _this.config.unscheduled_visit_pattern
-                  ? _this.config.unscheduled_visit_pattern.test(
-                        d[_this.config.time_settings.value_col]
-                    )
-                  : false;
+            //Identify unscheduled visits.
+            d.unscheduled = false;
+            if (ordinalTimeSettings) {
+                if (_this.config.unscheduled_visit_values)
+                    d.unscheduled =
+                        _this.config.unscheduled_visit_values.indexOf(
+                            d[ordinalTimeSettings.value_col]
+                        ) > -1;
+                else if (_this.config.unscheduled_visit_pattern)
+                    d.unscheduled = _this.config.unscheduled_visit_pattern.test(
+                        d[ordinalTimeSettings.value_col]
+                    );
+            }
         });
     }
 
     function defineVisitOrder() {
         var _this = this;
 
+        //ordinal
         this.config.time_cols
             .filter(function(time_col) {
                 return time_col.type === 'ordinal';
@@ -338,6 +400,9 @@
                 } else
                     //Otherwise use data-driven visit order.
                     time_settings.order = visitOrder;
+
+                //Define domain.
+                time_settings.domain = time_settings.order;
             });
     }
 
@@ -375,9 +440,9 @@
     }
 
     function setInitialMeasure() {
-        this.controls.config.inputs.filter(function(input) {
+        this.controls.config.inputs.find(function(input) {
             return input.label === 'Measure';
-        })[0].start =
+        }).start =
             this.config.start_value || this.measures[0];
     }
 
@@ -417,9 +482,9 @@
             })
             .selectAll('option')
             .property('label', function(d) {
-                return _this.config.time_cols.filter(function(time_col) {
+                return _this.config.time_cols.find(function(time_col) {
                     return time_col.value_col === d;
-                })[0].label;
+                }).label;
             });
     }
 
@@ -525,51 +590,40 @@
     function defineMeasureData() {
         var _this = this;
 
-        this.measure_data = this.raw_data.filter(function(d) {
+        this.measure_data = this.initial_data.filter(function(d) {
             return d[_this.config.measure_col] === _this.currentMeasure;
         });
-        this.filtered_measure_data = this.measure_data.filter(function(d) {
-            var filtered = false;
-
-            _this.filters
-                .filter(function(filter) {
-                    return filter.value_col !== _this.config.measure_col;
-                })
-                .forEach(function(filter) {
-                    if (filtered === false && filter.val !== 'All')
-                        filtered =
-                            filter.val instanceof Array
-                                ? filter.val.indexOf(d[filter.col]) < 0
-                                : filter.val !== d[filter.col];
-                });
-
-            return !filtered;
+        this.raw_data = this.measure_data.filter(function(d) {
+            return _this.config.unscheduled_visits || !d.unscheduled;
         });
-        this.nested_measure_data = d3
-            .nest()
-            .key(function(d) {
-                return d[_this.config.x.column];
-            })
-            .key(function(d) {
-                return d[_this.config.color_by];
-            })
-            .rollup(function(d) {
-                return d.map(function(m) {
-                    return +m[_this.config.y.column];
+    }
+
+    function removeUnscheduledVisits() {
+        var _this = this;
+
+        if (!this.config.unscheduled_visits) {
+            if (this.config.unscheduled_visit_values)
+                this.config.x.domain = this.config.x.domain.filter(function(visit) {
+                    return _this.config.unscheduled_visit_values.indexOf(visit) < 0;
                 });
-            })
-            .entries(this.filtered_measure_data);
+            else if (this.config.unscheduled_visit_pattern)
+                this.config.x.domain = this.config.x.domain.filter(function(visit) {
+                    return !_this.config.unscheduled_visit_pattern.test(visit);
+                });
+        }
     }
 
     function setXdomain() {
         var _this = this;
 
-        this.config.time_settings = this.config.time_cols
-            .filter(function(time_col) {
-                return time_col.value_col === _this.config.x.column;
-            })
-            .pop();
+        this.config.time_settings = this.config.time_cols.find(function(time_col) {
+            return time_col.value_col === _this.config.x.column;
+        });
         Object.assign(this.config.x, this.config.time_settings);
+        if (this.config.x.type === 'linear') delete this.config.x.domain;
+
+        //Remove unscheduled visits from x-domain if x-type is ordinal.
+        if (this.config.x.type === 'ordinal') removeUnscheduledVisits.call(this);
     }
 
     function setYdomain() {
@@ -656,7 +710,7 @@
         updateYaxisLimitControls.call(this);
     }
 
-    function onDataTransform() {}
+    function onDatatransform() {}
 
     // Takes a webcharts object creates a text annotation giving the
     // number and percentage of observations shown in the current view
@@ -697,9 +751,19 @@
         );
     }
 
+    function clearSmallMultiples() {
+        this.wrap
+            .select('.multiples')
+            .select('.wc-small-multiples')
+            .remove();
+    }
+
     function onDraw() {
         //Annotate participant count.
         updateParticipantCount(this, '#participant-count');
+
+        //Clear current multiples.
+        clearSmallMultiples.call(this);
     }
 
     function addBoxPlot(
@@ -851,6 +915,175 @@
             });
     }
 
+    var _typeof =
+        typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
+            ? function(obj) {
+                  return typeof obj;
+              }
+            : function(obj) {
+                  return obj &&
+                      typeof Symbol === 'function' &&
+                      obj.constructor === Symbol &&
+                      obj !== Symbol.prototype
+                      ? 'symbol'
+                      : typeof obj;
+              };
+
+    var asyncGenerator = (function() {
+        function AwaitValue(value) {
+            this.value = value;
+        }
+
+        function AsyncGenerator(gen) {
+            var front, back;
+
+            function send(key, arg) {
+                return new Promise(function(resolve, reject) {
+                    var request = {
+                        key: key,
+                        arg: arg,
+                        resolve: resolve,
+                        reject: reject,
+                        next: null
+                    };
+
+                    if (back) {
+                        back = back.next = request;
+                    } else {
+                        front = back = request;
+                        resume(key, arg);
+                    }
+                });
+            }
+
+            function resume(key, arg) {
+                try {
+                    var result = gen[key](arg);
+                    var value = result.value;
+
+                    if (value instanceof AwaitValue) {
+                        Promise.resolve(value.value).then(
+                            function(arg) {
+                                resume('next', arg);
+                            },
+                            function(arg) {
+                                resume('throw', arg);
+                            }
+                        );
+                    } else {
+                        settle(result.done ? 'return' : 'normal', result.value);
+                    }
+                } catch (err) {
+                    settle('throw', err);
+                }
+            }
+
+            function settle(type, value) {
+                switch (type) {
+                    case 'return':
+                        front.resolve({
+                            value: value,
+                            done: true
+                        });
+                        break;
+
+                    case 'throw':
+                        front.reject(value);
+                        break;
+
+                    default:
+                        front.resolve({
+                            value: value,
+                            done: false
+                        });
+                        break;
+                }
+
+                front = front.next;
+
+                if (front) {
+                    resume(front.key, front.arg);
+                } else {
+                    back = null;
+                }
+            }
+
+            this._invoke = send;
+
+            if (typeof gen.return !== 'function') {
+                this.return = undefined;
+            }
+        }
+
+        if (typeof Symbol === 'function' && Symbol.asyncIterator) {
+            AsyncGenerator.prototype[Symbol.asyncIterator] = function() {
+                return this;
+            };
+        }
+
+        AsyncGenerator.prototype.next = function(arg) {
+            return this._invoke('next', arg);
+        };
+
+        AsyncGenerator.prototype.throw = function(arg) {
+            return this._invoke('throw', arg);
+        };
+
+        AsyncGenerator.prototype.return = function(arg) {
+            return this._invoke('return', arg);
+        };
+
+        return {
+            wrap: function(fn) {
+                return function() {
+                    return new AsyncGenerator(fn.apply(this, arguments));
+                };
+            },
+            await: function(value) {
+                return new AwaitValue(value);
+            }
+        };
+    })();
+
+    /*------------------------------------------------------------------------------------------------\
+  Clone a variable (http://stackoverflow.com/a/728694).
+\------------------------------------------------------------------------------------------------*/
+
+    function clone(obj) {
+        var copy;
+
+        //Handle the 3 simple types, and null or undefined
+        if (null == obj || 'object' != (typeof obj === 'undefined' ? 'undefined' : _typeof(obj)))
+            return obj;
+
+        //Handle Date
+        if (obj instanceof Date) {
+            copy = new Date();
+            copy.setTime(obj.getTime());
+            return copy;
+        }
+
+        //Handle Array
+        if (obj instanceof Array) {
+            copy = [];
+            for (var i = 0, len = obj.length; i < len; i++) {
+                copy[i] = clone(obj[i]);
+            }
+            return copy;
+        }
+
+        //Handle Object
+        if (obj instanceof Object) {
+            copy = {};
+            for (var attr in obj) {
+                if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
+            }
+            return copy;
+        }
+
+        throw new Error("Unable to copy obj! Its type isn't supported.");
+    }
+
     function rangePolygon(chart) {
         var area = d3.svg
             .area()
@@ -909,8 +1142,8 @@
         //Define small multiples settings.
         var multiples_settings = Object.assign(
             {},
-            chart.config,
-            Object.getPrototypeOf(chart.config)
+            clone(chart.config),
+            clone(Object.getPrototypeOf(chart.config))
         );
         multiples_settings.x.domain = null;
         multiples_settings.y.domain = null;
@@ -987,9 +1220,9 @@
             this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
 
             //Set y-label to measure unit.
-            this.config.y.label = this.raw_data.filter(function(d) {
+            this.config.y.label = this.raw_data.find(function(d) {
                 return d[_this.config.measure_col] === _this.wrap.select('.wc-chart-title').text();
-            })[0][this.config.unit_col];
+            })[this.config.unit_col];
         });
 
         multiples.on('preprocess', function() {
@@ -1071,7 +1304,7 @@
             }
         });
 
-        var ptData = chart.raw_data.filter(function(f) {
+        var ptData = chart.initial_data.filter(function(f) {
             return f[chart.config.id_col] === id[chart.config.id_col];
         });
 
@@ -1111,16 +1344,16 @@
         this.svg
             .selectAll('.line')
             .on('mouseover', function(d) {
-                var id = chart.raw_data.filter(function(di) {
+                var id = chart.raw_data.find(function(di) {
                     return di[config.id_col] === d.values[0].values.raw[0][config.id_col];
-                })[0];
+                });
                 highlight(id);
             })
             .on('mouseout', clearHighlight)
             .on('click', function(d) {
-                var id = chart.raw_data.filter(function(di) {
+                var id = chart.raw_data.find(function(di) {
                     return di[config.id_col] === d.values[0].values.raw[0][config.id_col];
-                })[0];
+                });
 
                 //Un-select all lines and points.
                 chart.svg.selectAll('.line').classed('selected', false);
@@ -1143,16 +1376,16 @@
         this.svg
             .selectAll('.point')
             .on('mouseover', function(d) {
-                var id = chart.raw_data.filter(function(di) {
+                var id = chart.raw_data.find(function(di) {
                     return di[config.id_col] === d.values.raw[0][config.id_col];
-                })[0];
+                });
                 highlight(id);
             })
             .on('mouseout', clearHighlight)
             .on('click', function(d) {
-                var id = chart.raw_data.filter(function(di) {
+                var id = chart.raw_data.find(function(di) {
                     return di[config.id_col] === d.values.raw[0][config.id_col];
-                })[0];
+                });
 
                 //Un-select all lines and points.
                 chart.svg.selectAll('.line').classed('selected', false);
@@ -1227,7 +1460,7 @@
         chart.on('init', onInit);
         chart.on('layout', onLayout);
         chart.on('preprocess', onPreprocess);
-        chart.on('datatransform', onDataTransform);
+        chart.on('datatransform', onDatatransform);
         chart.on('draw', onDraw);
         chart.on('resize', onResize);
 
