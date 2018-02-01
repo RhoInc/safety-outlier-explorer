@@ -1,0 +1,205 @@
+{"title": "settings"
+,"description": "JSON schema for the configuration of safety-outlier-explorer"
+,"overview": "The most straightforward way to customize the Safety Outlier Explorer is by using a configuration object whose properties describe the behavior and appearance of the chart. Since the Safety Outlier Explorer is a Webcharts `chart` object, many default Webcharts settings are set in the [defaultSettings.js file](https://github.com/RhoInc/safety-outlier-explorer/blob/master/src/defaultSettings.js) as [described below](#Webcharts-Settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the Safety Outlier Explorer to facilitate data mapping and other custom functionality. These custom settings are described in detail below. All defaults can be overwritten by users."
+,"version": "2.2.0"
+,"type": "object"
+,"properties":
+    {"id_col":
+        {"type": "string"
+        ,"title": "ID"
+        ,"description": "unique identifier variable name"
+        ,"default": "USUBJID"
+        }
+    ,"time_cols":
+        {"type": "array"
+        ,"title": "Time settings"
+        ,"description": "visit metadata"
+        ,"defaultObject": 
+            [
+                {
+                    "type": "ordinal",
+                    "value_col": "VISIT",
+                    "label": "Visit",
+                    "order_col": "VISITNUM",
+                    "order": null,
+                    "rotate_tick_labels": true,
+                    "vertical_space": 100
+                },
+                {
+                    "type": "linear",
+                    "value_col": "DY",
+                    "label": "Study Day",
+                    "order_col": "DY",
+                    "order": null,
+                    "rotate_tick_labels": false,
+                    "vertical_space": 0
+                }
+            ]
+        ,"items":
+            {"type": "object"
+            ,"properties":
+                {"type":
+                    {"type": "string"
+                    ,"title": "Visit variable data type"
+                    ,"default": "ordinal"
+                    }
+                ,"value_col":
+                    {"type": "string"
+                    ,"title": "Visit variable name"
+                    ,"default": "VISIT"
+                    }
+                ,"label":
+                    {"type": "string"
+                    ,"title": "Visit variable label"
+                    ,"default":  "Visit"
+                    }
+                ,"order_col":
+                    {"type": "string"
+                    ,"title": "Visit ordering variable name"
+                    ,"default":  "VISITNUM"
+                    }
+                ,"order":
+                    {"type": "array"
+                    ,"title": "Visit order"
+                    ,"items":
+                        {"type": "string"
+                        ,"title": "Visit value"
+                        }
+                    }
+                ,"rotate_tick_labels":
+                    {"type": "boolean"
+                    ,"title": "Rotate tick labels 45 degrees?"
+                    ,"default":  true
+                    }
+                ,"vertical_space":
+                    {"type": "number"
+                    ,"title": "Rotated tick label spacing"
+                    ,"default":  100
+                    }
+                }
+            }
+        }
+    ,"measure_col":
+        {"type": "string"
+        ,"title": "Measure"
+        ,"description": "measure variable name"
+        ,"default": "TEST"
+        }
+    ,"unit_col":
+        {"type": "string"
+        ,"title": "Unit"
+        ,"description": "measure unit variable name"
+        ,"default": "STRESU"
+        }
+    ,"value_col":
+        {"type": "string"
+        ,"title": "Result"
+        ,"description": "result variable name"
+        ,"default": "STRESN"
+        }
+    ,"normal_col_low":
+        {"type": "string"
+        ,"title": "Lower Limit of Normal"
+        ,"description": "LLN variable name"
+        ,"default": "STNRLO"
+        }
+    ,"normal_col_high":
+        {"type": "string"
+        ,"title": "Upper Limit of Normal"
+        ,"description": "ULN variable name"
+        ,"default": "STNRHI"
+        }
+    ,"start_value":
+        {"type": "string"
+        ,"title": "Initially Displayed Measure"
+        ,"description": "value of measure to display initially"
+        }
+    ,"filters":
+        {"type": "array"
+        ,"title": "Filters"
+        ,"description": "an array of filter variables and associated metadata"
+        ,"items":
+            {"type": "object"
+            ,"properties":
+                {"value_col":
+                    {"type": "string"
+                    ,"title": "Variable name"
+                    }
+                ,"label":
+                    {"type": "string"
+                    ,"title": "Variable label"
+                    }
+                }
+            }
+        }
+    ,"details":
+        {"type": "array"
+        ,"title": "Participant details"
+        ,"description": "an array of ID-level variables and associated metadata"
+        ,"defaultObject":
+            [
+                { "value_col": "AGE" , "label": "Age"  },
+                { "value_col": "SEX" , "label": "Sex"  },
+                { "value_col": "RACE", "label": "Race" }
+            ]
+        ,"items":
+            {"type": "object"
+            ,"properties":
+                {"value_col":
+                    {"type": "string"
+                    ,"title": "Variable name"
+                    ,"default": "AGE"
+                    }
+                ,"label":
+                    {"type": "string"
+                    ,"title": "Variable label"
+                    ,"default": "Age"
+                    }
+                }
+            }
+        }
+    ,"multiples_sizing":
+        {"type": "object"
+        ,"title": "Dimensions of small multiples"
+        ,"description": "width and height of small multiples"
+        ,"properties":
+            {"width":
+                {"type": "number"
+                ,"title": "Width"
+                ,"default": 300
+                }
+            ,"height":
+                {"type": "number"
+                ,"title": "Height"
+                ,"default": 100
+                }
+            }
+        }
+    ,"visits_without_data":
+        {"type": "boolean"
+        ,"title": "Display visits without data?"
+        ,"description": "controls display of visits without data for the current measure"
+        ,"default":  false
+        }
+    ,"unscheduled_visits":
+        {"type": "boolean"
+        ,"title": "Display unscheduled visits?"
+        ,"description": "controls display of unscheduled visits"
+        ,"default":  false
+        }
+    ,"unscheduled_visit_pattern":
+        {"type": "string"
+        ,"title": "Unscheduled Visit Pattern"
+        ,"description": "a regular expression that identifies unscheduled visits"
+        ,"default": "/unscheduled|early termination/i"
+        }
+    ,"unscheduled_visits_values":
+        {"type": "array"
+        ,"title": "Unscheduled Visit List"
+        ,"description": "an array of strings that identify unscheduled visits; overrides unscheduled_visit_pattern"
+        ,"items":
+            {"type": "string"
+            }
+        }
+    }
+}

@@ -6,9 +6,9 @@ export default function removeUnscheduledVisits() {
             this.config.x.domain = this.config.x.domain.filter(
                 visit => this.config.unscheduled_visit_values.indexOf(visit) < 0
             );
-        else if (this.config.unscheduled_visit_pattern)
+        else if (this.config.unscheduled_visit_regex)
             this.config.x.domain = this.config.x.domain.filter(
-                visit => !this.config.unscheduled_visit_pattern.test(visit)
+                visit => !this.config.unscheduled_visit_regex.test(visit)
             );
     }
 }

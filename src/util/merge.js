@@ -17,7 +17,7 @@ function isObj(x) {
 function assignKey(to, from, key) {
     var val = from[key];
 
-    if (val === undefined || val === null) {
+    if (val === undefined) {
         return;
     }
 
