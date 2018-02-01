@@ -5,7 +5,12 @@ var pkg = require("./package.json");
 module.exports = {
     input: pkg.module,
     output: {
-		name: pkg.name,
+        name: pkg.name
+            .split('-')
+            .map((str,i) => i > 0
+                ? str.substring(0,1).toUpperCase() + str.substring(1)
+                : str)
+            .join(''),
         file: pkg.main,
         format: "umd",
 		globals: {

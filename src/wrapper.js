@@ -27,7 +27,7 @@ export default function safetyOutlierExplorer(element, settings) {
     chart.on('init', onInit);
     chart.on('layout', onLayout);
     chart.on('preprocess', onPreprocess);
-    chart.on('datatransform', onDataTransform);
+    chart.on('datatransform', onDatatransform);
     chart.on('draw', onDraw);
     chart.on('resize', onResize);
 

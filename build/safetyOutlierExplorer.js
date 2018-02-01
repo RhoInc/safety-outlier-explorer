@@ -3,8 +3,8 @@
         ? (module.exports = factory(require('webcharts'), require('d3')))
         : typeof define === 'function' && define.amd
           ? define(['webcharts', 'd3'], factory)
-          : (global['safety-outlier-explorer'] = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3$1) {
+          : (global.safetyOutlierExplorer = factory(global.webCharts, global.d3));
+})(this, function(webcharts, d3) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -37,29 +37,21 @@
         id_col: 'USUBJID',
         time_cols: [
             {
-                value_col: 'DY',
+                type: 'ordinal',
+                value_col: 'VISIT',
+                label: 'Visit',
+                order_col: 'VISITNUM',
                 order: null,
+                rotate_tick_labels: true,
+                vertical_space: 100
+            },
+            {
                 type: 'linear',
+                value_col: 'DY',
                 label: 'Study Day',
                 rotate_tick_labels: false,
                 vertical_space: 0
-            },
-            {
-                value_col: 'VISITN',
-                order: null,
-                type: 'ordinal',
-                label: 'Visit Number',
-                rotate_tick_labels: false,
-                vertical_space: 0
-            },
-            {
-                value_col: 'VISIT',
-                order: null,
-                type: 'ordinal',
-                label: 'Visit',
-                rotate_tick_labels: true,
-                vertical_space: 100
-            } // Specify vertical space for rotated tick labels.  Maps to [margin.bottom].
+            }
         ],
         measure_col: 'TEST',
         value_col: 'STRESN',
@@ -220,157 +212,221 @@
         return controlInputs;
     }
 
-    function getValType(data, variable) {
-        var values = d3$1
-                .set(
-                    data.map(function(m) {
-                        return m[variable];
-                    })
-                )
-                .values(),
-            numbers = values.filter(function(f) {
-                return +f || (+f === 0 && !/^\s*$/.test(f));
-            });
-
-        if (values.length === numbers.length) {
-            return 'continuous';
-        } else {
-            return 'categorical';
-        }
-    }
-
-    function onInit() {
+    function countParticipants() {
         var _this = this;
 
-        var context = this,
-            config = this.config,
-            allMeasures = d3$1
-                .set(
-                    this.raw_data.map(function(m) {
-                        return m[config.measure_col];
-                    })
-                )
-                .values();
-
-        //warning for non-numeric endpoints
-        var catMeasures = allMeasures.filter(function(f) {
-            var measureVals = _this.raw_data.filter(function(d) {
-                return d[config.measure_col] === f;
-            });
-
-            return getValType(measureVals, config.value_col) !== 'continuous';
-        });
-        if (catMeasures.length) {
-            console.warn(
-                catMeasures.length +
-                    ' non-numeric endpoint' +
-                    (catMeasures.length > 1 ? 's have' : ' has') +
-                    ' been removed:' +
-                    catMeasures.join(', ')
-            );
-        }
-
-        //delete non-numeric endpoints
-        var numMeasures = allMeasures.filter(function(f) {
-            var measureVals = _this.raw_data.filter(function(d) {
-                return d[config.measure_col] === f;
-            });
-
-            return getValType(measureVals, config.value_col) === 'continuous';
-        });
-
-        this.controls.config.inputs.filter(function(f) {
-            return f.value_col === config.measure_col;
-        })[0].start =
-            config.start_value || numMeasures[0];
-
-        //count the number of unique ids in the data set
-        this.populationCount = d3$1
+        this.populationCount = d3
             .set(
                 this.raw_data.map(function(d) {
                     return d[_this.config.id_col];
                 })
             )
             .values().length;
-        this.raw_data = this.raw_data.filter(function(f) {
-            return numMeasures.indexOf(f[config.measure_col]) > -1;
+    }
+
+    function cleanData() {
+        var _this = this;
+
+        //Remove missing and non-numeric data.
+        var preclean = this.raw_data,
+            clean = this.raw_data.filter(function(d) {
+                return /^-?[0-9.]+$/.test(d[_this.config.value_col]);
+            }),
+            nPreclean = preclean.length,
+            nClean = clean.length,
+            nRemoved = nPreclean - nClean;
+
+        //Warn user of removed records.
+        if (nRemoved > 0)
+            console.warn(
+                nRemoved +
+                    ' missing or non-numeric result' +
+                    (nRemoved > 1 ? 's have' : ' has') +
+                    ' been removed.'
+            );
+        this.raw_data = clean;
+
+        //Attach array of continuous measures to chart object.
+        this.measures = d3
+            .set(
+                this.raw_data.map(function(d) {
+                    return d[_this.config.measure_col];
+                })
+            )
+            .values()
+            .sort();
+    }
+
+    function addVariables() {
+        var _this = this;
+
+        this.raw_data.forEach(function(d) {
+            d.NONE = 'All Participants'; // placeholder variable for non-grouped comparisons
+            d.unscheduled = _this.config.unscheduled_visit_values
+                ? _this.config.unscheduled_visit_values.indexOf(
+                      d[_this.config.time_settings.value_col]
+                  ) > -1
+                : _this.config.unscheduled_visit_pattern
+                  ? _this.config.unscheduled_visit_pattern.test(
+                        d[_this.config.time_settings.value_col]
+                    )
+                  : false;
         });
+    }
 
-        // Remove filters for variables with 0 or 1 levels
-        var chart = this;
+    function defineVisitOrder() {
+        var _this = this;
 
-        this.controls.config.inputs = this.controls.config.inputs.filter(function(d) {
-            if (d.type != 'subsetter') {
+        this.config.time_cols
+            .filter(function(time_col) {
+                return time_col.type === 'ordinal';
+            })
+            .forEach(function(time_settings) {
+                var visits = void 0,
+                    visitOrder = void 0;
+
+                //Given an ordering variable sort a unique set of visits by the ordering variable.
+                if (
+                    time_settings.order_col &&
+                    _this.raw_data[0].hasOwnProperty(time_settings.order_col)
+                ) {
+                    //Define a unique set of visits with visit order concatenated.
+                    visits = d3
+                        .set(
+                            _this.raw_data.map(function(d) {
+                                return (
+                                    d[time_settings.order_col] + '|' + d[time_settings.value_col]
+                                );
+                            })
+                        )
+                        .values();
+
+                    //Sort visits.
+                    visitOrder = visits
+                        .sort(function(a, b) {
+                            var aOrder = a.split('|')[0],
+                                bOrder = b.split('|')[0],
+                                diff = +aOrder - +bOrder;
+                            return diff ? diff : d3.ascending(a, b);
+                        })
+                        .map(function(visit) {
+                            return visit.split('|')[1];
+                        });
+                } else {
+                    //Otherwise sort a unique set of visits alphanumerically.
+                    //Define a unique set of visits.
+                    visits = d3
+                        .set(
+                            _this.raw_data.map(function(d) {
+                                return d[time_settings.value_col];
+                            })
+                        )
+                        .values();
+
+                    //Sort visits;
+                    visitOrder = visits.sort();
+                }
+
+                //Set x-axis domain.
+                if (time_settings.order) {
+                    //If a visit order is specified, use it and concatenate any unspecified visits at the end.
+                    time_settings.order = time_settings.order.concat(
+                        visitOrder.filter(function(visit) {
+                            return time_settings.order.indexOf(visit) < 0;
+                        })
+                    );
+                } else
+                    //Otherwise use data-driven visit order.
+                    time_settings.order = visitOrder;
+            });
+    }
+
+    function checkFilters() {
+        var _this = this;
+
+        this.controls.config.inputs = this.controls.config.inputs.filter(function(input) {
+            if (input.type != 'subsetter') {
                 return true;
+            } else if (!_this.raw_data[0].hasOwnProperty(input.value_col)) {
+                console.warn(
+                    'The [ ' +
+                        input.label +
+                        ' ] filter has been removed because the variable does not exist.'
+                );
             } else {
-                var levels = d3$1
+                var levels = d3
                     .set(
-                        chart.raw_data.map(function(f) {
-                            return f[d.value_col];
+                        _this.raw_data.map(function(d) {
+                            return d[input.value_col];
                         })
                     )
                     .values();
-                if (levels.length < 2) {
+
+                if (levels.length === 1)
                     console.warn(
-                        d.value_col + ' filter not shown since the variable has less than 2 levels'
+                        'The [ ' +
+                            input.label +
+                            ' ] filter has been removed because the variable has only one level.'
                     );
-                }
-                return levels.length >= 2;
+
+                return levels.length > 1;
             }
         });
     }
 
-    function onLayout() {
+    function setInitialMeasure() {
+        this.controls.config.inputs.filter(function(input) {
+            return input.label === 'Measure';
+        })[0].start =
+            this.config.start_value || this.measures[0];
+    }
+
+    function onInit() {
+        // 1. Count total participants prior to data cleaning.
+        countParticipants.call(this);
+
+        // 2. Drop missing values and remove measures with any non-numeric results.
+        cleanData.call(this);
+
+        // 3a Define additional variables.
+        addVariables.call(this);
+
+        // 3b Define ordered x-axis domain with visit order variable.
+        defineVisitOrder.call(this);
+
+        // 3c Remove filters for nonexistent or single-level variables.
+        checkFilters.call(this);
+
+        // 3d Choose the start value for the Test filter
+        setInitialMeasure.call(this);
+    }
+
+    function identifyControls() {
+        this.controls.wrap.selectAll('.control-group').attr('id', function(d) {
+            return d.label.toLowerCase().replace(' ', '-');
+        });
+    }
+
+    function labelXaxisOptions() {
         var _this = this;
 
-        var chart = this,
-            config = chart.config;
-
-        //Define x-axis column control behavior.
-        var xColSelect = this.controls.wrap
+        this.controls.wrap
             .selectAll('.control-group')
-            .filter(function(f) {
-                return f.option === 'x.column';
+            .filter(function(d) {
+                return d.option === 'x.column';
             })
-            .select('select');
+            .selectAll('option')
+            .property('label', function(d) {
+                return _this.config.time_cols.filter(function(time_col) {
+                    return time_col.value_col === d;
+                })[0].label;
+            });
+    }
 
-        //Map column names to column labels.
-        xColSelect.selectAll('option').text(function(d) {
-            return _this.config.time_cols[
-                _this.config.time_cols
-                    .map(function(d) {
-                        return d.value_col;
-                    })
-                    .indexOf(d)
-            ].label;
-        });
-
-        //Define event listener.
-        xColSelect.on('change', function(d) {
-            var time_col =
-                _this.config.time_cols[
-                    _this.config.time_cols
-                        .map(function(di) {
-                            return di.label;
-                        })
-                        .indexOf(xColSelect.property('value'))
-                ];
-
-            //Redefine settings properties based on x-axis column selection.
-            _this.config.x.column = time_col.value_col;
-            _this.config.x.type = time_col.type;
-            _this.config.x.label = time_col.label;
-            _this.config.x.order = time_col.order;
-            _this.config.marks[1].per[2] = time_col.value_col;
-            _this.config.rotate_x_tick_labels = time_col.rotate_tick_labels;
-            _this.config.margin.bottom = time_col.vertical_space;
-
-            _this.draw();
-        });
-
-        //Add a button to reset the y-domain
-        var resetContainer = this.controls.wrap
-                .insert('div', '.control-group:nth-child(3)')
+    function addYdomainResetButton() {
+        var context = this,
+            resetContainer = this.controls.wrap
+                .insert('div', '#lower-limit')
                 .classed('control-group y-axis', true)
                 .datum({
                     type: 'button',
@@ -386,94 +442,185 @@
                 .append('button')
                 .text('Reset Limits')
                 .on('click', function() {
-                    var measure_data = chart.raw_data.filter(function(d) {
-                        return d[config.measure_col] === chart.currentMeasure;
+                    var measure_data = context.raw_data.filter(function(d) {
+                        return d[context.config.measure_col] === context.currentMeasure;
                     });
-                    chart.config.y.domain = d3.extent(measure_data, function(d) {
-                        return +d[config.value_col];
+                    context.config.y.domain = d3.extent(measure_data, function(d) {
+                        return +d[context.config.value_col];
                     }); //reset axis to full range
 
-                    chart.controls.wrap
+                    context.controls.wrap
                         .selectAll('.control-group')
                         .filter(function(f) {
                             return f.option === 'y.domain[0]';
                         })
                         .select('input')
-                        .property('value', chart.config.y.domain[0]);
+                        .property('value', context.config.y.domain[0]);
 
-                    chart.controls.wrap
+                    context.controls.wrap
                         .selectAll('.control-group')
                         .filter(function(f) {
                             return f.option === 'y.domain[1]';
                         })
                         .select('input')
-                        .property('value', chart.config.y.domain[1]);
+                        .property('value', context.config.y.domain[1]);
 
-                    chart.draw();
+                    context.draw();
                 });
+    }
 
-        //Add y-axis class to y-axis limit controls.
+    function classYdomainControls() {
         this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
                 return ['Lower Limit', 'Upper Limit'].indexOf(d.label) > -1;
             })
             .classed('y-axis', true);
+    }
 
-        //Add div for participant counts.
-        this.controls.wrap.append('p').classed('annote', true);
+    function addParticipantCountContainer() {
+        this.controls.wrap
+            .append('div')
+            .attr('id', 'participant-count')
+            .style('font-style', 'italic');
+    }
 
-        //Add wrapper for small multiples.
+    function addSmallMultiplesContainer() {
         this.wrap.append('div').attr('class', 'multiples');
     }
 
-    function onPreprocess() {
+    function onLayout() {
+        // Distinguish controls to insert y-axis reset button in the correct position.
+        identifyControls.call(this);
+
+        //Label x-axis options.
+        labelXaxisOptions.call(this);
+
+        //Add a button to reset the y-domain
+        addYdomainResetButton.call(this);
+
+        //Add .y-axis class to y-domain controls.
+        classYdomainControls.call(this);
+
+        //Add participant count container.
+        addParticipantCountContainer.call(this);
+
+        //Add container for small multiples.
+        addSmallMultiplesContainer.call(this);
+    }
+
+    function getCurrentMeasure() {
         var _this = this;
 
-        var context = this,
-            config = this.config;
-
-        //Check if the selected measure has changed.
-        var prevMeasure = this.currentMeasure;
+        this.previousMeasure = this.currentMeasure;
         this.currentMeasure = this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
-                return d.value_col && d.value_col === config.measure_col;
+                return d.value_col && d.value_col === _this.config.measure_col;
             })
             .select('option:checked')
             .text();
-        var changedMeasureFlag = this.currentMeasure !== prevMeasure;
+    }
 
-        //Define x-axis domain.
-        var measure_data = this.raw_data.filter(function(d) {
-            return d[config.measure_col] === _this.currentMeasure;
+    function defineMeasureData() {
+        var _this = this;
+
+        this.measure_data = this.raw_data.filter(function(d) {
+            return d[_this.config.measure_col] === _this.currentMeasure;
         });
-        this.config.x.domain =
-            config.x.type === 'ordinal'
-                ? d3$1
-                      .set(
-                          measure_data.map(function(d) {
-                              return d[config.x.column];
-                          })
-                      )
-                      .values()
-                : d3$1.extent(measure_data, function(d) {
-                      return +d[config.x.column];
-                  });
-        if (this.config.x.order) {
-            this.config.x.domain.sort(function(a, b) {
-                var aindex = config.x.order.indexOf(a);
-                var bindex = config.x.order.indexOf(b);
-                return aindex - bindex;
-            });
-        }
+        this.filtered_measure_data = this.measure_data.filter(function(d) {
+            var filtered = false;
 
-        //Set y-axis domain.
-        if (changedMeasureFlag) {
-            //reset axis to full range when measure changes
-            this.config.y.domain = d3$1.extent(measure_data, function(d) {
-                return +d[config.value_col];
-            });
+            _this.filters
+                .filter(function(filter) {
+                    return filter.value_col !== _this.config.measure_col;
+                })
+                .forEach(function(filter) {
+                    if (filtered === false && filter.val !== 'All')
+                        filtered =
+                            filter.val instanceof Array
+                                ? filter.val.indexOf(d[filter.col]) < 0
+                                : filter.val !== d[filter.col];
+                });
+
+            return !filtered;
+        });
+        this.nested_measure_data = d3
+            .nest()
+            .key(function(d) {
+                return d[_this.config.x.column];
+            })
+            .key(function(d) {
+                return d[_this.config.color_by];
+            })
+            .rollup(function(d) {
+                return d.map(function(m) {
+                    return +m[_this.config.y.column];
+                });
+            })
+            .entries(this.filtered_measure_data);
+    }
+
+    function setXdomain() {
+        var _this = this;
+
+        this.config.time_settings = this.config.time_cols
+            .filter(function(time_col) {
+                return time_col.value_col === _this.config.x.column;
+            })
+            .pop();
+        Object.assign(this.config.x, this.config.time_settings);
+    }
+
+    function setYdomain() {
+        var _this = this;
+
+        //Define y-domain.
+        if (this.currentMeasure !== this.previousMeasure)
+            this.config.y.domain = d3.extent(
+                this.measure_data.map(function(d) {
+                    return +d[_this.config.y.column];
+                })
+            );
+        else if (this.config.y.domain[0] > this.config.y.domain[1])
+            // new measure
+            this.config.y.domain.reverse();
+        else if (this.config.y.domain[0] === this.config.y.domain[1])
+            // invalid domain
+            this.config.y.domain = this.config.y.domain.map(function(d, i) {
+                return i === 0 ? d - d * 0.01 : d + d * 0.01;
+            }); // domain with zero range
+    }
+
+    function updateYaxisLimitControls() {
+        //Update y-axis limit controls.
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(f) {
+                return f.option === 'y.domain[0]';
+            })
+            .select('input')
+            .property('value', this.config.y.domain[0]);
+        this.controls.wrap
+            .selectAll('.control-group')
+            .filter(function(f) {
+                return f.option === 'y.domain[1]';
+            })
+            .select('input')
+            .property('value', this.config.y.domain[1]);
+    }
+
+    function setYaxisLabel() {
+        this.config.y.label =
+            this.currentMeasure +
+            (this.config.unit_col && this.measure_data[0][this.config.unit_col]
+                ? ' (' + this.measure_data[0][this.config.unit_col] + ')'
+                : '');
+    }
+
+    function updateYaxisResetButton() {
+        //Update tooltip of y-axis domain reset button.
+        if (this.currentMeasure !== this.previousMeasure)
             this.controls.wrap
                 .selectAll('.y-axis')
                 .property(
@@ -484,115 +631,75 @@
                         this.config.y.domain[1] +
                         ']'
                 );
-
-            //Set y-axis domain controls.
-            this.controls.wrap
-                .selectAll('.control-group')
-                .filter(function(f) {
-                    return f.option === 'y.domain[0]';
-                })
-                .select('input')
-                .property('value', this.config.y.domain[0]);
-            this.controls.wrap
-                .selectAll('.control-group')
-                .filter(function(f) {
-                    return f.option === 'y.domain[1]';
-                })
-                .select('input')
-                .property('value', this.config.y.domain[1]);
-        }
     }
 
-    /*------------------------------------------------------------------------------------------------\
-  Annotate number of participants based on current filters, number of participants in all, and
-  the corresponding percentage.
-  Inputs:
-    chart - a webcharts chart object
-    id_col - a column name in the raw data set (chart.raw_data) representing the observation of interest
-    id_unit - a text string to label the units in the annotation (default = 'participants')
-    selector - css selector for the annotation
-\------------------------------------------------------------------------------------------------*/
+    function onPreprocess() {
+        // 1. Capture currently selected measure.
+        getCurrentMeasure.call(this);
 
-    function updateSubjectCount(chart, id_col, selector, id_unit) {
-        var totalObs = chart.populationCount;
+        // 2. Filter data on currently selected measure.
+        defineMeasureData.call(this);
 
+        // 3a Set x-domain given current visit settings.
+        setXdomain.call(this);
+
+        // 3b Set y-domain given currently selected measure.
+        setYdomain.call(this);
+
+        // 3c Set y-axis label to current measure.
+        setYaxisLabel.call(this);
+
+        // 4a Update y-axis reset button when measure changes.
+        updateYaxisResetButton.call(this);
+
+        // 4b Update y-axis limit controls to match y-axis domain.
+        updateYaxisLimitControls.call(this);
+    }
+
+    function onDataTransform() {}
+
+    // Takes a webcharts object creates a text annotation giving the
+    // number and percentage of observations shown in the current view
+    //
+    // inputs:
+    // - chart - a webcharts chart object
+    // - selector - css selector for the annotation
+    // - id_unit - a text string to label the units in the annotation (default = "participants")
+    function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
-        var currentObs = d3$1
+        var currentObs = d3
             .set(
-                chart.raw_data
-                    .filter(function(d) {
-                        var filtered = false;
-
-                        chart.filters.forEach(function(filter) {
-                            if (!filtered && filter.val !== 'All')
-                                filtered = d[filter.col] !== filter.val;
-                        });
-
-                        return !filtered;
-                    })
-                    .map(function(d) {
-                        return d[id_col];
-                    })
+                chart.filtered_data.map(function(d) {
+                    return d[chart.config.id_col];
+                })
             )
             .values().length;
-
-        var percentage = d3$1.format('0.1%')(currentObs / totalObs);
+        var percentage = d3.format('0.1%')(currentObs / chart.populationCount);
 
         //clear the annotation
-        var annotation = d3$1.select(selector);
-        annotation.selectAll('*').remove();
+        var annotation = d3.select(selector);
+        d3
+            .select(selector)
+            .selectAll('*')
+            .remove();
 
         //update the annotation
         var units = id_unit ? ' ' + id_unit : ' participant(s)';
-        annotation.text(currentObs + ' of ' + totalObs + units + ' shown (' + percentage + ')');
-    }
-
-    function updateYDomain(chart) {
-        var yMinSelect = chart.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(f) {
-                return f.option === 'y.domain[0]';
-            })
-            .select('input');
-
-        var yMaxSelect = chart.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(f) {
-                return f.option === 'y.domain[1]';
-            })
-            .select('input');
-
-        //switch the values if min > max
-        var range = [yMinSelect.node().value, yMaxSelect.node().value].sort(function(a, b) {
-            return a - b;
-        });
-        yMinSelect.node().value = range[0];
-        yMaxSelect.node().value = range[1];
-
-        //apply custom domain to the chart
-        chart.config.y.domain = range;
-        chart.y_dom = range;
+        annotation.text(
+            '\n' +
+                currentObs +
+                ' of ' +
+                chart.populationCount +
+                units +
+                ' shown (' +
+                percentage +
+                ')'
+        );
     }
 
     function onDraw() {
-        //Annotate sample and population counts.
-        updateSubjectCount(this, this.config.id_col, '.annote');
-
-        //Clear current multiples.
-        this.wrap
-            .select('.multiples')
-            .select('.wc-small-multiples')
-            .remove();
-
-        //hack to avoid domains with 0 extent
-        if (this.y_dom[0] == this.y_dom[1]) {
-            var jitter = this.y_dom[0] / 10;
-            this.y_dom[0] = this.y_dom[0] - jitter;
-            this.y_dom[1] = this.y_dom[1] + jitter;
-        }
-
-        //update the y domain using the custom controsl
-        updateYDomain(this);
+        //Annotate participant count.
+        updateParticipantCount(this, '#participant-count');
     }
 
     function addBoxPlot(
@@ -615,12 +722,12 @@
             .map(function(d) {
                 return +d;
             })
-            .sort(d3$1.ascending);
+            .sort(d3.ascending);
 
         //set up scales
-        var y = d3$1.scale.linear().range([height, 0]);
+        var y = d3.scale.linear().range([height, 0]);
 
-        var x = d3$1.scale.linear().range([0, width]);
+        var x = d3.scale.linear().range([0, width]);
 
         if (horizontal) {
             y.domain(domain);
@@ -630,7 +737,7 @@
 
         var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
         for (var i = 0; i < probs.length; i++) {
-            probs[i] = d3$1.quantile(results, probs[i]);
+            probs[i] = d3.quantile(results, probs[i]);
         }
 
         var boxplot = svg$$1
@@ -689,8 +796,8 @@
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
-            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
+            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
+            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3))
             .style('fill', boxInsideColor)
             .style('stroke', boxColor);
@@ -698,13 +805,13 @@
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
-            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
+            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
+            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
             .style('fill', boxColor)
             .style('stroke', 'None');
 
-        var formatx = fmt ? d3$1.format(fmt) : d3$1.format('.2f');
+        var formatx = fmt ? d3.format(fmt) : d3.format('.2f');
 
         boxplot
             .selectAll('.boxplot')
@@ -715,37 +822,37 @@
                     d.values.length +
                     '\n' +
                     'Min = ' +
-                    d3$1.min(d.values) +
+                    d3.min(d.values) +
                     '\n' +
                     '5th % = ' +
-                    formatx(d3$1.quantile(d.values, 0.05)) +
+                    formatx(d3.quantile(d.values, 0.05)) +
                     '\n' +
                     'Q1 = ' +
-                    formatx(d3$1.quantile(d.values, 0.25)) +
+                    formatx(d3.quantile(d.values, 0.25)) +
                     '\n' +
                     'Median = ' +
-                    formatx(d3$1.median(d.values)) +
+                    formatx(d3.median(d.values)) +
                     '\n' +
                     'Q3 = ' +
-                    formatx(d3$1.quantile(d.values, 0.75)) +
+                    formatx(d3.quantile(d.values, 0.75)) +
                     '\n' +
                     '95th % = ' +
-                    formatx(d3$1.quantile(d.values, 0.95)) +
+                    formatx(d3.quantile(d.values, 0.95)) +
                     '\n' +
                     'Max = ' +
-                    d3$1.max(d.values) +
+                    d3.max(d.values) +
                     '\n' +
                     'Mean = ' +
-                    formatx(d3$1.mean(d.values)) +
+                    formatx(d3.mean(d.values)) +
                     '\n' +
                     'StDev = ' +
-                    formatx(d3$1.deviation(d.values))
+                    formatx(d3.deviation(d.values))
                 );
             });
     }
 
     function rangePolygon(chart) {
-        var area = d3$1.svg
+        var area = d3.svg
             .area()
             .x(function(d) {
                 return chart.x(d['TIME']);
@@ -917,7 +1024,7 @@
             );
 
             //Calculate range of data.
-            var ylo = d3$1.min(
+            var ylo = d3.min(
                 filtered_data
                     .map(function(m) {
                         return +m[chart.config.y.column];
@@ -926,7 +1033,7 @@
                         return +f || +f === 0;
                     })
             );
-            var yhi = d3$1.max(
+            var yhi = d3.max(
                 filtered_data
                     .map(function(m) {
                         return +m[chart.config.y.column];
@@ -1020,7 +1127,7 @@
                 chart.svg.selectAll('.point').classed('selected', false);
 
                 //Select line and all points corresponding to selected ID.
-                d3$1.select(this).classed('selected', true);
+                d3.select(this).classed('selected', true);
                 chart.svg
                     .selectAll('.point')
                     .filter(function(d) {
