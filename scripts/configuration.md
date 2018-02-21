@@ -3,7 +3,7 @@ The most straightforward way to customize the Safety Outlier Explorer is by usin
 In addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the Safety Outlier Explorer to facilitate data mapping and other custom functionality. These custom settings are described in detail below. All defaults can be overwritten by users.
 
 # Renderer-specific settings
-The sections below describe each safety-outlier-explorer setting as of version 2.2.0.
+The sections below describe each safety-outlier-explorer setting as of version 2.2.2.
 
 ## settings.id_col
 `string`
@@ -46,49 +46,49 @@ visit metadata
 ### settings.time_cols[].type
 `string`
 
-undefined
+Visit variable data type
 
 **default:** `"ordinal"`
 
 ### settings.time_cols[].value_col
 `string`
 
-undefined
+Visit variable name
 
 **default:** `"VISIT"`
 
 ### settings.time_cols[].label
 `string`
 
-undefined
+Visit variable label
 
 **default:** `"Visit"`
 
 ### settings.time_cols[].order_col
 `string`
 
-undefined
+Visit ordering variable name
 
 **default:** `"VISITNUM"`
 
 ### settings.time_cols[].order
 `array`
 
-undefined
+Visit order
 
 **default:** none
 
 ### settings.time_cols[].rotate_tick_labels
 `boolean`
 
-undefined
+Rotate tick labels 45 degrees?
 
 **default:** `true`
 
 ### settings.time_cols[].vertical_space
 `number`
 
-undefined
+Rotated tick label spacing
 
 **default:** `100`
 
@@ -158,14 +158,14 @@ an array of filter variables and associated metadata
 ### settings.filters[].value_col
 `string`
 
-undefined
+Variable name
 
 **default:** none
 
 ### settings.filters[].label
 `string`
 
-undefined
+Variable label
 
 **default:** none
 
@@ -197,14 +197,14 @@ an array of ID-level variables and associated metadata
 ### settings.details[].value_col
 `string`
 
-undefined
+Variable name
 
 **default:** `"AGE"`
 
 ### settings.details[].label
 `string`
 
-undefined
+Variable label
 
 **default:** `"Age"`
 
@@ -218,14 +218,14 @@ width and height of small multiples
 ### settings.multiples_sizing.width
 `number`
 
-undefined
+Width
 
 **default:** `300`
 
 ### settings.multiples_sizing.height
 `number`
 
-undefined
+Height
 
 **default:** `100`
 
@@ -266,7 +266,7 @@ an array of strings that identify unscheduled visits; overrides unscheduled_visi
 **default:** none
 
 # Webcharts settings
-The object below contains each Webcharts setting as of version 2.2.0.
+The object below contains each Webcharts setting as of version 2.2.2.
 
 ```
 {    x: {        column: null, //set in syncSettings()        type: null, //set in syncSettings()        behavior: 'raw'    },    y: {        column: null, //set in syncSettings()        stat: 'mean',        type: 'linear',        label: 'Value',        behavior: 'raw',        format: '0.2f'    },    marks: [        {            per: null, //set in syncSettings()            type: 'line',            attributes: {                'stroke-width': 0.5,                'stroke-opacity': 0.5,                stroke: '#999',                'clip-path': 'url(#1)'            },            tooltip: null //set in syncSettings()        },        {            per: null, //set in syncSettings()            type: 'circle',            radius: 2,            attributes: {                'stroke-width': 0.5,                'stroke-opacity': 0.5,                'fill-opacity': 1,                'clip-path': 'url(#1)'            },            tooltip: null //set in syncSettings()        }    ],    resizable: true,    margin: { right: 20 }, //create space for box plot    aspect: 3}

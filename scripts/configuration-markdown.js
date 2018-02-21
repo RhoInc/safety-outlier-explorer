@@ -64,7 +64,7 @@ function setDefault(setting) {
                             markdown.push(`### settings.${property}.${subProperty}`);
                             markdown.push(`\`${subSetting.type}\``);
                             markdown.push(``);
-                            markdown.push(`${subSetting.description}`);
+                            markdown.push(`${subSetting.title}`);
                             markdown.push(``);
                             markdown.push(setDefault(subSetting));
                         });
@@ -78,7 +78,7 @@ function setDefault(setting) {
                             markdown.push(`### settings.${property}[].${subProperty}`);
                             markdown.push(`\`${subSetting.type}\``);
                             markdown.push(``);
-                            markdown.push(`${subSetting.description}`);
+                            markdown.push(`${subSetting.title}`);
                             markdown.push(``);
                             markdown.push(setDefault(subSetting));
                         });
