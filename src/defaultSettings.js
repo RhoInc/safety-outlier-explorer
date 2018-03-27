@@ -38,7 +38,18 @@ export const rendererSpecificSettings = {
     visits_without_data: false,
     unscheduled_visits: false,
     unscheduled_visit_pattern: '/unscheduled|early termination/i',
-    unscheduled_visit_values: null // takes precedence over unscheduled_visit_pattern
+    unscheduled_visit_values: null, // takes precedence over unscheduled_visit_pattern
+    line_attributes: {
+        'stroke-width': .5,
+        'stroke-opacity': .5,
+        'stroke': 'black',
+    },
+    point_attributes: {
+        'radius': 3,
+        'stroke-width': 0.5,
+        'stroke-opacity': 0.5,
+        'fill-opacity': .75,
+    }
 };
 
 export const webchartsSettings = {
@@ -60,9 +71,6 @@ export const webchartsSettings = {
             per: null, //set in syncSettings()
             type: 'line',
             attributes: {
-                'stroke-width': 0.5,
-                'stroke-opacity': 0.5,
-                stroke: '#999',
                 'clip-path': 'url(#1)'
             },
             tooltip: null //set in syncSettings()
@@ -70,11 +78,7 @@ export const webchartsSettings = {
         {
             per: null, //set in syncSettings()
             type: 'circle',
-            radius: 2,
             attributes: {
-                'stroke-width': 0.5,
-                'stroke-opacity': 0.5,
-                'fill-opacity': 1,
                 'clip-path': 'url(#1)'
             },
             tooltip: null //set in syncSettings()
@@ -91,23 +95,32 @@ export default Object.assign({}, rendererSpecificSettings, webchartsSettings);
 export function syncSettings(settings) {
     const time_col = settings.time_cols[0];
 
+    //x-axis
     settings.x.column = time_col.value_col;
     settings.x.type = time_col.type;
     settings.x.label = time_col.label;
     settings.x.order = time_col.order;
 
+    //y-axis
     settings.y.column = settings.value_col;
 
-    settings.marks[0].per = [settings.id_col, settings.measure_col];
-    settings.marks[0].tooltip = `[${settings.id_col}]`;
+    //lines
+    const lines = settings.marks.find(mark => mark.type === 'line');
+    lines.per = [settings.id_col, settings.measure_col];
+    lines.tooltip = `[${settings.id_col}]`;
+    Object.assign(lines.attributes, settings.line_attributes);
 
-    settings.marks[1].per = [
+    //points
+    const points = settings.marks.find(mark => mark.type === 'circle');
+    points.per = [
         settings.id_col,
         settings.measure_col,
         time_col.value_col,
         settings.value_col
     ];
-    settings.marks[1].tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${
+    points.radius = settings.point_attributes.radius || 2;
+    Object.assign(points.attributes, settings.point_attributes);
+    points.tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${
         settings.unit_col
     }] at ${settings.x.column} = [${settings.x.column}]`;
 
