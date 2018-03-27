@@ -1,36 +1,36 @@
 import { svg } from 'd3';
 
-export default function rangePolygon(chart) {
+export default function rangePolygon() {
     var area = svg
         .area()
         .x(function(d) {
             return (
-                chart.x(d['TIME']) +
-                (chart.config.x.type === 'ordinal' ? chart.x.rangeBand() / 2 : 0)
+                this.x(d['TIME']) +
+                (this.config.x.type === 'ordinal' ? this.x.rangeBand() / 2 : 0)
             );
         })
         .y0(function(d) {
             var lbornlo = d['STNRLO'];
-            return lbornlo !== 'NA' ? chart.y(+lbornlo) : 0;
+            return lbornlo !== 'NA' ? this.y(+lbornlo) : 0;
         })
         .y1(function(d) {
             var lbornrhi = d['STNRHI'];
-            return lbornrhi !== 'NA' ? chart.y(+lbornrhi) : 0;
+            return lbornrhi !== 'NA' ? this.y(+lbornrhi) : 0;
         });
 
-    var dRow = chart.filtered_data[0];
+    var dRow = this.filtered_data[0];
 
-    var myRows = chart.x_dom.slice().map(m => {
+    var myRows = this.x_dom.slice().map(m => {
         return {
-            STNRLO: dRow[chart.config.normal_col_low],
-            STNRHI: dRow[chart.config.normal_col_high],
+            STNRLO: dRow[this.config.normal_col_low],
+            STNRHI: dRow[this.config.normal_col_high],
             TIME: m
         };
     });
     //remove what is there now
-    chart.svg.select('.norms').remove();
+    this.svg.select('.norms').remove();
     //add new
-    chart.svg
+    this.svg
         .append('path')
         .datum(myRows)
         .attr('class', 'norms')

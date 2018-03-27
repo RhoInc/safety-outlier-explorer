@@ -629,75 +629,7 @@ function onDraw() {
     clearSmallMultiples.call(this);
 }
 
-function addBoxPlot(svg$$1, results, height, width, domain, boxPlotWidth, boxColor, boxInsideColor, fmt, horizontal) {
-    //set default orientation to "horizontal"
-    var horizontal = horizontal == undefined ? true : horizontal;
-
-    //make the results numeric and sort
-    var results = results.map(function (d) {
-        return +d;
-    }).sort(d3.ascending);
-
-    //set up scales
-    var y = d3.scale.linear().range([height, 0]);
-
-    var x = d3.scale.linear().range([0, width]);
-
-    if (horizontal) {
-        y.domain(domain);
-    } else {
-        x.domain(domain);
-    }
-
-    var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
-    for (var i = 0; i < probs.length; i++) {
-        probs[i] = d3.quantile(results, probs[i]);
-    }
-
-    var boxplot = svg$$1.append('g').attr('class', 'boxplot').datum({ values: results, probs: probs });
-
-    //set bar width variable
-    var box_x = horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[1]);
-    var box_width = horizontal ? x(0.5 + boxPlotWidth / 2) - x(0.5 - boxPlotWidth / 2) : x(probs[3]) - x(probs[1]);
-    var box_y = horizontal ? y(probs[3]) : y(0.5 + boxPlotWidth / 2);
-    var box_height = horizontal ? -y(probs[3]) + y(probs[1]) : y(0.5 - boxPlotWidth / 2) - y(0.5 + boxPlotWidth / 2);
-
-    boxplot.append('rect').attr('class', 'boxplot fill').attr('x', box_x).attr('width', box_width).attr('y', box_y).attr('height', box_height).style('fill', boxColor);
-
-    //draw dividing lines at median, 95% and 5%
-    var iS = [0, 2, 4];
-    var iSclass = ['', 'median', ''];
-    var iSColor = [boxColor, boxInsideColor, boxColor];
-    for (var i = 0; i < iS.length; i++) {
-        boxplot.append('line').attr('class', 'boxplot ' + iSclass[i]).attr('x1', horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[iS[i]])).attr('x2', horizontal ? x(0.5 + boxPlotWidth / 2) : x(probs[iS[i]])).attr('y1', horizontal ? y(probs[iS[i]]) : y(0.5 - boxPlotWidth / 2)).attr('y2', horizontal ? y(probs[iS[i]]) : y(0.5 + boxPlotWidth / 2)).style('fill', iSColor[i]).style('stroke', iSColor[i]);
-    }
-
-    //draw lines from 5% to 25% and from 75% to 95%
-    var iS = [[0, 1], [3, 4]];
-    for (var i = 0; i < iS.length; i++) {
-        boxplot.append('line').attr('class', 'boxplot').attr('x1', horizontal ? x(0.5) : x(probs[iS[i][0]])).attr('x2', horizontal ? x(0.5) : x(probs[iS[i][1]])).attr('y1', horizontal ? y(probs[iS[i][0]]) : y(0.5)).attr('y2', horizontal ? y(probs[iS[i][1]]) : y(0.5)).style('stroke', boxColor);
-    }
-
-    boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', horizontal ? x(0.5) : x(d3.mean(results))).attr('cy', horizontal ? y(d3.mean(results)) : y(0.5)).attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3)).style('fill', boxInsideColor).style('stroke', boxColor);
-
-    boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', horizontal ? x(0.5) : x(d3.mean(results))).attr('cy', horizontal ? y(d3.mean(results)) : y(0.5)).attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6)).style('fill', boxColor).style('stroke', 'None');
-
-    var formatx = fmt ? d3.format(fmt) : d3.format('.2f');
-
-    boxplot.selectAll('.boxplot').append('title').text(function (d) {
-        return 'N = ' + d.values.length + '\n' + 'Min = ' + d3.min(d.values) + '\n' + '5th % = ' + formatx(d3.quantile(d.values, 0.05)) + '\n' + 'Q1 = ' + formatx(d3.quantile(d.values, 0.25)) + '\n' + 'Median = ' + formatx(d3.median(d.values)) + '\n' + 'Q3 = ' + formatx(d3.quantile(d.values, 0.75)) + '\n' + '95th % = ' + formatx(d3.quantile(d.values, 0.95)) + '\n' + 'Max = ' + d3.max(d.values) + '\n' + 'Mean = ' + formatx(d3.mean(d.values)) + '\n' + 'StDev = ' + formatx(d3.deviation(d.values));
-    });
-}
-
-var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
-  return typeof obj;
-} : function (obj) {
-  return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj;
-};
-
-
-
-
+//Highlight lines and point corresponding to an ID.
 
 var asyncGenerator = function () {
   function AwaitValue(value) {
@@ -816,291 +748,91 @@ var asyncGenerator = function () {
   Clone a variable (http://stackoverflow.com/a/728694).
 \------------------------------------------------------------------------------------------------*/
 
-function clone(obj) {
-    var copy;
-
-    //Handle the 3 simple types, and null or undefined
-    if (null == obj || 'object' != (typeof obj === "undefined" ? "undefined" : _typeof(obj))) return obj;
-
-    //Handle Date
-    if (obj instanceof Date) {
-        copy = new Date();
-        copy.setTime(obj.getTime());
-        return copy;
-    }
-
-    //Handle Array
-    if (obj instanceof Array) {
-        copy = [];
-        for (var i = 0, len = obj.length; i < len; i++) {
-            copy[i] = clone(obj[i]);
-        }
-        return copy;
-    }
-
-    //Handle Object
-    if (obj instanceof Object) {
-        copy = {};
-        for (var attr in obj) {
-            if (obj.hasOwnProperty(attr)) copy[attr] = clone(obj[attr]);
-        }
-        return copy;
-    }
-
-    throw new Error("Unable to copy obj! Its type isn't supported.");
+function adjustTicks() {
+    if (this.config.rotate_x_tick_labels) this.svg.selectAll('.' + axis + '.axis .tick text').attr({
+        transform: 'rotate(-45)',
+        dx: -10,
+        dy: 10
+    }).style('text-anchor', 'end');
 }
 
-function rangePolygon(chart) {
-    var area = d3.svg.area().x(function (d) {
-        return chart.x(d['TIME']) + (chart.config.x.type === 'ordinal' ? chart.x.rangeBand() / 2 : 0);
-    }).y0(function (d) {
-        var lbornlo = d['STNRLO'];
-        return lbornlo !== 'NA' ? chart.y(+lbornlo) : 0;
-    }).y1(function (d) {
-        var lbornrhi = d['STNRHI'];
-        return lbornrhi !== 'NA' ? chart.y(+lbornrhi) : 0;
-    });
+function addBoxPlot() {
+    //Clear box plot.
+    this.svg.select('g.boxplot').remove();
 
-    var dRow = chart.filtered_data[0];
+    //Customize box plot.
+    var results = this.current_data.map(function (d) {
+        return +d.values.y;
+    }).sort(d3.ascending);
+    var height = this.plot_height;
+    var width = 1;
+    var domain = this.y_dom;
+    var boxPlotWidth = 10;
+    var boxColor = '#bbb';
+    var boxInsideColor = 'white';
+    var fmt = d3.format('.2f');
+    var horizontal = true;
 
-    var myRows = chart.x_dom.slice().map(function (m) {
-        return {
-            STNRLO: dRow[chart.config.normal_col_low],
-            STNRHI: dRow[chart.config.normal_col_high],
-            TIME: m
-        };
-    });
-    //remove what is there now
-    chart.svg.select('.norms').remove();
-    //add new
-    chart.svg.append('path').datum(myRows).attr('class', 'norms').attr('fill', 'blue').attr('fill-opacity', 0.1).attr('d', area);
-}
+    //set up scales
+    var x = d3.scale.linear().range([0, width]);
+    var y = d3.scale.linear().range([height, 0]);
 
-function adjustTicks(axis, dx, dy, rotation, anchor) {
-    if (!axis) return;
-    this.svg.selectAll('.' + axis + '.axis .tick text').attr({
-        transform: 'rotate(' + rotation + ')',
-        dx: dx,
-        dy: dy
-    }).style('text-anchor', anchor || 'start');
-}
-
-function smallMultiples(id, chart) {
-    //Clear current multiples.
-    chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
-
-    //Define small multiples settings.
-    var multiples_settings = Object.assign({}, clone(chart.config), clone(Object.getPrototypeOf(chart.config)));
-    multiples_settings.x.domain = null;
-    multiples_settings.y.domain = null;
-    multiples_settings.resizable = false;
-    multiples_settings.scale_text = false;
-
-    if (multiples_settings.multiples_sizing.width) multiples_settings.width = multiples_settings.multiples_sizing.width;
-    if (multiples_settings.multiples_sizing.height) multiples_settings.height = multiples_settings.multiples_sizing.height + (multiples_settings.margin.bottom ? multiples_settings.margin.bottom : 0);
-
-    multiples_settings.margin = { bottom: multiples_settings.margin.bottom || 20 };
-
-    var multiples = webcharts.createChart(chart.wrap.select('.multiples').node(), multiples_settings, null);
-
-    //Insert header.
-    multiples.wrap.insert('strong', '.legend').text('All Measures for ' + id[chart.config.id_col]);
-    var detail_table = multiples.wrap.insert('table', '.legend').append('tbody').classed('detail-listing', true);
-    detail_table.append('thead').selectAll('th').data(['', '']).enter().append('th');
-    detail_table.append('tbody');
-
-    //Insert a line for each item in [ settings.detail_cols ].
-    if (chart.config.details && chart.config.details.length) {
-        chart.config.details.forEach(function (detail) {
-            var value_col = detail.value_col ? detail.value_col : detail;
-
-            var label = detail.label ? detail.label : detail.value_col ? detail.value_col : detail;
-
-            if (id[value_col] !== undefined) detail_table.select('tbody').append('tr').selectAll('td').data([label, id[value_col]]).enter().append('td').style('text-align', function (d, i) {
-                return i === 0 ? 'right' : 'left';
-            }).text(function (d, i) {
-                return i === 0 ? d + ':' : d;
-            });
-        });
+    if (horizontal) {
+        y.domain(domain);
+    } else {
+        x.domain(domain);
     }
 
-    //Add styling to small multiples.
-    multiples.on('layout', function () {
-        var _this = this;
+    var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
+    for (var i = 0; i < probs.length; i++) {
+        probs[i] = d3.quantile(results, probs[i]);
+    }
 
-        //Define multiple styling.
-        this.wrap.style('display', 'block');
-        this.wrap.selectAll('.wc-chart-title').style('display', 'block').style('border-top', '1px solid #eee');
-        this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
+    var boxplot = this.svg.append('g').attr('class', 'boxplot').datum({
+        values: results,
+        probs: probs
+    }).attr('transform', 'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)');
 
-        //Set y-label to measure unit.
-        this.config.y.label = this.raw_data.find(function (d) {
-            return d[_this.config.measure_col] === _this.wrap.select('.wc-chart-title').text();
-        })[this.config.unit_col];
+    //set bar width variable
+    var box_x = horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[1]);
+    var box_width = horizontal ? x(0.5 + boxPlotWidth / 2) - x(0.5 - boxPlotWidth / 2) : x(probs[3]) - x(probs[1]);
+    var box_y = horizontal ? y(probs[3]) : y(0.5 + boxPlotWidth / 2);
+    var box_height = horizontal ? -y(probs[3]) + y(probs[1]) : y(0.5 - boxPlotWidth / 2) - y(0.5 + boxPlotWidth / 2);
+
+    boxplot.append('rect').attr('class', 'boxplot fill').attr('x', box_x).attr('width', box_width).attr('y', box_y).attr('height', box_height).style('fill', boxColor);
+
+    //draw dividing lines at median, 95% and 5%
+    var iS = [0, 2, 4];
+    var iSclass = ['', 'median', ''];
+    var iSColor = [boxColor, boxInsideColor, boxColor];
+    for (var i = 0; i < iS.length; i++) {
+        boxplot.append('line').attr('class', 'boxplot ' + iSclass[i]).attr('x1', horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[iS[i]])).attr('x2', horizontal ? x(0.5 + boxPlotWidth / 2) : x(probs[iS[i]])).attr('y1', horizontal ? y(probs[iS[i]]) : y(0.5 - boxPlotWidth / 2)).attr('y2', horizontal ? y(probs[iS[i]]) : y(0.5 + boxPlotWidth / 2)).style('fill', iSColor[i]).style('stroke', iSColor[i]);
+    }
+
+    //draw lines from 5% to 25% and from 75% to 95%
+    var iS = [[0, 1], [3, 4]];
+    for (var i = 0; i < iS.length; i++) {
+        boxplot.append('line').attr('class', 'boxplot').attr('x1', horizontal ? x(0.5) : x(probs[iS[i][0]])).attr('x2', horizontal ? x(0.5) : x(probs[iS[i][1]])).attr('y1', horizontal ? y(probs[iS[i][0]]) : y(0.5)).attr('y2', horizontal ? y(probs[iS[i][1]]) : y(0.5)).style('stroke', boxColor);
+    }
+
+    boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', horizontal ? x(0.5) : x(d3.mean(results))).attr('cy', horizontal ? y(d3.mean(results)) : y(0.5)).attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3)).style('fill', boxInsideColor).style('stroke', boxColor);
+
+    boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', horizontal ? x(0.5) : x(d3.mean(results))).attr('cy', horizontal ? y(d3.mean(results)) : y(0.5)).attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6)).style('fill', boxColor).style('stroke', 'None');
+
+    boxplot.selectAll('.boxplot').append('title').text(function (d) {
+        return 'N = ' + d.values.length + '\n' + 'Min = ' + d3.min(d.values) + '\n' + '5th % = ' + formatx(d3.quantile(d.values, 0.05)) + '\n' + 'Q1 = ' + formatx(d3.quantile(d.values, 0.25)) + '\n' + 'Median = ' + formatx(d3.median(d.values)) + '\n' + 'Q3 = ' + formatx(d3.quantile(d.values, 0.75)) + '\n' + '95th % = ' + formatx(d3.quantile(d.values, 0.95)) + '\n' + 'Max = ' + d3.max(d.values) + '\n' + 'Mean = ' + formatx(d3.mean(d.values)) + '\n' + 'StDev = ' + formatx(d3.deviation(d.values));
     });
-
-    multiples.on('preprocess', function () {
-        var _this2 = this;
-
-        //Define y-domain as minimum of lower limit of normal and minimum result and maximum of
-        //upper limit of normal and maximum result.
-        var filtered_data = this.raw_data.filter(function (f) {
-            return f[_this2.filters[0].col] === _this2.filters[0].val;
-        });
-
-        //Calculate range of normal range.
-        var normlo = Math.min.apply(null, filtered_data.map(function (m) {
-            return +m[chart.config.normal_col_low];
-        }).filter(function (f) {
-            return +f || +f === 0;
-        }));
-        var normhi = Math.max.apply(null, filtered_data.map(function (m) {
-            return +m[chart.config.normal_col_high];
-        }).filter(function (f) {
-            return +f || +f === 0;
-        }));
-
-        //Calculate range of data.
-        var ylo = d3.min(filtered_data.map(function (m) {
-            return +m[chart.config.y.column];
-        }).filter(function (f) {
-            return +f || +f === 0;
-        }));
-        var yhi = d3.max(filtered_data.map(function (m) {
-            return +m[chart.config.y.column];
-        }).filter(function (f) {
-            return +f || +f === 0;
-        }));
-
-        //Set y-domain.
-        this.config.y_dom = [Math.min(normlo, ylo), Math.max(normhi, yhi)];
-    });
-
-    multiples.on('resize', function () {
-        //Resize text manually.
-        this.wrap.select('.wc-chart-title').style('font-size', '12px');
-        this.svg.selectAll('.axis .tick text').style('font-size', '10px');
-
-        //Draw normal range.
-        if (this.filtered_data.length) rangePolygon(this);
-
-        //Axis tweaks
-        //this.svg.select('.y.axis').select('.axis-title').text(this.filtered_data[0][chart.config.unit_col]);
-        this.svg.select('.x.axis').select('.axis-title').remove();
-
-        //Delete legend.
-        this.legend.remove();
-
-        //Rotate ticks.
-        if (chart.config.rotate_x_tick_labels) {
-            adjustTicks.call(this, 'x', -10, 10, -45, 'end');
-        }
-    });
-
-    var ptData = chart.initial_data.filter(function (f) {
-        return f[chart.config.id_col] === id[chart.config.id_col];
-    });
-
-    webcharts.multiply(multiples, ptData, chart.config.measure_col);
 }
 
 function onResize() {
-    var chart = this;
-    var config = this.config;
+    //Add event listeners to lines and points
+    addMarkEventListeners.call(this);
 
-    //Highlight lines and point corresponding to an ID.
-    function highlight(id) {
-        var myLine = chart.svg.selectAll('.line').filter(function (d) {
-            return d.values[0].values.raw[0][config.id_col] === id[config.id_col];
-        });
-        myLine.select('path').attr('stroke-width', 4);
+    //Draw a marginal box plot.
+    addBoxPlot.call(this);
 
-        var myPoints = chart.svg.selectAll('.point').filter(function (d) {
-            return d.values.raw[0][config.id_col] === id[config.id_col];
-        });
-        myPoints.select('circle').attr('r', 4);
-    }
-
-    //Remove highlighting.
-    function clearHighlight() {
-        chart.svg.selectAll('.line:not(.selected)').select('path').attr('stroke-width', 0.5);
-        chart.svg.selectAll('.point:not(.selected)').select('circle').attr('r', 2);
-    }
-
-    //Set up event listeners on lines and points
-    this.svg.selectAll('.line').on('mouseover', function (d) {
-        var id = chart.raw_data.find(function (di) {
-            return di[config.id_col] === d.values[0].values.raw[0][config.id_col];
-        });
-        highlight(id);
-    }).on('mouseout', clearHighlight).on('click', function (d) {
-        var id = chart.raw_data.find(function (di) {
-            return di[config.id_col] === d.values[0].values.raw[0][config.id_col];
-        });
-
-        //Un-select all lines and points.
-        chart.svg.selectAll('.line').classed('selected', false);
-        chart.svg.selectAll('.point').classed('selected', false);
-
-        //Select line and all points corresponding to selected ID.
-        d3.select(this).classed('selected', true);
-        chart.svg.selectAll('.point').filter(function (d) {
-            return d.values.raw[0][config.id_col] === id[config.id_col];
-        }).classed('selected', true);
-
-        //Generate small multiples and highlight marks.
-        smallMultiples(id, chart);
-        highlight(id);
-    });
-
-    this.svg.selectAll('.point').on('mouseover', function (d) {
-        var id = chart.raw_data.find(function (di) {
-            return di[config.id_col] === d.values.raw[0][config.id_col];
-        });
-        highlight(id);
-    }).on('mouseout', clearHighlight).on('click', function (d) {
-        var id = chart.raw_data.find(function (di) {
-            return di[config.id_col] === d.values.raw[0][config.id_col];
-        });
-
-        //Un-select all lines and points.
-        chart.svg.selectAll('.line').classed('selected', false);
-        chart.svg.selectAll('.point').classed('selected', false);
-
-        //Select line and all points corresponding to selected ID.
-        chart.svg.selectAll('.line').filter(function (d) {
-            return d.values[0].values.raw[0][config.id_col] === id[config.id_col];
-        }).classed('selected', true);
-        chart.svg.selectAll('.point').filter(function (d) {
-            return d.values.raw[0][config.id_col] === id[config.id_col];
-        }).classed('selected', true);
-
-        //Generate small multiples and highlight marks.
-        smallMultiples(id, chart);
-        highlight(id);
-    });
-
-    //draw reference boxplot
-    this.svg.select('g.boxplot').remove();
-    var myValues = this.current_data.map(function (d) {
-        return d.values.y;
-    });
-
-    addBoxPlot(this.svg, myValues, this.plot_height, 1, this.y_dom, 10, '#bbb', 'white');
-    this.svg.select('g.boxplot').attr('transform', 'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)');
-
-    this.svg.select('.overlay').on('click', function () {
-        //clear current multiples
-        chart.wrap.select('.multiples').select('.wc-small-multiples').remove();
-        chart.svg.selectAll('.line').classed('selected', false);
-        chart.svg.selectAll('.point').classed('selected', false);
-        clearHighlight();
-    });
-
-    // rotate ticks
-    if (config.rotate_x_tick_labels) {
-        adjustTicks.call(this, 'x', -10, 10, -45, 'end');
-    }
+    //Rotate tick marks to prevent text overlap.
+    adjustTicks.call(this);
 }
 
 //polyfills

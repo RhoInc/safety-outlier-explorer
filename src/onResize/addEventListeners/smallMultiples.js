@@ -1,9 +1,8 @@
-import '../util/object-assign';
-import clone from '../util/clone';
+import clone from '../../util/clone';
 import { min, max } from 'd3';
 import { createChart, multiply } from 'webcharts';
 import rangePolygon from './rangePolygon';
-import adjustTicks from './adjustTicks';
+import adjustTicks from '../adjustTicks';
 
 export default function smallMultiples(id, chart) {
     //Clear current multiples.
@@ -121,7 +120,7 @@ export default function smallMultiples(id, chart) {
         this.svg.selectAll('.axis .tick text').style('font-size', '10px');
 
         //Draw normal range.
-        if (this.filtered_data.length) rangePolygon(this);
+        if (this.filtered_data.length) rangePolygon.call(this);
 
         //Axis tweaks
         //this.svg.select('.y.axis').select('.axis-title').text(this.filtered_data[0][chart.config.unit_col]);
@@ -134,9 +133,7 @@ export default function smallMultiples(id, chart) {
         this.legend.remove();
 
         //Rotate ticks.
-        if (chart.config.rotate_x_tick_labels) {
-            adjustTicks.call(this, 'x', -10, 10, -45, 'end');
-        }
+        adjustTicks.call(this);
     });
 
     const ptData = chart.initial_data.filter(

@@ -1,11 +1,11 @@
-export default function adjustTicks(axis, dx, dy, rotation, anchor) {
-    if (!axis) return;
-    this.svg
-        .selectAll('.' + axis + '.axis .tick text')
-        .attr({
-            transform: 'rotate(' + rotation + ')',
-            dx: dx,
-            dy: dy
-        })
-        .style('text-anchor', anchor || 'start');
+export default function adjustTicks() {
+    if (this.config.rotate_x_tick_labels)
+        this.svg
+            .selectAll('.' + axis + '.axis .tick text')
+            .attr({
+                transform: 'rotate(-45)',
+                dx: -10,
+                dy: 10
+            })
+            .style('text-anchor', 'end');
 }

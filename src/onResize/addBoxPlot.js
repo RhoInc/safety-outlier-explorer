@@ -1,31 +1,24 @@
 import { ascending, scale, quantile, mean, format, min, median, max, deviation } from 'd3';
 
-export default function addBoxPlot(
-    svg,
-    results,
-    height,
-    width,
-    domain,
-    boxPlotWidth,
-    boxColor,
-    boxInsideColor,
-    fmt,
-    horizontal
-) {
-    //set default orientation to "horizontal"
-    var horizontal = horizontal == undefined ? true : horizontal;
+export default function addBoxPlot() {
+    //Clear box plot.
+    this.svg.select('g.boxplot').remove();
 
-    //make the results numeric and sort
-    var results = results
-        .map(function(d) {
-            return +d;
-        })
-        .sort(ascending);
+    //Customize box plot.
+    const svg = this.svg;
+    const results = this.current_data.map(d => +d.values.y).sort(ascending);
+    const height = this.plot_height;
+    const width = 1;
+    const domain = this.y_dom;
+    const boxPlotWidth = 10;
+    const boxColor = '#bbb';
+    const boxInsideColor = 'white';
+    const fmt = format('.2f');
+    const horizontal = true;
 
     //set up scales
-    var y = scale.linear().range([height, 0]);
-
     var x = scale.linear().range([0, width]);
+    var y = scale.linear().range([height, 0]);
 
     if (horizontal) {
         y.domain(domain);
@@ -38,10 +31,14 @@ export default function addBoxPlot(
         probs[i] = quantile(results, probs[i]);
     }
 
-    var boxplot = svg
+    var boxplot = this.svg
         .append('g')
         .attr('class', 'boxplot')
-        .datum({ values: results, probs: probs });
+        .datum({
+            values: results,
+            probs: probs
+        })
+        .attr('transform', 'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)');
 
     //set bar width variable
     var left = horizontal ? 0.5 - boxPlotWidth / 2 : null;
@@ -114,8 +111,6 @@ export default function addBoxPlot(
         .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
         .style('fill', boxColor)
         .style('stroke', 'None');
-
-    var formatx = fmt ? format(fmt) : format('.2f');
 
     boxplot
         .selectAll('.boxplot')
