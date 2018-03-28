@@ -14,6 +14,8 @@ export const rendererSpecificSettings = {
             type: 'linear',
             value_col: 'DY',
             label: 'Study Day',
+            order_col: 'DY',
+            order: null,
             rotate_tick_labels: false,
             vertical_space: 0
         }
