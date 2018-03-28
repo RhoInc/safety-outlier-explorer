@@ -201,5 +201,73 @@
             {"type": "string"
             }
         }
+    ,"line_attributes":
+        {"type": "object"
+        ,"title": "Line Attributes"
+        ,"description": "an object that defines the line color, thickness, and opacity"
+        ,"properties":
+            {"stroke":
+                {"type": "string"
+                ,"title": "Line Color"
+                ,"description": "the color of the line"
+                ,"default": "black"
+                }
+            ,"stroke-width":
+                {"type": "number"
+                ,"title": "Line Thickness"
+                ,"description": "the thickness of the line"
+                ,"default": 0.5
+                }
+            ,"stroke-opacity":
+                {"type": "number"
+                ,"title": "Line Opacity"
+                ,"description": "the opacity of the line"
+                ,"default": 0.75
+                }
+            }
+        }
+    ,"point_attributes":
+        {"type": "object"
+        ,"title": "Point Attributes"
+        ,"description": "an object that defines the point color, radius, and opacity and its outline color, thickness, and opacity"
+        ,"properties":
+            {"stroke":
+                {"type": "string"
+                ,"title": "Point Outline Color"
+                ,"description": "the color of the outline of the point"
+                ,"default": "rgb(102,194,165)"
+                }
+            ,"stroke-width":
+                {"type": "number"
+                ,"title": "Point Outline Thickness"
+                ,"description": "the thickness of the outline of the point"
+                ,"default": 0.5
+                }
+            ,"stroke-opacity":
+                {"type": "number"
+                ,"title": "Point Outline Opacity"
+                ,"description": "the opacity of the outline of the point"
+                ,"default": 1
+                }
+            ,"fill":
+                {"type": "string"
+                ,"title": "Point Color"
+                ,"description": "the color of the point"
+                ,"default": "rgb(102,194,165)"
+                }
+            ,"radius":
+                {"type": "number"
+                ,"title": "Point Radius"
+                ,"description": "the radius of the point"
+                ,"default": 3
+                }
+            ,"fill-opacity":
+                {"type": "number"
+                ,"title": "Point Opacity"
+                ,"description": "the opacity of the point"
+                ,"default": 1
+                }
+            }
+        }
     }
 }

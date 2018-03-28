@@ -265,9 +265,86 @@ an array of strings that identify unscheduled visits; overrides unscheduled_visi
 
 **default:** none
 
+
+
+## settings.line_attributes
+`object`
+
+an object that defines the line color, thickness, and opacity
+
+### settings.line_attributes.stroke
+`string`
+
+Line Color
+
+**default:** `"black"`
+
+### settings.line_attributes.stroke-width
+`number`
+
+Line Thickness
+
+**default:** `0.5`
+
+### settings.line_attributes.stroke-opacity
+`number`
+
+Line Opacity
+
+**default:** `0.75`
+
+
+
+## settings.point_attributes
+`object`
+
+an object that defines the point color, radius, and opacity and its outline color, thickness, and opacity
+
+### settings.point_attributes.stroke
+`string`
+
+Point Outline Color
+
+**default:** `"rgb(102,194,165)"`
+
+### settings.point_attributes.stroke-width
+`number`
+
+Point Outline Thickness
+
+**default:** `0.5`
+
+### settings.point_attributes.stroke-opacity
+`number`
+
+Point Outline Opacity
+
+**default:** `1`
+
+### settings.point_attributes.fill
+`string`
+
+Point Color
+
+**default:** `"rgb(102,194,165)"`
+
+### settings.point_attributes.radius
+`number`
+
+Point Radius
+
+**default:** `3`
+
+### settings.point_attributes.fill-opacity
+`number`
+
+Point Opacity
+
+**default:** `1`
+
 # Webcharts settings
 The object below contains each Webcharts setting as of version 2.2.2.
 
 ```
-{    x: {        column: null, //set in syncSettings()        type: null, //set in syncSettings()        behavior: 'raw'    },    y: {        column: null, //set in syncSettings()        stat: 'mean',        type: 'linear',        label: 'Value',        behavior: 'raw',        format: '0.2f'    },    marks: [        {            per: null, //set in syncSettings()            type: 'line',            attributes: {                'clip-path': 'url(#1)',                'stroke-width': 0.5,                'stroke-opacity': 0.5,                stroke: 'black'            },            tooltip: null //set in syncSettings()        },        {            per: null, //set in syncSettings()            type: 'circle',            attributes: {                'clip-path': 'url(#1)',                'stroke-width': 0.5,                'stroke-opacity': 0.5,                'fill-opacity': 0.75            },            tooltip: null //set in syncSettings()        }    ],    resizable: true,    margin: { right: 20 }, //create space for box plot    aspect: 3}
+{    x: {        column: null, //set in syncSettings()        type: null, //set in syncSettings()        behavior: 'raw'    },    y: {        column: null, //set in syncSettings()        stat: 'mean',        type: 'linear',        label: 'Value',        behavior: 'raw',        format: '0.2f'    },    marks: [        {            per: null, //set in syncSettings()            type: 'line',            attributes: {                'clip-path': 'url(#1)'            },            tooltip: null //set in syncSettings()        },        {            per: null, //set in syncSettings()            type: 'circle',            attributes: {                'clip-path': 'url(#1)'            },            tooltip: null //set in syncSettings()        }    ],    resizable: true,    margin: { right: 20 }, //create space for box plot    aspect: 3}
 ```

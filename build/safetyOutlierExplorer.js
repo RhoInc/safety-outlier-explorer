@@ -120,17 +120,17 @@
         unscheduled_visit_pattern: '/unscheduled|early termination/i',
         unscheduled_visit_values: null, // takes precedence over unscheduled_visit_pattern
         line_attributes: {
+            stroke: 'black',
             'stroke-width': 0.5,
-            'stroke-opacity': 0.5,
-            stroke: 'black'
+            'stroke-opacity': 0.75
         },
         point_attributes: {
-            'stroke-width': 0.5,
-            'stroke-opacity': 0.5,
             stroke: 'rgb(102,194,165)',
+            'stroke-width': 0.5,
+            'stroke-opacity': 1,
             radius: 3,
             fill: 'rgb(102,194,165)',
-            'fill-opacity': 0.75
+            'fill-opacity': 1
         }
     };
 
@@ -153,10 +153,7 @@
                 per: null, //set in syncSettings()
                 type: 'line',
                 attributes: {
-                    'clip-path': 'url(#1)',
-                    'stroke-width': 0.5,
-                    'stroke-opacity': 0.5,
-                    stroke: 'black'
+                    'clip-path': 'url(#1)'
                 },
                 tooltip: null //set in syncSettings()
             },
@@ -164,10 +161,7 @@
                 per: null, //set in syncSettings()
                 type: 'circle',
                 attributes: {
-                    'clip-path': 'url(#1)',
-                    'stroke-width': 0.5,
-                    'stroke-opacity': 0.5,
-                    'fill-opacity': 0.75
+                    'clip-path': 'url(#1)'
                 },
                 tooltip: null //set in syncSettings()
             }
@@ -199,6 +193,7 @@
         lines.per = [settings.id_col, settings.measure_col];
         lines.tooltip = '[' + settings.id_col + ']';
         Object.assign(lines.attributes, settings.line_attributes);
+        lines.attributes['stroke-width'] = settings.line_attributes['stroke-width'] || 0.5;
 
         //points
         var points = settings.marks.find(function(mark) {
@@ -210,8 +205,6 @@
             time_col.value_col,
             settings.value_col
         ];
-        points.radius = settings.point_attributes.radius || 3;
-        Object.assign(points.attributes, settings.point_attributes);
         points.tooltip =
             '[' +
             settings.id_col +
@@ -224,6 +217,8 @@
             ' = [' +
             settings.x.column +
             ']';
+        Object.assign(points.attributes, settings.point_attributes);
+        points.radius = settings.point_attributes.radius || 3;
 
         //Add custom marks to settings.marks.
         if (settings.custom_marks)
