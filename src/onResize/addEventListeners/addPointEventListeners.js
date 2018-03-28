@@ -29,7 +29,10 @@ export default function addPointEventListeners() {
             context.svg
                 .selectAll('.line')
                 .filter(function(d) {
-                    return d.values[0].values.raw[0][context.config.id_col] === id[context.config.id_col];
+                    return (
+                        d.values[0].values.raw[0][context.config.id_col] ===
+                        id[context.config.id_col]
+                    );
                 })
                 .classed('selected', true);
             context.svg

@@ -7,6 +7,7 @@ export default function highlight(id) {
     const myPoints = this.svg
         .selectAll('.point')
         .filter(d => d.values.raw[0][this.config.id_col] === id[this.config.id_col]);
-    myPoints.select('circle')
-        .attr('r', this.config.marks.find(mark => mark.type === 'circle').radius*1.5);
+    myPoints
+        .select('circle')
+        .attr('r', this.config.marks.find(mark => mark.type === 'circle').radius * 1.5);
 }

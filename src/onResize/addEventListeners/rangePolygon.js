@@ -3,21 +3,19 @@ import { svg } from 'd3';
 export default function rangePolygon() {
     var area = svg
         .area()
-        .x(d => this.x(d['TIME']) + (
-            this.config.x.type === 'ordinal'
-                ? this.x.rangeBand() / 2
-                : 0
-        ))
-        .y0(d => (
-            /^-?[0-9.]+$/.test(d[this.config.normal_col_low])
-                ? this.y(d[this.config.normal_col_low])
-                : 0
-        ))
-        .y1(d => (
-            /^-?[0-9.]+$/.test(d[this.config.normal_col_high])
-                ? this.y(d[this.config.normal_col_high])
-                : 0
-        ));
+        .x(d => this.x(d['TIME']) + (this.config.x.type === 'ordinal' ? this.x.rangeBand() / 2 : 0))
+        .y0(
+            d =>
+                /^-?[0-9.]+$/.test(d[this.config.normal_col_low])
+                    ? this.y(d[this.config.normal_col_low])
+                    : 0
+        )
+        .y1(
+            d =>
+                /^-?[0-9.]+$/.test(d[this.config.normal_col_high])
+                    ? this.y(d[this.config.normal_col_high])
+                    : 0
+        );
 
     var dRow = this.filtered_data[0];
 

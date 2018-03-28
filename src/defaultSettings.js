@@ -40,15 +40,15 @@ export const rendererSpecificSettings = {
     unscheduled_visit_pattern: '/unscheduled|early termination/i',
     unscheduled_visit_values: null, // takes precedence over unscheduled_visit_pattern
     line_attributes: {
-        'stroke-width': .5,
-        'stroke-opacity': .5,
-        'stroke': 'black',
-    },
-    point_attributes: {
-        'radius': 3,
         'stroke-width': 0.5,
         'stroke-opacity': 0.5,
-        'fill-opacity': .75,
+        stroke: 'black'
+    },
+    point_attributes: {
+        radius: 3,
+        'stroke-width': 0.5,
+        'stroke-opacity': 0.5,
+        'fill-opacity': 0.75
     }
 };
 
@@ -112,17 +112,12 @@ export function syncSettings(settings) {
 
     //points
     const points = settings.marks.find(mark => mark.type === 'circle');
-    points.per = [
-        settings.id_col,
-        settings.measure_col,
-        time_col.value_col,
-        settings.value_col
-    ];
+    points.per = [settings.id_col, settings.measure_col, time_col.value_col, settings.value_col];
     points.radius = settings.point_attributes.radius || 3;
     Object.assign(points.attributes, settings.point_attributes);
-    points.tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${
-        settings.unit_col
-    }] at ${settings.x.column} = [${settings.x.column}]`;
+    points.tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${settings.unit_col}] at ${
+        settings.x.column
+    } = [${settings.x.column}]`;
 
     //Add custom marks to settings.marks.
     if (settings.custom_marks) settings.custom_marks.forEach(mark => settings.marks.push(mark));
