@@ -4,7 +4,7 @@ import adjustTicks from './onResize/adjustTicks';
 
 export default function onResize() {
     //Add event listeners to lines and points
-    addMarkEventListeners.call(this);
+    addEventListeners.call(this);
 
     //Draw a marginal box plot.
     addBoxPlot.call(this);

@@ -9,16 +9,16 @@ export default function addPointEventListeners() {
         .selectAll('.point')
         .on('mouseover', function(d) {
             const id = context.raw_data.find(
-                di => di[config.id_col] === d.values.raw[0][config.id_col]
+                di => di[context.config.id_col] === d.values.raw[0][context.config.id_col]
             );
-            highlight.call(this, id);
+            highlight.call(context, id);
         })
         .on('mouseout', () => {
-            clearHighlight.call(this);
+            clearHighlight.call(context);
         })
         .on('click', function(d) {
             const id = context.raw_data.find(
-                di => di[config.id_col] === d.values.raw[0][config.id_col]
+                di => di[context.config.id_col] === d.values.raw[0][context.config.id_col]
             );
 
             //Un-select all lines and points.
@@ -29,18 +29,18 @@ export default function addPointEventListeners() {
             context.svg
                 .selectAll('.line')
                 .filter(function(d) {
-                    return d.values[0].values.raw[0][config.id_col] === id[config.id_col];
+                    return d.values[0].values.raw[0][context.config.id_col] === id[context.config.id_col];
                 })
                 .classed('selected', true);
             context.svg
                 .selectAll('.point')
                 .filter(function(d) {
-                    return d.values.raw[0][config.id_col] === id[config.id_col];
+                    return d.values.raw[0][context.config.id_col] === id[context.config.id_col];
                 })
                 .classed('selected', true);
 
             //Generate small multiples and highlight marks.
             smallMult(id, context);
-            highlight.call(this, id);
+            highlight.call(context, id);
         });
 }

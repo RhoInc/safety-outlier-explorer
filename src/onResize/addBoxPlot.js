@@ -124,28 +124,28 @@ export default function addBoxPlot() {
                 min(d.values) +
                 '\n' +
                 '5th % = ' +
-                formatx(quantile(d.values, 0.05)) +
+                fmt(quantile(d.values, 0.05)) +
                 '\n' +
                 'Q1 = ' +
-                formatx(quantile(d.values, 0.25)) +
+                fmt(quantile(d.values, 0.25)) +
                 '\n' +
                 'Median = ' +
-                formatx(median(d.values)) +
+                fmt(median(d.values)) +
                 '\n' +
                 'Q3 = ' +
-                formatx(quantile(d.values, 0.75)) +
+                fmt(quantile(d.values, 0.75)) +
                 '\n' +
                 '95th % = ' +
-                formatx(quantile(d.values, 0.95)) +
+                fmt(quantile(d.values, 0.95)) +
                 '\n' +
                 'Max = ' +
                 max(d.values) +
                 '\n' +
                 'Mean = ' +
-                formatx(mean(d.values)) +
+                fmt(mean(d.values)) +
                 '\n' +
                 'StDev = ' +
-                formatx(deviation(d.values))
+                fmt(deviation(d.values))
             );
         });
 }

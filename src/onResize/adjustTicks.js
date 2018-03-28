@@ -1,7 +1,7 @@
 export default function adjustTicks() {
     if (this.config.rotate_x_tick_labels)
         this.svg
-            .selectAll('.' + axis + '.axis .tick text')
+            .selectAll('.x.axis .tick text')
             .attr({
                 transform: 'rotate(-45)',
                 dx: -10,

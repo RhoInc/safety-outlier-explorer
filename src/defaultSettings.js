@@ -118,7 +118,7 @@ export function syncSettings(settings) {
         time_col.value_col,
         settings.value_col
     ];
-    points.radius = settings.point_attributes.radius || 2;
+    points.radius = settings.point_attributes.radius || 3;
     Object.assign(points.attributes, settings.point_attributes);
     points.tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${
         settings.unit_col

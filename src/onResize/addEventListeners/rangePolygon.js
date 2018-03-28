@@ -3,20 +3,21 @@ import { svg } from 'd3';
 export default function rangePolygon() {
     var area = svg
         .area()
-        .x(function(d) {
-            return (
-                this.x(d['TIME']) +
-                (this.config.x.type === 'ordinal' ? this.x.rangeBand() / 2 : 0)
-            );
-        })
-        .y0(function(d) {
-            var lbornlo = d['STNRLO'];
-            return lbornlo !== 'NA' ? this.y(+lbornlo) : 0;
-        })
-        .y1(function(d) {
-            var lbornrhi = d['STNRHI'];
-            return lbornrhi !== 'NA' ? this.y(+lbornrhi) : 0;
-        });
+        .x(d => this.x(d['TIME']) + (
+            this.config.x.type === 'ordinal'
+                ? this.x.rangeBand() / 2
+                : 0
+        ))
+        .y0(d => (
+            /^-?[0-9.]+$/.test(d[this.config.normal_col_low])
+                ? this.y(d[this.config.normal_col_low])
+                : 0
+        ))
+        .y1(d => (
+            /^-?[0-9.]+$/.test(d[this.config.normal_col_high])
+                ? this.y(d[this.config.normal_col_high])
+                : 0
+        ));
 
     var dRow = this.filtered_data[0];
 
@@ -27,8 +28,10 @@ export default function rangePolygon() {
             TIME: m
         };
     });
+
     //remove what is there now
     this.svg.select('.norms').remove();
+
     //add new
     this.svg
         .append('path')
