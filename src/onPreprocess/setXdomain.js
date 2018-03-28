@@ -11,7 +11,10 @@ export default function setXdomain() {
     Object.assign(this.config.x, this.config.time_settings);
 
     //When the domain is not specified, it's calculated on data transform.
-    if (this.config.x.type === 'linear') delete this.config.x.domain;
+    if (this.config.x.type === 'linear') {
+        delete this.config.x.domain;
+        delete this.config.x.order;
+    }
 
     //Remove unscheduled visits from x-domain if x-type is ordinal.
     if (this.config.x.type === 'ordinal') {

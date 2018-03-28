@@ -47,9 +47,11 @@ export const rendererSpecificSettings = {
         stroke: 'black'
     },
     point_attributes: {
-        radius: 3,
         'stroke-width': 0.5,
         'stroke-opacity': 0.5,
+        stroke: 'rgb(102,194,165)',
+        radius: 3,
+        fill: 'rgb(102,194,165)',
         'fill-opacity': 0.75
     }
 };
@@ -73,7 +75,10 @@ export const webchartsSettings = {
             per: null, //set in syncSettings()
             type: 'line',
             attributes: {
-                'clip-path': 'url(#1)'
+                'clip-path': 'url(#1)',
+                'stroke-width': 0.5,
+                'stroke-opacity': 0.5,
+                stroke: 'black'
             },
             tooltip: null //set in syncSettings()
         },
@@ -81,7 +86,10 @@ export const webchartsSettings = {
             per: null, //set in syncSettings()
             type: 'circle',
             attributes: {
-                'clip-path': 'url(#1)'
+                'clip-path': 'url(#1)',
+                'stroke-width': 0.5,
+                'stroke-opacity': 0.5,
+                'fill-opacity': 0.75
             },
             tooltip: null //set in syncSettings()
         }
@@ -185,7 +193,13 @@ export function syncControlInputs(controlInputs, settings) {
     }
 
     //Remove unscheduled visit control if unscheduled visit pattern is unscpecified.
-    if (!settings.unscheduled_visit_regex)
+    if (
+        !settings.unscheduled_visit_regex &&
+        !(
+            Array.isArray(settings.unscheduled_visit_values) &&
+            settings.unscheduled_visit_values.length
+        )
+    )
         controlInputs.splice(
             controlInputs.map(controlInput => controlInput.label).indexOf('Unscheduled visits'),
             1
