@@ -1,7 +1,6 @@
 import { extent } from 'd3';
 
 export default function addYdomainResetButton() {
-    const context = this;
     const resetContainer = this.controls.wrap
         .insert('div', '#lower')
         .classed('control-group y-axis', true)
@@ -19,21 +18,21 @@ export default function addYdomainResetButton() {
         .append('button')
         .text(' Reset ')
         .style('padding', '0px 5px')
-        .on('click', function() {
-            context.config.y.domain = context.measure.range; //reset axis to full range
+        .on('click', () => {
+            this.config.y.domain = this.measure.domain; //reset axis to full range
 
-            context.controls.wrap
+            this.controls.wrap
                 .selectAll('.control-group')
                 .filter(f => f.option === 'y.domain[0]')
                 .select('input')
-                .property('value', context.config.y.domain[0]);
+                .property('value', this.config.y.domain[0]);
 
-            context.controls.wrap
+            this.controls.wrap
                 .selectAll('.control-group')
                 .filter(f => f.option === 'y.domain[1]')
                 .select('input')
-                .property('value', context.config.y.domain[1]);
+                .property('value', this.config.y.domain[1]);
 
-            context.draw();
+            this.draw();
         });
 }

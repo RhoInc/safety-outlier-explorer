@@ -183,6 +183,36 @@
                 }
             }
         },
+        "normal_range_method": {
+            "type": "string",
+            "title": "Normal Range Method",
+            "description": "method for identifying the normal range",
+            "default": "LLN-ULN",
+            "enum": [
+                "None",
+                "LLN-ULN",
+                "Standard Deviation",
+                "Qunatiles"
+            ]
+        },
+        "normal_range_sd": {
+            "type": "number",
+            "title": "Number of Standard Deviations",
+            "description": "the number of standard deviations from the mean with which to define the normal range",
+            "default": 1.96
+        },
+        "normal_range_quantile_low": {
+            "type": "number",
+            "title": "Lower quantile",
+            "description": "this quantile defines the lower bound of the normal range",
+            "default": 0.05
+        },
+        "normal_range_quantile_high": {
+            "type": "number",
+            "title": "Upper quantile",
+            "description": "this quantile defines the upper bound of the normal range",
+            "default": 0.95
+        },
         "visits_without_data": {
             "type": "boolean",
             "title": "Display visits without data?",

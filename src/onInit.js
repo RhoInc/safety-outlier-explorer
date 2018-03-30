@@ -1,6 +1,7 @@
 import countParticipants from './onInit/countParticipants';
 import cleanData from './onInit/cleanData';
 import addVariables from './onInit/addVariables';
+import captureMeasures from './onInit/captureMeasures';
 import defineVisitOrder from './onInit/defineVisitOrder';
 import updateControlInputs from './onInit/updateControlInputs';
 import checkFilters from './onInit/checkFilters';
@@ -16,15 +17,18 @@ export default function onInit() {
     // 3a Define additional variables.
     addVariables.call(this);
 
-    // 3b Define ordered x-axis domain with visit order variable.
+    // 3b Capture unique set of measures.
+    captureMeasures.call(this);
+
+    // 3c Define ordered x-axis domain with visit order variable.
     defineVisitOrder.call(this);
 
-    // 3c Remove invalid control inputs.
+    // 3d Remove invalid control inputs.
     updateControlInputs.call(this);
 
-    // 3d Remove filters for nonexistent or single-level variables.
+    // 3e Remove filters for nonexistent or single-level variables.
     checkFilters.call(this);
 
-    // 3e Choose the start value for the Test filter
+    // 3f Choose the start value for the Test filter
     setInitialMeasure.call(this);
 }
