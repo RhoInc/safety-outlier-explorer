@@ -4,7 +4,7 @@
         : typeof define === 'function' && define.amd
           ? define(['webcharts', 'd3'], factory)
           : (global.safetyOutlierExplorer = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3) {
+})(this, function(webcharts, d3$1) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -329,7 +329,7 @@
     function countParticipants() {
         var _this = this;
 
-        this.populationCount = d3
+        this.populationCount = d3$1
             .set(
                 this.raw_data.map(function(d) {
                     return d[_this.config.id_col];
@@ -362,7 +362,7 @@
         this.raw_data = clean;
 
         //Attach array of continuous measures to chart object.
-        this.measures = d3
+        this.measures = d3$1
             .set(
                 this.raw_data.map(function(d) {
                     return d[_this.config.measure_col];
@@ -414,7 +414,7 @@
                     _this.raw_data[0].hasOwnProperty(time_settings.order_col)
                 ) {
                     //Define a unique set of visits with visit order concatenated.
-                    visits = d3
+                    visits = d3$1
                         .set(
                             _this.raw_data.map(function(d) {
                                 return (
@@ -430,7 +430,7 @@
                             var aOrder = a.split('|')[0],
                                 bOrder = b.split('|')[0],
                                 diff = +aOrder - +bOrder;
-                            return diff ? diff : d3.ascending(a, b);
+                            return diff ? diff : d3$1.ascending(a, b);
                         })
                         .map(function(visit) {
                             return visit.split('|')[1];
@@ -438,7 +438,7 @@
                 } else {
                     //Otherwise sort a unique set of visits alphanumerically.
                     //Define a unique set of visits.
-                    visits = d3
+                    visits = d3$1
                         .set(
                             _this.raw_data.map(function(d) {
                                 return d[time_settings.value_col];
@@ -480,7 +480,7 @@
                         ' ] filter has been removed because the variable does not exist.'
                 );
             } else {
-                var levels = d3
+                var levels = d3$1
                     .set(
                         _this.raw_data.map(function(d) {
                             return d[input.value_col];
@@ -571,7 +571,7 @@
                     var measure_data = context.raw_data.filter(function(d) {
                         return d[context.config.measure_col] === context.currentMeasure;
                     });
-                    context.config.y.domain = d3.extent(measure_data, function(d) {
+                    context.config.y.domain = d3$1.extent(measure_data, function(d) {
                         return +d[context.config.value_col];
                     }); //reset axis to full range
 
@@ -665,7 +665,7 @@
         if (!this.config.visits_without_data)
             this.config.x.domain = this.config.x.domain.filter(function(visit) {
                 return (
-                    d3
+                    d3$1
                         .set(
                             _this.raw_data.map(function(d) {
                                 return d[_this.config.time_settings.value_col];
@@ -719,7 +719,7 @@
 
         //Define y-domain.
         if (this.currentMeasure !== this.previousMeasure)
-            this.config.y.domain = d3.extent(
+            this.config.y.domain = d3$1.extent(
                 this.measure_data.map(function(d) {
                     return +d[_this.config.y.column];
                 })
@@ -809,18 +809,18 @@
     // - id_unit - a text string to label the units in the annotation (default = "participants")
     function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
-        var currentObs = d3
+        var currentObs = d3$1
             .set(
                 chart.filtered_data.map(function(d) {
                     return d[chart.config.id_col];
                 })
             )
             .values().length;
-        var percentage = d3.format('0.1%')(currentObs / chart.populationCount);
+        var percentage = d3$1.format('0.1%')(currentObs / chart.populationCount);
 
         //clear the annotation
-        var annotation = d3.select(selector);
-        d3
+        var annotation = d3$1.select(selector);
+        d3$1
             .select(selector)
             .selectAll('*')
             .remove();
@@ -840,6 +840,8 @@
     }
 
     function clearSmallMultiples() {
+        delete this.hovered_id;
+        delete this.selected_id;
         this.wrap
             .select('.multiples')
             .select('.wc-small-multiples')
@@ -854,11 +856,64 @@
         clearSmallMultiples.call(this);
     }
 
+    d3.selection.prototype.moveToFront = function() {
+        return this.each(function() {
+            this.parentNode.appendChild(this);
+        });
+    };
+
+    function highlight() {
+        var _this = this;
+
+        var myLine = this.svg
+            .selectAll('.line')
+            .filter(function(d) {
+                return (
+                    [_this.hovered_id, _this.selected_id].indexOf(
+                        d.values[0].values.raw[0][_this.config.id_col]
+                    ) > -1
+                );
+            })
+            .moveToFront();
+        myLine.select('path').attr(
+            'stroke-width',
+            this.config.marks.find(function(mark) {
+                return mark.type === 'line';
+            }).attributes['stroke-width'] * 8
+        );
+
+        var myPoints = this.svg
+            .selectAll('.point')
+            .filter(function(d) {
+                return (
+                    [_this.hovered_id, _this.selected_id].indexOf(
+                        d.values.raw[0][_this.config.id_col]
+                    ) > -1
+                );
+            })
+            .moveToFront();
+        myPoints
+            .select('circle')
+            .attr(
+                'r',
+                this.config.marks.find(function(mark) {
+                    return mark.type === 'circle';
+                }).radius * 1.5
+            )
+            .attr('stroke', 'black')
+            .attr('stroke-width', 3);
+    }
+
+    function maintainHighlight() {
+        if (this.selected_id) highlight.call(this);
+    }
+
     function clearHighlight() {
         this.svg
             .selectAll('.line:not(.selected)')
             .select('path')
             .attr(this.config.line_attributes);
+        this.svg.selectAll('.line.selected').moveToFront();
         this.svg
             .selectAll('.point:not(.selected)')
             .select('circle')
@@ -869,6 +924,7 @@
                     return mark.type === 'circle';
                 }).radius
             );
+        this.svg.selectAll('.point.selected').moveToFront();
     }
 
     function addOverlayEventListener() {
@@ -882,36 +938,10 @@
                 .remove();
             _this.svg.selectAll('.line').classed('selected', false);
             _this.svg.selectAll('.point').classed('selected', false);
+            delete _this.hovered_id;
+            delete _this.selected_id;
             clearHighlight.call(_this);
         });
-    }
-
-    function highlight(id) {
-        var _this = this;
-
-        var myLine = this.svg.selectAll('.line').filter(function(d) {
-            return d.values[0].values.raw[0][_this.config.id_col] === id[_this.config.id_col];
-        });
-        myLine.select('path').attr(
-            'stroke-width',
-            this.config.marks.find(function(mark) {
-                return mark.type === 'line';
-            }).attributes['stroke-width'] * 8
-        );
-
-        var myPoints = this.svg.selectAll('.point').filter(function(d) {
-            return d.values.raw[0][_this.config.id_col] === id[_this.config.id_col];
-        });
-        myPoints
-            .select('circle')
-            .attr(
-                'r',
-                this.config.marks.find(function(mark) {
-                    return mark.type === 'circle';
-                }).radius * 1.5
-            )
-            .attr('stroke', 'black')
-            .attr('stroke-width', 3);
     }
 
     var _typeof =
@@ -1086,7 +1116,7 @@
     function rangePolygon() {
         var _this = this;
 
-        var area = d3.svg
+        var area = d3$1.svg
             .area()
             .x(function(d) {
                 return (
@@ -1265,7 +1295,7 @@
             );
 
             //Calculate range of data.
-            var ylo = d3.min(
+            var ylo = d3$1.min(
                 filtered_data
                     .map(function(m) {
                         return +m[chart.config.y.column];
@@ -1274,7 +1304,7 @@
                         return +f || +f === 0;
                     })
             );
-            var yhi = d3.max(
+            var yhi = d3$1.max(
                 filtered_data
                     .map(function(m) {
                         return +m[chart.config.y.column];
@@ -1318,21 +1348,19 @@
     }
 
     function addLineEventListeners() {
+        var _this = this;
+
         var context = this;
 
         this.svg
             .selectAll('.line')
             .on('mouseover', function(d) {
-                var id = context.raw_data.find(function(di) {
-                    return (
-                        di[context.config.id_col] ===
-                        d.values[0].values.raw[0][context.config.id_col]
-                    );
-                });
-                highlight.call(context, id);
+                _this.hovered_id = d.values[0].values.raw[0][context.config.id_col];
+                highlight.call(_this);
             })
-            .on('mouseout', function() {
-                clearHighlight.call(context);
+            .on('mouseout', function(d) {
+                delete _this.hovered_id;
+                clearHighlight.call(_this);
             })
             .on('click', function(d) {
                 var id = context.raw_data.find(function(di) {
@@ -1341,13 +1369,14 @@
                         d.values[0].values.raw[0][context.config.id_col]
                     );
                 });
+                context.selected_id = id[context.config.id_col];
 
                 //Un-select all lines and points.
                 context.svg.selectAll('.line').classed('selected', false);
                 context.svg.selectAll('.point').classed('selected', false);
 
                 //Select line and all points corresponding to selected ID.
-                d3.select(this).classed('selected', true);
+                d3$1.select(this).classed('selected', true);
                 context.svg
                     .selectAll('.point')
                     .filter(function(d) {
@@ -1357,28 +1386,30 @@
 
                 //Generate small multiples and highlight marks.
                 smallMultiples(id, context);
-                highlight.call(context, id);
+                highlight.call(context);
             });
     }
 
     function addPointEventListeners() {
+        var _this = this;
+
         var context = this;
 
         this.svg
             .selectAll('.point')
             .on('mouseover', function(d) {
-                var id = context.raw_data.find(function(di) {
-                    return di[context.config.id_col] === d.values.raw[0][context.config.id_col];
-                });
-                highlight.call(context, id);
+                _this.hovered_id = d.values.raw[0][context.config.id_col];
+                highlight.call(_this);
             })
-            .on('mouseout', function() {
-                clearHighlight.call(context);
+            .on('mouseout', function(d) {
+                delete _this.hovered_id;
+                clearHighlight.call(_this);
             })
             .on('click', function(d) {
                 var id = context.raw_data.find(function(di) {
                     return di[context.config.id_col] === d.values.raw[0][context.config.id_col];
                 });
+                context.selected_id = id[context.config.id_col];
 
                 //Un-select all lines and points.
                 context.svg.selectAll('.line').classed('selected', false);
@@ -1403,7 +1434,7 @@
 
                 //Generate small multiples and highlight marks.
                 smallMultiples(id, context);
-                highlight.call(context, id);
+                highlight.call(context);
             });
     }
 
@@ -1422,19 +1453,19 @@
             .map(function(d) {
                 return +d.values.y;
             })
-            .sort(d3.ascending);
+            .sort(d3$1.ascending);
         var height = this.plot_height;
         var width = 1;
         var domain = this.y_dom;
         var boxPlotWidth = 10;
         var boxColor = '#bbb';
         var boxInsideColor = 'white';
-        var fmt = d3.format('.2f');
+        var fmt = d3$1.format('.2f');
         var horizontal = true;
 
         //set up scales
-        var x = d3.scale.linear().range([0, width]);
-        var y = d3.scale.linear().range([height, 0]);
+        var x = d3$1.scale.linear().range([0, width]);
+        var y = d3$1.scale.linear().range([height, 0]);
 
         if (horizontal) {
             y.domain(domain);
@@ -1444,7 +1475,7 @@
 
         var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
         for (var i = 0; i < probs.length; i++) {
-            probs[i] = d3.quantile(results, probs[i]);
+            probs[i] = d3$1.quantile(results, probs[i]);
         }
 
         var boxplot = this.svg
@@ -1510,8 +1541,8 @@
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
-            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
+            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
+            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3))
             .style('fill', boxInsideColor)
             .style('stroke', boxColor);
@@ -1519,8 +1550,8 @@
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
-            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
+            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
+            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
             .style('fill', boxColor)
             .style('stroke', 'None');
@@ -1534,37 +1565,40 @@
                     d.values.length +
                     '\n' +
                     'Min = ' +
-                    d3.min(d.values) +
+                    d3$1.min(d.values) +
                     '\n' +
                     '5th % = ' +
-                    fmt(d3.quantile(d.values, 0.05)) +
+                    fmt(d3$1.quantile(d.values, 0.05)) +
                     '\n' +
                     'Q1 = ' +
-                    fmt(d3.quantile(d.values, 0.25)) +
+                    fmt(d3$1.quantile(d.values, 0.25)) +
                     '\n' +
                     'Median = ' +
-                    fmt(d3.median(d.values)) +
+                    fmt(d3$1.median(d.values)) +
                     '\n' +
                     'Q3 = ' +
-                    fmt(d3.quantile(d.values, 0.75)) +
+                    fmt(d3$1.quantile(d.values, 0.75)) +
                     '\n' +
                     '95th % = ' +
-                    fmt(d3.quantile(d.values, 0.95)) +
+                    fmt(d3$1.quantile(d.values, 0.95)) +
                     '\n' +
                     'Max = ' +
-                    d3.max(d.values) +
+                    d3$1.max(d.values) +
                     '\n' +
                     'Mean = ' +
-                    fmt(d3.mean(d.values)) +
+                    fmt(d3$1.mean(d.values)) +
                     '\n' +
                     'StDev = ' +
-                    fmt(d3.deviation(d.values))
+                    fmt(d3$1.deviation(d.values))
                 );
             });
     }
 
     function onResize() {
-        //Add event listeners to lines and points
+        //Maintain mark highlighting.
+        maintainHighlight.call(this);
+
+        //Add event listeners to lines, points, and overlay.
         addEventListeners.call(this);
 
         //Draw a marginal box plot.
