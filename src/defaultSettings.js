@@ -169,53 +169,53 @@ export const controlInputs = [
         type: 'dropdown',
         option: 'x.column',
         label: 'X-axis',
-        require: true,
+        require: true
     },
     {
         type: 'number',
         option: 'y.domain[0]',
-        label: 'Lower Limit',
-        require: true,
+        label: 'Lower',
+        require: true
     },
     {
         type: 'number',
         option: 'y.domain[1]',
-        label: 'Upper Limit',
-        require: true,
+        label: 'Upper',
+        require: true
     },
     {
         type: 'dropdown',
         option: 'normal_range_method',
-        label: 'Normal range method',
+        label: 'Method',
         values: ['None', 'LLN-ULN', 'Standard Deviation', 'Quantiles'],
-        require: true,
+        require: true
     },
     {
         type: 'number',
         option: 'normal_range_sd',
-        label: 'Number of standard deviations',
+        label: '# Std. Dev.'
     },
     {
         type: 'number',
-        label: 'Lower quantile',
-        option: 'normal_range_quantile_low',
+        label: 'Lower',
+        option: 'normal_range_quantile_low'
     },
     {
         type: 'number',
-        label: 'Upper quantile',
-        option: 'normal_range_quantile_high',
+        label: 'Upper',
+        option: 'normal_range_quantile_high'
     },
     {
         type: 'checkbox',
         inline: true,
         option: 'visits_without_data',
-        label: 'Visits without data',
+        label: 'Without Data'
     },
     {
         type: 'checkbox',
         inline: true,
         option: 'unscheduled_visits',
-        label: 'Unscheduled visits',
+        label: 'Unscheduled'
     }
 ];
 
@@ -252,7 +252,7 @@ export function syncControlInputs(controlInputs, settings) {
         )
     )
         controlInputs.splice(
-            controlInputs.map(controlInput => controlInput.label).indexOf('Unscheduled visits'),
+            controlInputs.map(controlInput => controlInput.label).indexOf('Unscheduled Visits'),
             1
         );
 
