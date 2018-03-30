@@ -833,6 +833,10 @@
         this.measure.data = this.initial_data.filter(function(d) {
             return d[_this.config.measure_col] === _this.measure.current;
         });
+        this.measure.unit =
+            this.config.unit_col && this.measure.data[0].hasOwnProperty(this.config.unit_col)
+                ? this.measure.data[0][this.config.unit_col]
+                : null;
         this.measure.results = this.measure.data
             .map(function(d) {
                 return +d[_this.config.value_col];
@@ -937,9 +941,7 @@
     function setYaxisLabel() {
         this.config.y.label =
             this.measure.current +
-            (this.config.unit_col && this.measure.data[0][this.config.unit_col]
-                ? ' (' + this.measure.data[0][this.config.unit_col] + ')'
-                : '');
+            (this.measure.unit ? ' (' + this.measure.data[0][this.config.unit_col] + ')' : '');
     }
 
     function updateYaxisResetButton() {
@@ -1081,12 +1083,19 @@
             .remove();
     }
 
+    function updateBottomMargin() {
+        this.config.margin.bottom = this.config.x.vertical_space;
+    }
+
     function onDraw() {
         //Annotate participant count.
         updateParticipantCount(this, '#participant-count');
 
         //Clear current multiples.
         clearSmallMultiples.call(this);
+
+        //Update bottom margin for tick label rotation.
+        updateBottomMargin.call(this);
     }
 
     d3.selection.prototype.moveToFront = function() {
@@ -1372,6 +1381,7 @@
     function rangePolygon() {
         var _this = this;
 
+        console.log(this.config.normal_col_low);
         var area = d3.svg
             .area()
             .x(function(d) {
@@ -1405,17 +1415,22 @@
         this.svg.select('.norms').remove();
 
         //add new
-        this.svg
-            .append('path')
+        var normalRange = this.svg
+            .append('g')
             .datum(myRows)
-            .attr('class', 'norms')
+            .attr('class', 'norms');
+        normalRange
+            .append('path')
             .attr('fill', 'blue')
             .attr('fill-opacity', 0.1)
             .attr('d', area);
+        normalRange.append('title').text(function(d) {
+            return 'Normal range: ' + d[0].STNRLO + '-' + d[0].STNRHI;
+        });
     }
 
     function adjustTicks() {
-        if (this.config.rotate_x_tick_labels)
+        if (this.config.x.rotate_tick_labels)
             this.svg
                 .selectAll('.x.axis .tick text')
                 .attr({
@@ -1514,9 +1529,12 @@
             this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
 
             //Set y-label to measure unit.
-            this.config.y.label = this.raw_data.find(function(d) {
-                return d[_this.config.measure_col] === _this.wrap.select('.wc-chart-title').text();
-            })[this.config.unit_col];
+            this.config.y.label =
+                this.raw_data.find(function(d) {
+                    return (
+                        d[_this.config.measure_col] === _this.wrap.select('.wc-chart-title').text()
+                    );
+                })[this.config.unit_col] || '';
         });
 
         multiples.on('preprocess', function() {
@@ -1600,7 +1618,19 @@
             return f[chart.config.id_col] === id[chart.config.id_col];
         });
 
-        webcharts.multiply(multiples, ptData, chart.config.measure_col);
+        webcharts.multiply(
+            multiples,
+            ptData,
+            chart.config.measure_col,
+            d3
+                .set(
+                    ptData.map(function(d) {
+                        return d[chart.config.measure_col];
+                    })
+                )
+                .values()
+                .sort()
+        );
     }
 
     function addLineEventListeners() {
