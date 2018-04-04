@@ -1,7 +1,6 @@
 import { svg } from 'd3';
 
 export default function rangePolygon() {
-    console.log(this.config.normal_col_low);
     var area = svg
         .area()
         .x(d => this.x(d['TIME']) + (this.config.x.type === 'ordinal' ? this.x.rangeBand() / 2 : 0))

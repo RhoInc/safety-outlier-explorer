@@ -1381,7 +1381,6 @@
     function rangePolygon() {
         var _this = this;
 
-        console.log(this.config.normal_col_low);
         var area = d3.svg
             .area()
             .x(function(d) {
