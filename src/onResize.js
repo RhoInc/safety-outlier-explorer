@@ -4,11 +4,6 @@ import addBoxPlot from './onResize/addBoxPlot';
 import adjustTicks from './onResize/adjustTicks';
 
 export default function onResize() {
-    this.lineSuperGroup = this.marks[0].supergroup;
-    this.lines = this.marks[0].groups;
-    this.pointSuperGroup = this.marks[1].supergroup;
-    this.points = this.marks[1].groups;
-
     //Maintain mark highlighting.
     maintainHighlight.call(this);
 
