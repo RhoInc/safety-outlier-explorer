@@ -1,4 +1,4 @@
-import '../../../util/d3-moveToFront';
+import '../../../util/d3-selection-moveToFront';
 
 export default function highlight() {
     const myLine = this.svg
