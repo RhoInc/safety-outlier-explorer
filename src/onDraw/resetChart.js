@@ -1,4 +1,4 @@
-export default function clearSmallMultiples() {
+export default function resetChart() {
     delete this.hovered_id;
     delete this.selected_id;
     this.wrap

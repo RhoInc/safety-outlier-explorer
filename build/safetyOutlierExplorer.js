@@ -1074,7 +1074,7 @@
         );
     }
 
-    function clearSmallMultiples() {
+    function resetChart() {
         delete this.hovered_id;
         delete this.selected_id;
         this.wrap
@@ -1092,23 +1092,27 @@
         updateParticipantCount(this, '#participant-count');
 
         //Clear current multiples.
-        clearSmallMultiples.call(this);
+        resetChart.call(this);
 
         //Update bottom margin for tick label rotation.
         updateBottomMargin.call(this);
     }
 
-    d3.selection.prototype.moveToFront = function() {
-        return this.each(function() {
-            this.parentNode.appendChild(this);
-        });
-    };
-
     function highlight() {
         var _this = this;
 
-        var myLine = this.svg
+        //Highlight line and move in front of all other lines.
+        this.svg
             .selectAll('.line')
+            .sort(function(a, b) {
+                return a.key.indexOf(_this.selected_id) === 0
+                    ? 2
+                    : b.key.indexOf(_this.selected_id) === 0
+                      ? -2
+                      : a.key.indexOf(_this.hovered_id) === 0
+                        ? 1
+                        : b.key.indexOf(_this.hovered_id) === 0 ? -1 : 0;
+            })
             .filter(function(d) {
                 return (
                     [_this.hovered_id, _this.selected_id].indexOf(
@@ -1116,16 +1120,26 @@
                     ) > -1
                 );
             })
-            .moveToFront();
-        myLine.select('path').attr(
-            'stroke-width',
-            this.config.marks.find(function(mark) {
-                return mark.type === 'line';
-            }).attributes['stroke-width'] * 8
-        );
+            .select('path')
+            .attr(
+                'stroke-width',
+                this.config.marks.find(function(mark) {
+                    return mark.type === 'line';
+                }).attributes['stroke-width'] * 8
+            );
 
-        var myPoints = this.svg
+        //Highlight points and move in front of all other points.
+        this.svg
             .selectAll('.point')
+            .sort(function(a, b) {
+                return a.key.indexOf(_this.selected_id) === 0
+                    ? 2
+                    : b.key.indexOf(_this.selected_id) === 0
+                      ? -2
+                      : a.key.indexOf(_this.hovered_id) === 0
+                        ? 1
+                        : b.key.indexOf(_this.hovered_id) === 0 ? -1 : 0;
+            })
             .filter(function(d) {
                 return (
                     [_this.hovered_id, _this.selected_id].indexOf(
@@ -1133,8 +1147,6 @@
                     ) > -1
                 );
             })
-            .moveToFront();
-        myPoints
             .select('circle')
             .attr(
                 'r',
@@ -1178,7 +1190,6 @@
             .selectAll('.line:not(.selected)')
             .select('path')
             .attr(this.config.line_attributes);
-        this.svg.selectAll('.line.selected').moveToFront();
         this.svg
             .selectAll('.point:not(.selected)')
             .select('circle')
@@ -1189,24 +1200,31 @@
                     return mark.type === 'circle';
                 }).radius
             );
-        this.svg.selectAll('.point.selected').moveToFront();
     }
 
     function addOverlayEventListener() {
         var _this = this;
 
-        this.svg.select('.overlay').on('click', function() {
-            //clear current multiples
-            _this.wrap
-                .select('.multiples')
-                .select('.wc-small-multiples')
-                .remove();
-            _this.svg.selectAll('.line').classed('selected', false);
-            _this.svg.selectAll('.point').classed('selected', false);
-            delete _this.hovered_id;
-            delete _this.selected_id;
-            clearHighlight.call(_this);
-        });
+        var context = this;
+
+        this.svg
+            .select('.overlay')
+            .on('mouseover', function() {
+                delete context.hovered_id;
+                clearHighlight.call(context);
+            })
+            .on('click', function() {
+                //clear current multiples
+                _this.wrap
+                    .select('.multiples')
+                    .select('.wc-small-multiples')
+                    .remove();
+                _this.svg.selectAll('.line').classed('selected', false);
+                _this.svg.selectAll('.point').classed('selected', false);
+                delete _this.hovered_id;
+                delete _this.selected_id;
+                clearHighlight.call(_this);
+            });
     }
 
     var _typeof =
@@ -1633,21 +1651,23 @@
     }
 
     function addLineEventListeners() {
-        var _this = this;
-
         var context = this;
+        var lines = this.svg.selectAll('.line');
+        var points = this.svg.selectAll('.point');
 
-        this.svg
-            .selectAll('.line')
+        lines
             .on('mouseover', function(d) {
-                _this.hovered_id = d.values[0].values.raw[0][context.config.id_col];
-                highlight.call(_this);
+                delete context.hovered_id;
+                clearHighlight.call(context);
+                context.hovered_id = d.values[0].values.raw[0][context.config.id_col];
+                highlight.call(context);
             })
             .on('mouseout', function(d) {
-                delete _this.hovered_id;
-                clearHighlight.call(_this);
+                delete context.hovered_id;
+                clearHighlight.call(context);
             })
             .on('click', function(d) {
+                //Capture selected ID.
                 var id = context.raw_data.find(function(di) {
                     return (
                         di[context.config.id_col] ===
@@ -1657,17 +1677,15 @@
                 context.selected_id = id[context.config.id_col];
 
                 //Un-select all lines and points.
-                context.svg.selectAll('.line').classed('selected', false);
-                context.svg.selectAll('.point').classed('selected', false);
+                lines.classed('selected', false);
+                points.classed('selected', false);
+                clearHighlight.call(context);
 
                 //Select line and all points corresponding to selected ID.
                 d3.select(this).classed('selected', true);
-                context.svg
-                    .selectAll('.point')
-                    .filter(function(d) {
-                        return d.values.raw[0][context.config.id_col] === id[context.config.id_col];
-                    })
-                    .classed('selected', true);
+                points.classed('selected', function(d) {
+                    return d.values.raw[0][context.config.id_col] === id[context.config.id_col];
+                });
 
                 //Generate small multiples and highlight marks.
                 smallMultiples(id, context);
@@ -1676,46 +1694,43 @@
     }
 
     function addPointEventListeners() {
-        var _this = this;
-
         var context = this;
+        var lines = this.svg.selectAll('.line');
+        var points = this.svg.selectAll('.point');
 
-        this.svg
-            .selectAll('.point')
+        points
             .on('mouseover', function(d) {
-                _this.hovered_id = d.values.raw[0][context.config.id_col];
-                highlight.call(_this);
+                delete context.hovered_id;
+                clearHighlight.call(context);
+                context.hovered_id = d.values.raw[0][context.config.id_col];
+                highlight.call(context);
             })
             .on('mouseout', function(d) {
-                delete _this.hovered_id;
-                clearHighlight.call(_this);
+                delete context.hovered_id;
+                clearHighlight.call(context);
             })
             .on('click', function(d) {
+                //Capture selected ID.
                 var id = context.raw_data.find(function(di) {
                     return di[context.config.id_col] === d.values.raw[0][context.config.id_col];
                 });
                 context.selected_id = id[context.config.id_col];
 
                 //Un-select all lines and points.
-                context.svg.selectAll('.line').classed('selected', false);
-                context.svg.selectAll('.point').classed('selected', false);
+                lines.classed('selected', false);
+                points.classed('selected', false);
+                clearHighlight.call(context);
 
                 //Select line and all points corresponding to selected ID.
-                context.svg
-                    .selectAll('.line')
-                    .filter(function(d) {
-                        return (
-                            d.values[0].values.raw[0][context.config.id_col] ===
-                            id[context.config.id_col]
-                        );
-                    })
-                    .classed('selected', true);
-                context.svg
-                    .selectAll('.point')
-                    .filter(function(d) {
-                        return d.values.raw[0][context.config.id_col] === id[context.config.id_col];
-                    })
-                    .classed('selected', true);
+                lines.classed('selected', function(d) {
+                    return (
+                        d.values[0].values.raw[0][context.config.id_col] ===
+                        id[context.config.id_col]
+                    );
+                });
+                points.classed('selected', function(d) {
+                    return d.values.raw[0][context.config.id_col] === id[context.config.id_col];
+                });
 
                 //Generate small multiples and highlight marks.
                 smallMultiples(id, context);
