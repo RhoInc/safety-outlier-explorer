@@ -1,10 +1,13 @@
+//polyfills
 import './util/object-assign';
 import './util/array-find';
+
+//settings
 import defaultSettings from './defaultSettings';
 import { controlInputs, syncControlInputs, syncSettings } from './defaultSettings';
 
+//webcharts
 import { createChart, createControls } from 'webcharts';
-
 import onInit from './onInit';
 import onLayout from './onLayout';
 import onPreprocess from './onPreprocess';
