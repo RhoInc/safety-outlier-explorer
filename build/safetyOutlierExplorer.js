@@ -260,7 +260,7 @@
     var controlInputs = [
         {
             type: 'subsetter',
-            value_col: null, // set in syncControlInputs()
+            value_col: 'measure_unit', // set in syncControlInputs()
             label: 'Measure',
             start: null
         },
@@ -320,11 +320,6 @@
 
     // Map values from settings to control inputs
     function syncControlInputs(controlInputs, settings) {
-        var labTestControl = controlInputs.find(function(d) {
-            return d.label === 'Measure';
-        });
-        labTestControl.value_col = settings.measure_col;
-
         var xAxisControl = controlInputs.find(function(d) {
             return d.label === 'X-axis';
         });
@@ -388,13 +383,13 @@
         var _this = this;
 
         //Remove missing and non-numeric data.
-        var preclean = this.raw_data,
-            clean = this.raw_data.filter(function(d) {
-                return /^-?[0-9.]+$/.test(d[_this.config.value_col]);
-            }),
-            nPreclean = preclean.length,
-            nClean = clean.length,
-            nRemoved = nPreclean - nClean;
+        var preclean = this.raw_data;
+        var clean = this.raw_data.filter(function(d) {
+            return /^-?[0-9.]+$/.test(d[_this.config.value_col]);
+        });
+        var nPreclean = preclean.length;
+        var nClean = clean.length;
+        var nRemoved = nPreclean - nClean;
 
         //Warn user of removed records.
         if (nRemoved > 0)
@@ -406,16 +401,6 @@
             );
         this.initial_data = clean;
         this.raw_data = clean;
-
-        //Attach array of continuous measures to chart object.
-        this.measures = d3
-            .set(
-                this.raw_data.map(function(d) {
-                    return d[_this.config.measure_col];
-                })
-            )
-            .values()
-            .sort();
     }
 
     function addVariables() {
@@ -426,6 +411,15 @@
         });
 
         this.raw_data.forEach(function(d) {
+            //Append units to measure.
+            d.measure_unit = d[_this.config.measure_col];
+            if (
+                _this.config.unit_col &&
+                d.hasOwnProperty(_this.config.unit_col) &&
+                d[_this.config.unit_col] !== ''
+            )
+                d.measure_unit = d.measure_unit + ' (' + d[_this.config.unit_col] + ')';
+
             //Identify unscheduled visits.
             d.unscheduled = false;
             if (ordinalTimeSettings) {
@@ -440,6 +434,17 @@
                     );
             }
         });
+    }
+
+    function captureMeasures() {
+        this.measures = d3
+            .set(
+                this.initial_data.map(function(d) {
+                    return d.measure_unit;
+                })
+            )
+            .values()
+            .sort();
     }
 
     function defineVisitOrder() {
@@ -533,7 +538,7 @@
         var _this = this;
 
         this.controls.config.inputs = this.controls.config.inputs.filter(function(input) {
-            if (input.type != 'subsetter') {
+            if (input.type !== 'subsetter') {
                 return true;
             } else if (!_this.raw_data[0].hasOwnProperty(input.value_col)) {
                 console.warn(
@@ -580,16 +585,19 @@
         // 3a Define additional variables.
         addVariables.call(this);
 
-        // 3b Define ordered x-axis domain with visit order variable.
+        // 3b Capture unique set of measures.
+        captureMeasures.call(this);
+
+        // 3c Define ordered x-axis domain with visit order variable.
         defineVisitOrder.call(this);
 
-        // 3c Remove invalid control inputs.
+        // 3d Remove invalid control inputs.
         updateControlInputs.call(this);
 
-        // 3d Remove filters for nonexistent or single-level variables.
+        // 3e Remove filters for nonexistent or single-level variables.
         checkFilters.call(this);
 
-        // 3e Choose the start value for the Test filter
+        // 3f Choose the start value for the Test filter
         setInitialMeasure.call(this);
     }
 
@@ -651,7 +659,8 @@
     }
 
     function addYdomainResetButton() {
-        var context = this;
+        var _this = this;
+
         var resetContainer = this.controls.wrap
             .insert('div', '#lower')
             .classed('control-group y-axis', true)
@@ -670,25 +679,25 @@
             .text(' Reset ')
             .style('padding', '0px 5px')
             .on('click', function() {
-                context.config.y.domain = context.measure.range; //reset axis to full range
+                _this.config.y.domain = _this.measure.domain; //reset axis to full range
 
-                context.controls.wrap
+                _this.controls.wrap
                     .selectAll('.control-group')
                     .filter(function(f) {
                         return f.option === 'y.domain[0]';
                     })
                     .select('input')
-                    .property('value', context.config.y.domain[0]);
+                    .property('value', _this.config.y.domain[0]);
 
-                context.controls.wrap
+                _this.controls.wrap
                     .selectAll('.control-group')
                     .filter(function(f) {
                         return f.option === 'y.domain[1]';
                     })
                     .select('input')
-                    .property('value', context.config.y.domain[1]);
+                    .property('value', _this.config.y.domain[1]);
 
-                context.draw();
+                _this.draw();
             });
     }
 
@@ -815,13 +824,11 @@
     }
 
     function getCurrentMeasure() {
-        var _this = this;
-
         this.measure.previous = this.measure.current;
         this.measure.current = this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
-                return d.value_col && d.value_col === _this.config.measure_col;
+                return d.value_col && d.value_col === 'measure_unit';
             })
             .select('option:checked')
             .text();
@@ -831,7 +838,7 @@
         var _this = this;
 
         this.measure.data = this.initial_data.filter(function(d) {
-            return d[_this.config.measure_col] === _this.measure.current;
+            return d.measure_unit === _this.measure.current;
         });
         this.measure.unit =
             this.config.unit_col && this.measure.data[0].hasOwnProperty(this.config.unit_col)
@@ -939,9 +946,7 @@
     }
 
     function setYaxisLabel() {
-        this.config.y.label =
-            this.measure.current +
-            (this.measure.unit ? ' (' + this.measure.data[0][this.config.unit_col] + ')' : '');
+        this.config.y.label = this.measure.current;
     }
 
     function updateYaxisResetButton() {
@@ -1227,6 +1232,28 @@
             });
     }
 
+    function clearSelected() {
+        this.svg.selectAll('.line').classed('selected', false);
+        this.svg.selectAll('.point').classed('selected', false);
+    }
+
+    function applySelected() {
+        var _this = this;
+
+        this.svg
+            .selectAll('.line')
+            .filter(function(d) {
+                return d.values[0].values.raw[0][_this.config.id_col] === _this.selected_id;
+            })
+            .classed('selected', true);
+        this.svg
+            .selectAll('.point')
+            .filter(function(d) {
+                return d.values.raw[0][_this.config.id_col] === _this.selected_id;
+            })
+            .classed('selected', true);
+    }
+
     var _typeof =
         typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
             ? function(obj) {
@@ -1396,6 +1423,162 @@
         throw new Error("Unable to copy obj! Its type isn't supported.");
     }
 
+    function defineSmallMultiples() {
+        var multiples_settings = Object.assign(
+            {},
+            clone(this.config),
+            clone(Object.getPrototypeOf(this.config))
+        );
+        multiples_settings.x.domain = null;
+        multiples_settings.y.domain = null;
+        multiples_settings.resizable = false;
+        multiples_settings.scale_text = false;
+
+        if (multiples_settings.multiples_sizing.width)
+            multiples_settings.width = multiples_settings.multiples_sizing.width;
+        if (multiples_settings.multiples_sizing.height)
+            multiples_settings.height =
+                multiples_settings.multiples_sizing.height +
+                (multiples_settings.margin.bottom ? multiples_settings.margin.bottom : 0);
+
+        multiples_settings.margin = { bottom: multiples_settings.margin.bottom || 20 };
+
+        this.multiples = webcharts.createChart(
+            this.wrap.select('.multiples').node(),
+            multiples_settings
+        );
+    }
+
+    function insertHeader() {
+        this.multiples.wrap
+            .insert('strong', '.legend')
+            .text('All Measures for ' + this.selected_id);
+    }
+
+    function participantCharacteristics() {
+        var detail_table = this.multiples.wrap
+            .insert('table', '.legend')
+            .append('tbody')
+            .classed('detail-listing', true);
+        detail_table
+            .append('thead')
+            .selectAll('th')
+            .data(['', ''])
+            .enter()
+            .append('th');
+        detail_table.append('tbody');
+
+        //Insert a line for each item in [ settings.detail_cols ].
+        if (Array.isArray(this.config.details) && this.config.details.length) {
+            var id = this.participantData[0];
+            this.config.details.forEach(function(detail) {
+                var value_col = detail.value_col ? detail.value_col : detail;
+                var label = detail.label
+                    ? detail.label
+                    : detail.value_col ? detail.value_col : detail;
+
+                if (id[value_col] !== undefined)
+                    detail_table
+                        .select('tbody')
+                        .append('tr')
+                        .selectAll('td')
+                        .data([label, id[value_col]])
+                        .enter()
+                        .append('td')
+                        .style('text-align', function(d, i) {
+                            return i === 0 ? 'right' : 'left';
+                        })
+                        .text(function(d, i) {
+                            return i === 0 ? d + ':' : d;
+                        });
+            });
+        }
+    }
+
+    function onLayout$1() {
+        this.multiples.on('layout', function() {
+            //Define multiple styling.
+            this.wrap.style('display', 'block');
+            this.wrap
+                .selectAll('.wc-chart-title')
+                .style('display', 'block')
+                .style('border-top', '1px solid #eee');
+            this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
+
+            //Set y-label to measure unit.
+            this.config.y.label = '';
+        });
+    }
+
+    function onPreprocess$1() {
+        this.multiples.on('preprocess', function() {
+            var _this = this;
+
+            //Define y-domain as minimum of lower limit of normal and minimum result and maximum of
+            //upper limit of normal and maximum result.
+            var filtered_data = this.raw_data.filter(function(f) {
+                return f[_this.filters[0].col] === _this.filters[0].val;
+            });
+
+            //Calculate range of normal range.
+            var normlo = Math.min.apply(
+                null,
+                filtered_data
+                    .map(function(m) {
+                        return +m[_this.config.normal_col_low];
+                    })
+                    .filter(function(f) {
+                        return +f || +f === 0;
+                    })
+            );
+            var normhi = Math.max.apply(
+                null,
+                filtered_data
+                    .map(function(m) {
+                        return +m[_this.config.normal_col_high];
+                    })
+                    .filter(function(f) {
+                        return +f || +f === 0;
+                    })
+            );
+
+            //Calculate range of data.
+            var ylo = d3.min(
+                filtered_data
+                    .map(function(m) {
+                        return +m[_this.config.y.column];
+                    })
+                    .filter(function(f) {
+                        return +f || +f === 0;
+                    })
+            );
+            var yhi = d3.max(
+                filtered_data
+                    .map(function(m) {
+                        return +m[_this.config.y.column];
+                    })
+                    .filter(function(f) {
+                        return +f || +f === 0;
+                    })
+            );
+
+            //Set y-domain.
+            this.config.y_dom = [Math.min(normlo, ylo), Math.max(normhi, yhi)];
+        });
+    }
+
+    function adjustTicks() {
+        if (this.config.x.rotate_tick_labels)
+            this.svg
+                .selectAll('.x.axis .tick text')
+                .attr({
+                    transform: 'rotate(-45)',
+                    dx: -10,
+                    dy: 10
+                })
+                .style('text-anchor', 'end');
+    }
+
     function rangePolygon() {
         var _this = this;
 
@@ -1446,170 +1629,8 @@
         });
     }
 
-    function adjustTicks() {
-        if (this.config.x.rotate_tick_labels)
-            this.svg
-                .selectAll('.x.axis .tick text')
-                .attr({
-                    transform: 'rotate(-45)',
-                    dx: -10,
-                    dy: 10
-                })
-                .style('text-anchor', 'end');
-    }
-
-    function smallMultiples(id, chart) {
-        //Clear current multiples.
-        chart.wrap
-            .select('.multiples')
-            .select('.wc-small-multiples')
-            .remove();
-
-        //Define small multiples settings.
-        var multiples_settings = Object.assign(
-            {},
-            clone(chart.config),
-            clone(Object.getPrototypeOf(chart.config))
-        );
-        multiples_settings.x.domain = null;
-        multiples_settings.y.domain = null;
-        multiples_settings.resizable = false;
-        multiples_settings.scale_text = false;
-
-        if (multiples_settings.multiples_sizing.width)
-            multiples_settings.width = multiples_settings.multiples_sizing.width;
-        if (multiples_settings.multiples_sizing.height)
-            multiples_settings.height =
-                multiples_settings.multiples_sizing.height +
-                (multiples_settings.margin.bottom ? multiples_settings.margin.bottom : 0);
-
-        multiples_settings.margin = { bottom: multiples_settings.margin.bottom || 20 };
-
-        var multiples = webcharts.createChart(
-            chart.wrap.select('.multiples').node(),
-            multiples_settings,
-            null
-        );
-
-        //Insert header.
-        multiples.wrap
-            .insert('strong', '.legend')
-            .text('All Measures for ' + id[chart.config.id_col]);
-        var detail_table = multiples.wrap
-            .insert('table', '.legend')
-            .append('tbody')
-            .classed('detail-listing', true);
-        detail_table
-            .append('thead')
-            .selectAll('th')
-            .data(['', ''])
-            .enter()
-            .append('th');
-        detail_table.append('tbody');
-
-        //Insert a line for each item in [ settings.detail_cols ].
-        if (chart.config.details && chart.config.details.length) {
-            chart.config.details.forEach(function(detail) {
-                var value_col = detail.value_col ? detail.value_col : detail;
-
-                var label = detail.label
-                    ? detail.label
-                    : detail.value_col ? detail.value_col : detail;
-
-                if (id[value_col] !== undefined)
-                    detail_table
-                        .select('tbody')
-                        .append('tr')
-                        .selectAll('td')
-                        .data([label, id[value_col]])
-                        .enter()
-                        .append('td')
-                        .style('text-align', function(d, i) {
-                            return i === 0 ? 'right' : 'left';
-                        })
-                        .text(function(d, i) {
-                            return i === 0 ? d + ':' : d;
-                        });
-            });
-        }
-
-        //Add styling to small multiples.
-        multiples.on('layout', function() {
-            var _this = this;
-
-            //Define multiple styling.
-            this.wrap.style('display', 'block');
-            this.wrap
-                .selectAll('.wc-chart-title')
-                .style('display', 'block')
-                .style('border-top', '1px solid #eee');
-            this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
-
-            //Set y-label to measure unit.
-            this.config.y.label =
-                this.raw_data.find(function(d) {
-                    return (
-                        d[_this.config.measure_col] === _this.wrap.select('.wc-chart-title').text()
-                    );
-                })[this.config.unit_col] || '';
-        });
-
-        multiples.on('preprocess', function() {
-            var _this2 = this;
-
-            //Define y-domain as minimum of lower limit of normal and minimum result and maximum of
-            //upper limit of normal and maximum result.
-            var filtered_data = this.raw_data.filter(function(f) {
-                return f[_this2.filters[0].col] === _this2.filters[0].val;
-            });
-
-            //Calculate range of normal range.
-            var normlo = Math.min.apply(
-                null,
-                filtered_data
-                    .map(function(m) {
-                        return +m[chart.config.normal_col_low];
-                    })
-                    .filter(function(f) {
-                        return +f || +f === 0;
-                    })
-            );
-            var normhi = Math.max.apply(
-                null,
-                filtered_data
-                    .map(function(m) {
-                        return +m[chart.config.normal_col_high];
-                    })
-                    .filter(function(f) {
-                        return +f || +f === 0;
-                    })
-            );
-
-            //Calculate range of data.
-            var ylo = d3.min(
-                filtered_data
-                    .map(function(m) {
-                        return +m[chart.config.y.column];
-                    })
-                    .filter(function(f) {
-                        return +f || +f === 0;
-                    })
-            );
-            var yhi = d3.max(
-                filtered_data
-                    .map(function(m) {
-                        return +m[chart.config.y.column];
-                    })
-                    .filter(function(f) {
-                        return +f || +f === 0;
-                    })
-            );
-
-            //Set y-domain.
-            this.config.y_dom = [Math.min(normlo, ylo), Math.max(normhi, yhi)];
-        });
-
-        multiples.on('resize', function() {
+    function onResize$1() {
+        this.multiples.on('resize', function() {
             //Resize text manually.
             this.wrap.select('.wc-chart-title').style('font-size', '12px');
             this.svg.selectAll('.axis .tick text').style('font-size', '10px');
@@ -1618,7 +1639,6 @@
             if (this.filtered_data.length) rangePolygon.call(this);
 
             //Axis tweaks
-            //this.svg.select('.y.axis').select('.axis-title').text(this.filtered_data[0][chart.config.unit_col]);
             this.svg
                 .select('.x.axis')
                 .select('.axis-title')
@@ -1630,27 +1650,43 @@
             //Rotate ticks.
             adjustTicks.call(this);
         });
+    }
 
-        var ptData = chart.initial_data.filter(function(f) {
-            return f[chart.config.id_col] === id[chart.config.id_col];
+    function smallMultiples() {
+        var _this = this;
+
+        //Clear current multiples.
+        this.wrap
+            .select('.multiples')
+            .select('.wc-small-multiples')
+            .remove();
+
+        //Define participant data.
+        this.participantData = this.initial_data.filter(function(d) {
+            return d[_this.config.id_col] === _this.selected_id;
         });
 
-        webcharts.multiply(
-            multiples,
-            ptData,
-            chart.config.measure_col,
-            d3
-                .set(
-                    ptData.map(function(d) {
-                        return d[chart.config.measure_col];
-                    })
-                )
-                .values()
-                .sort()
-        );
+        //Define small multiples.
+        defineSmallMultiples.call(this);
+
+        //Insert header.
+        insertHeader.call(this);
+
+        //Insert participant characteristics table.
+        participantCharacteristics.call(this);
+
+        //Add callbacks to small multiples.
+        onLayout$1.call(this);
+        onPreprocess$1.call(this);
+        onResize$1.call(this);
+
+        //Initialize small multiples.
+        webcharts.multiply(this.multiples, this.participantData, 'measure_unit', this.measures);
     }
 
     function addLineEventListeners() {
+        var _this = this;
+
         var context = this;
         var lines = this.svg.selectAll('.line');
         var points = this.svg.selectAll('.point');
@@ -1667,33 +1703,17 @@
                 clearHighlight.call(context);
             })
             .on('click', function(d) {
-                //Capture selected ID.
-                var id = context.raw_data.find(function(di) {
-                    return (
-                        di[context.config.id_col] ===
-                        d.values[0].values.raw[0][context.config.id_col]
-                    );
-                });
-                context.selected_id = id[context.config.id_col];
-
-                //Un-select all lines and points.
-                lines.classed('selected', false);
-                points.classed('selected', false);
-                clearHighlight.call(context);
-
-                //Select line and all points corresponding to selected ID.
-                d3.select(this).classed('selected', true);
-                points.classed('selected', function(d) {
-                    return d.values.raw[0][context.config.id_col] === id[context.config.id_col];
-                });
-
-                //Generate small multiples and highlight marks.
-                smallMultiples(id, context);
-                highlight.call(context);
+                _this.selected_id = d.values[0].values.raw[0][_this.config.id_col];
+                clearSelected.call(_this);
+                applySelected.call(_this);
+                highlight.call(_this);
+                smallMultiples.call(_this);
             });
     }
 
     function addPointEventListeners() {
+        var _this = this;
+
         var context = this;
         var lines = this.svg.selectAll('.line');
         var points = this.svg.selectAll('.point');
@@ -1710,31 +1730,11 @@
                 clearHighlight.call(context);
             })
             .on('click', function(d) {
-                //Capture selected ID.
-                var id = context.raw_data.find(function(di) {
-                    return di[context.config.id_col] === d.values.raw[0][context.config.id_col];
-                });
-                context.selected_id = id[context.config.id_col];
-
-                //Un-select all lines and points.
-                lines.classed('selected', false);
-                points.classed('selected', false);
-                clearHighlight.call(context);
-
-                //Select line and all points corresponding to selected ID.
-                lines.classed('selected', function(d) {
-                    return (
-                        d.values[0].values.raw[0][context.config.id_col] ===
-                        id[context.config.id_col]
-                    );
-                });
-                points.classed('selected', function(d) {
-                    return d.values.raw[0][context.config.id_col] === id[context.config.id_col];
-                });
-
-                //Generate small multiples and highlight marks.
-                smallMultiples(id, context);
-                highlight.call(context);
+                _this.selected_id = d.values.raw[0][_this.config.id_col];
+                clearSelected.call(_this);
+                applySelected.call(_this);
+                highlight.call(_this);
+                smallMultiples.call(_this);
             });
     }
 

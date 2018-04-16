@@ -231,6 +231,42 @@ Height
 
 
 
+## settings.normal_range_method
+`string`
+
+method for identifying the normal range
+
+**default:** `"LLN-ULN"`
+
+
+
+## settings.normal_range_sd
+`number`
+
+the number of standard deviations from the mean with which to define the normal range
+
+**default:** `1.96`
+
+
+
+## settings.normal_range_quantile_low
+`number`
+
+this quantile defines the lower bound of the normal range
+
+**default:** `0.05`
+
+
+
+## settings.normal_range_quantile_high
+`number`
+
+this quantile defines the upper bound of the normal range
+
+**default:** `0.95`
+
+
+
 ## settings.visits_without_data
 `boolean`
 

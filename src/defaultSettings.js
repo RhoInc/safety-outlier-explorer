@@ -161,7 +161,7 @@ export function syncSettings(settings) {
 export const controlInputs = [
     {
         type: 'subsetter',
-        value_col: null, // set in syncControlInputs()
+        value_col: 'measure_unit', // set in syncControlInputs()
         label: 'Measure',
         start: null
     },
@@ -221,9 +221,6 @@ export const controlInputs = [
 
 // Map values from settings to control inputs
 export function syncControlInputs(controlInputs, settings) {
-    const labTestControl = controlInputs.find(d => d.label === 'Measure');
-    labTestControl.value_col = settings.measure_col;
-
     const xAxisControl = controlInputs.find(d => d.label === 'X-axis');
     xAxisControl.values = settings.time_cols.map(d => d.value_col);
 

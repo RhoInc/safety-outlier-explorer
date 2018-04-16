@@ -2,7 +2,7 @@ import { set } from 'd3';
 
 export default function checkFilters() {
     this.controls.config.inputs = this.controls.config.inputs.filter(input => {
-        if (input.type != 'subsetter') {
+        if (input.type !== 'subsetter') {
             return true;
         } else if (!this.raw_data[0].hasOwnProperty(input.value_col)) {
             console.warn(
