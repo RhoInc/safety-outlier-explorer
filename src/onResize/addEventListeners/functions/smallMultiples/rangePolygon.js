@@ -31,11 +31,14 @@ export default function rangePolygon() {
     this.svg.select('.norms').remove();
 
     //add new
-    this.svg
-        .append('path')
+    const normalRange = this.svg
+        .append('g')
         .datum(myRows)
-        .attr('class', 'norms')
+        .attr('class', 'norms');
+    normalRange
+        .append('path')
         .attr('fill', 'blue')
         .attr('fill-opacity', 0.1)
         .attr('d', area);
+    normalRange.append('title').text(d => `Normal range: ${d[0].STNRLO}-${d[0].STNRHI}`);
 }

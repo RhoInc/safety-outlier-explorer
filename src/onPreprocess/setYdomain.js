@@ -1,9 +1,6 @@
-import { extent } from 'd3';
-
 export default function setYdomain() {
     //Define y-domain.
-    if (this.currentMeasure !== this.previousMeasure)
-        this.config.y.domain = extent(this.measure_data.map(d => +d[this.config.y.column]));
+    if (this.measure.current !== this.measure.previous) this.config.y.domain = this.measure.domain;
     else if (this.config.y.domain[0] > this.config.y.domain[1])
         // new measure
         this.config.y.domain.reverse();

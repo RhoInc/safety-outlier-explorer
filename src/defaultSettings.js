@@ -37,6 +37,10 @@ export const rendererSpecificSettings = {
         width: 300,
         height: 100
     },
+    normal_range_method: 'LLN-ULN',
+    normal_range_sd: 1.96,
+    normal_range_quantile_low: 0.05,
+    normal_range_quantile_high: 0.95,
     visits_without_data: false,
     unscheduled_visits: false,
     unscheduled_visit_pattern: '/unscheduled|early termination/i',
@@ -155,12 +159,64 @@ export function syncSettings(settings) {
 
 // Default Control objects
 export const controlInputs = [
-    { label: 'Measure', type: 'subsetter', start: null },
-    { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true },
-    { type: 'number', label: 'Lower Limit', option: 'y.domain[0]', require: true },
-    { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true },
-    { type: 'checkbox', inline: true, option: 'visits_without_data', label: 'Visits without data' },
-    { type: 'checkbox', inline: true, option: 'unscheduled_visits', label: 'Unscheduled visits' }
+    {
+        type: 'subsetter',
+        value_col: null, // set in syncControlInputs()
+        label: 'Measure',
+        start: null
+    },
+    {
+        type: 'dropdown',
+        option: 'x.column',
+        label: 'X-axis',
+        require: true
+    },
+    {
+        type: 'number',
+        option: 'y.domain[0]',
+        label: 'Lower',
+        require: true
+    },
+    {
+        type: 'number',
+        option: 'y.domain[1]',
+        label: 'Upper',
+        require: true
+    },
+    {
+        type: 'dropdown',
+        option: 'normal_range_method',
+        label: 'Method',
+        values: ['None', 'LLN-ULN', 'Standard Deviation', 'Quantiles'],
+        require: true
+    },
+    {
+        type: 'number',
+        option: 'normal_range_sd',
+        label: '# Std. Dev.'
+    },
+    {
+        type: 'number',
+        label: 'Lower',
+        option: 'normal_range_quantile_low'
+    },
+    {
+        type: 'number',
+        label: 'Upper',
+        option: 'normal_range_quantile_high'
+    },
+    {
+        type: 'checkbox',
+        inline: true,
+        option: 'visits_without_data',
+        label: 'Without Data'
+    },
+    {
+        type: 'checkbox',
+        inline: true,
+        option: 'unscheduled_visits',
+        label: 'Unscheduled'
+    }
 ];
 
 // Map values from settings to control inputs
@@ -196,7 +252,7 @@ export function syncControlInputs(controlInputs, settings) {
         )
     )
         controlInputs.splice(
-            controlInputs.map(controlInput => controlInput.label).indexOf('Unscheduled visits'),
+            controlInputs.map(controlInput => controlInput.label).indexOf('Unscheduled Visits'),
             1
         );
 

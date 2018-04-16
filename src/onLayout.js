@@ -1,7 +1,8 @@
 import identifyControls from './onLayout/identifyControls';
 import labelXaxisOptions from './onLayout/labelXaxisOptions';
 import addYdomainResetButton from './onLayout/addYdomainResetButton';
-import classYdomainControls from './onLayout/classYdomainControls';
+import groupControls from './onLayout/groupControls';
+import hideNormalRangeInputs from './onLayout/hideNormalRangeInputs';
 import addParticipantCountContainer from './onLayout/addParticipantCountContainer';
 import addSmallMultiplesContainer from './onLayout/addSmallMultiplesContainer';
 
@@ -15,8 +16,11 @@ export default function onLayout() {
     //Add a button to reset the y-domain
     addYdomainResetButton.call(this);
 
-    //Add .y-axis class to y-domain controls.
-    classYdomainControls.call(this);
+    //Group related controls visually.
+    groupControls.call(this);
+
+    //Hide normal range input controls depending on the normal range method.
+    hideNormalRangeInputs.call(this);
 
     //Add participant count container.
     addParticipantCountContainer.call(this);

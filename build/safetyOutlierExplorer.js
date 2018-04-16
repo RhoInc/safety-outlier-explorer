@@ -115,6 +115,10 @@
             width: 300,
             height: 100
         },
+        normal_range_method: 'LLN-ULN',
+        normal_range_sd: 1.96,
+        normal_range_quantile_low: 0.05,
+        normal_range_quantile_high: 0.95,
         visits_without_data: false,
         unscheduled_visits: false,
         unscheduled_visit_pattern: '/unscheduled|early termination/i',
@@ -254,21 +258,63 @@
 
     // Default Control objects
     var controlInputs = [
-        { label: 'Measure', type: 'subsetter', start: null },
-        { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true },
-        { type: 'number', label: 'Lower Limit', option: 'y.domain[0]', require: true },
-        { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true },
+        {
+            type: 'subsetter',
+            value_col: null, // set in syncControlInputs()
+            label: 'Measure',
+            start: null
+        },
+        {
+            type: 'dropdown',
+            option: 'x.column',
+            label: 'X-axis',
+            require: true
+        },
+        {
+            type: 'number',
+            option: 'y.domain[0]',
+            label: 'Lower',
+            require: true
+        },
+        {
+            type: 'number',
+            option: 'y.domain[1]',
+            label: 'Upper',
+            require: true
+        },
+        {
+            type: 'dropdown',
+            option: 'normal_range_method',
+            label: 'Method',
+            values: ['None', 'LLN-ULN', 'Standard Deviation', 'Quantiles'],
+            require: true
+        },
+        {
+            type: 'number',
+            option: 'normal_range_sd',
+            label: '# Std. Dev.'
+        },
+        {
+            type: 'number',
+            label: 'Lower',
+            option: 'normal_range_quantile_low'
+        },
+        {
+            type: 'number',
+            label: 'Upper',
+            option: 'normal_range_quantile_high'
+        },
         {
             type: 'checkbox',
             inline: true,
             option: 'visits_without_data',
-            label: 'Visits without data'
+            label: 'Without Data'
         },
         {
             type: 'checkbox',
             inline: true,
             option: 'unscheduled_visits',
-            label: 'Unscheduled visits'
+            label: 'Unscheduled'
         }
     ];
 
@@ -319,7 +365,7 @@
                     .map(function(controlInput) {
                         return controlInput.label;
                     })
-                    .indexOf('Unscheduled visits'),
+                    .indexOf('Unscheduled Visits'),
                 1
             );
 
@@ -467,6 +513,22 @@
             });
     }
 
+    function updateControlInputs() {
+        //If data do not have normal range variables update normal range method setting and options.
+        if (
+            Object.keys(this.raw_data[0]).indexOf(this.config.normal_col_low) < 0 ||
+            Object.keys(this.raw_data[0]).indexOf(this.config.normal_col_high) < 0
+        ) {
+            if (this.config.normal_range_method === 'LLN-ULN')
+                this.config.normal_range_method = 'Standard Deviation';
+            this.controls.config.inputs
+                .find(function(input) {
+                    return input.option === 'normal_range_method';
+                })
+                .values.splice(1, 1);
+        }
+    }
+
     function checkFilters() {
         var _this = this;
 
@@ -501,6 +563,7 @@
     }
 
     function setInitialMeasure() {
+        this.measure = {};
         this.controls.config.inputs.find(function(input) {
             return input.label === 'Measure';
         }).start =
@@ -520,17 +583,55 @@
         // 3b Define ordered x-axis domain with visit order variable.
         defineVisitOrder.call(this);
 
-        // 3c Remove filters for nonexistent or single-level variables.
+        // 3c Remove invalid control inputs.
+        updateControlInputs.call(this);
+
+        // 3d Remove filters for nonexistent or single-level variables.
         checkFilters.call(this);
 
-        // 3d Choose the start value for the Test filter
+        // 3e Choose the start value for the Test filter
         setInitialMeasure.call(this);
     }
 
     function identifyControls() {
-        this.controls.wrap.selectAll('.control-group').attr('id', function(d) {
-            return d.label.toLowerCase().replace(' ', '-');
-        });
+        var controlGroups = this.controls.wrap.selectAll('.control-group');
+
+        //Give each control a unique ID.
+        controlGroups
+            .attr('id', function(d) {
+                return d.label.toLowerCase().replace(' ', '-');
+            })
+            .each(function(d) {
+                d3.select(this).classed(d.type, true);
+            });
+
+        //Give y-axis controls a common class name.
+        controlGroups
+            .filter(function(d) {
+                return ['y.domain[0]', 'y.domain[1]'].indexOf(d.option) > -1;
+            })
+            .classed('y-axis', true);
+
+        //Give normal range controls a common class name.
+        controlGroups
+            .filter(function(d) {
+                return (
+                    [
+                        'normal_range_method',
+                        'normal_range_sd',
+                        'normal_range_quantile_low',
+                        'normal_range_quantile_high'
+                    ].indexOf(d.option) > -1
+                );
+            })
+            .classed('normal-range', true);
+
+        //Give visit range controls a common class name.
+        controlGroups
+            .filter(function(d) {
+                return ['visits_without_data', 'unscheduled_visits'].indexOf(d.option) > -1;
+            })
+            .classed('visits', true);
     }
 
     function labelXaxisOptions() {
@@ -550,58 +651,133 @@
     }
 
     function addYdomainResetButton() {
-        var context = this,
-            resetContainer = this.controls.wrap
-                .insert('div', '#lower-limit')
-                .classed('control-group y-axis', true)
-                .datum({
-                    type: 'button',
-                    option: 'y.domain',
-                    label: 'Y-axis:'
-                }),
-            resetLabel = resetContainer
-                .append('span')
-                .attr('class', 'wc-control-label')
-                .style('text-align', 'right')
-                .text('Y-axis:'),
-            resetButton = resetContainer
-                .append('button')
-                .text('Reset Limits')
-                .on('click', function() {
-                    var measure_data = context.raw_data.filter(function(d) {
-                        return d[context.config.measure_col] === context.currentMeasure;
-                    });
-                    context.config.y.domain = d3.extent(measure_data, function(d) {
-                        return +d[context.config.value_col];
-                    }); //reset axis to full range
+        var context = this;
+        var resetContainer = this.controls.wrap
+            .insert('div', '#lower')
+            .classed('control-group y-axis', true)
+            .datum({
+                type: 'button',
+                option: 'y.domain',
+                label: ''
+            })
+            .style('vertical-align', 'bottom');
+        var resetLabel = resetContainer
+            .append('span')
+            .attr('class', 'wc-control-label')
+            .text('Limits');
+        var resetButton = resetContainer
+            .append('button')
+            .text(' Reset ')
+            .style('padding', '0px 5px')
+            .on('click', function() {
+                context.config.y.domain = context.measure.range; //reset axis to full range
 
-                    context.controls.wrap
-                        .selectAll('.control-group')
-                        .filter(function(f) {
-                            return f.option === 'y.domain[0]';
-                        })
-                        .select('input')
-                        .property('value', context.config.y.domain[0]);
+                context.controls.wrap
+                    .selectAll('.control-group')
+                    .filter(function(f) {
+                        return f.option === 'y.domain[0]';
+                    })
+                    .select('input')
+                    .property('value', context.config.y.domain[0]);
 
-                    context.controls.wrap
-                        .selectAll('.control-group')
-                        .filter(function(f) {
-                            return f.option === 'y.domain[1]';
-                        })
-                        .select('input')
-                        .property('value', context.config.y.domain[1]);
+                context.controls.wrap
+                    .selectAll('.control-group')
+                    .filter(function(f) {
+                        return f.option === 'y.domain[1]';
+                    })
+                    .select('input')
+                    .property('value', context.config.y.domain[1]);
 
-                    context.draw();
-                });
+                context.draw();
+            });
     }
 
-    function classYdomainControls() {
-        this.controls.wrap
-            .selectAll('.control-group')
-            .filter(function(d) {
-                return ['Lower Limit', 'Upper Limit'].indexOf(d.label) > -1;
+    function insertGrouping(selector, label) {
+        var grouping = this.controls.wrap
+            .insert('div', selector)
+            .style({
+                display: 'inline-block',
+                'margin-right': '5px'
             })
-            .classed('y-axis', true);
+            .append('fieldset')
+            .style('padding', '0px 2px');
+        grouping.append('legend').text(label);
+        this.controls.wrap.selectAll(selector).each(function(d) {
+            this.style.marginTop = '0px';
+            this.style.marginRight = '2px';
+            this.style.marginBottom = '2px';
+            this.style.marginLeft = '2px';
+            grouping.node().appendChild(this);
+        });
+    }
+
+    function groupControls() {
+        //Group y-axis controls.
+        insertGrouping.call(this, '.y-axis', 'Y-axis');
+
+        //Group filters.
+        if (this.filters.length > 1)
+            insertGrouping.call(this, '.subsetter:not(#measure)', 'Filters');
+
+        //Group normal controls.
+        insertGrouping.call(this, '.normal-range', 'Normal Range');
+
+        //Group visit controls.
+        insertGrouping.call(this, '.visits', 'Visits');
+    }
+
+    function hideNormalRangeInputs() {
+        var _this = this;
+
+        var controls = this.controls.wrap.selectAll('.control-group');
+
+        //Normal range method control
+        var normalRangeMethodControl = controls.filter(function(d) {
+            return d.label === 'Method';
+        });
+
+        //Normal range inputs
+        var normalRangeInputs = controls
+            .filter(function(d) {
+                return (
+                    [
+                        'normal_range_sd',
+                        'normal_range_quantile_low',
+                        'normal_range_quantile_high'
+                    ].indexOf(d.option) > -1
+                );
+            })
+            .style('display', function(d) {
+                return (_this.config.normal_range_method !== 'Standard Deviation' &&
+                    d.option === 'normal_range_sd') ||
+                    (_this.config.normal_range_method !== 'Quantiles' &&
+                        ['normal_range_quantile_low', 'normal_range_quantile_high'].indexOf(
+                            d.option
+                        ) > -1)
+                    ? 'none'
+                    : 'inline-table';
+            });
+
+        //Set significant digits to .01.
+        normalRangeInputs.select('input').attr('step', 0.01);
+
+        normalRangeMethodControl.on('change', function() {
+            var normal_range_method = d3
+                .select(this)
+                .select('option:checked')
+                .text();
+
+            normalRangeInputs.style('display', function(d) {
+                return (normal_range_method !== 'Standard Deviation' &&
+                    d.option === 'normal_range_sd') ||
+                    (normal_range_method !== 'Quantiles' &&
+                        ['normal_range_quantile_low', 'normal_range_quantile_high'].indexOf(
+                            d.option
+                        ) > -1)
+                    ? 'none'
+                    : 'inline-table';
+            });
+        });
     }
 
     function addParticipantCountContainer() {
@@ -625,8 +801,11 @@
         //Add a button to reset the y-domain
         addYdomainResetButton.call(this);
 
-        //Add .y-axis class to y-domain controls.
-        classYdomainControls.call(this);
+        //Group related controls visually.
+        groupControls.call(this);
+
+        //Hide normal range input controls depending on the normal range method.
+        hideNormalRangeInputs.call(this);
 
         //Add participant count container.
         addParticipantCountContainer.call(this);
@@ -638,8 +817,8 @@
     function getCurrentMeasure() {
         var _this = this;
 
-        this.previousMeasure = this.currentMeasure;
-        this.currentMeasure = this.controls.wrap
+        this.measure.previous = this.measure.current;
+        this.measure.current = this.controls.wrap
             .selectAll('.control-group')
             .filter(function(d) {
                 return d.value_col && d.value_col === _this.config.measure_col;
@@ -651,10 +830,23 @@
     function defineMeasureData() {
         var _this = this;
 
-        this.measure_data = this.initial_data.filter(function(d) {
-            return d[_this.config.measure_col] === _this.currentMeasure;
+        this.measure.data = this.initial_data.filter(function(d) {
+            return d[_this.config.measure_col] === _this.measure.current;
         });
-        this.raw_data = this.measure_data.filter(function(d) {
+        this.measure.unit =
+            this.config.unit_col && this.measure.data[0].hasOwnProperty(this.config.unit_col)
+                ? this.measure.data[0][this.config.unit_col]
+                : null;
+        this.measure.results = this.measure.data
+            .map(function(d) {
+                return +d[_this.config.value_col];
+            })
+            .sort(function(a, b) {
+                return a - b;
+            });
+        this.measure.domain = d3.extent(this.measure.results);
+        this.measure.range = this.measure.domain[1] - this.measure.domain[0];
+        this.raw_data = this.measure.data.filter(function(d) {
             return _this.config.unscheduled_visits || !d.unscheduled;
         });
     }
@@ -715,15 +907,9 @@
     }
 
     function setYdomain() {
-        var _this = this;
-
         //Define y-domain.
-        if (this.currentMeasure !== this.previousMeasure)
-            this.config.y.domain = d3.extent(
-                this.measure_data.map(function(d) {
-                    return +d[_this.config.y.column];
-                })
-            );
+        if (this.measure.current !== this.measure.previous)
+            this.config.y.domain = this.measure.domain;
         else if (this.config.y.domain[0] > this.config.y.domain[1])
             // new measure
             this.config.y.domain.reverse();
@@ -754,10 +940,8 @@
 
     function setYaxisLabel() {
         this.config.y.label =
-            this.currentMeasure +
-            (this.config.unit_col && this.measure_data[0][this.config.unit_col]
-                ? ' (' + this.measure_data[0][this.config.unit_col] + ')'
-                : '');
+            this.measure.current +
+            (this.measure.unit ? ' (' + this.measure.data[0][this.config.unit_col] + ')' : '');
     }
 
     function updateYaxisResetButton() {
@@ -773,6 +957,54 @@
                         this.config.y.domain[1] +
                         ']'
                 );
+    }
+
+    function deriveStatistics() {
+        var _this = this;
+
+        if (this.config.normal_range_method === 'LLN-ULN') {
+            this.lln = function(d) {
+                return d instanceof Object
+                    ? +d[_this.config.normal_col_low]
+                    : d3.median(_this.measure.data, function(d) {
+                          return +d[_this.config.normal_col_low];
+                      });
+            };
+            this.uln = function(d) {
+                return d instanceof Object
+                    ? +d[_this.config.normal_col_high]
+                    : d3.median(_this.measure.data, function(d) {
+                          return +d[_this.config.normal_col_high];
+                      });
+            };
+        } else if (this.config.normal_range_method === 'Standard Deviation') {
+            this.mean = d3.mean(this.measure.results);
+            this.sd = d3.deviation(this.measure.results);
+            this.lln = function() {
+                return _this.mean - _this.config.normal_range_sd * _this.sd;
+            };
+            this.uln = function() {
+                return _this.mean + _this.config.normal_range_sd * _this.sd;
+            };
+        } else if (this.config.normal_range_method === 'Quantiles') {
+            this.lln = function() {
+                return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_low);
+            };
+            this.uln = function() {
+                return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_high);
+            };
+        } else {
+            this.lln = function(d) {
+                return d instanceof Object
+                    ? d[_this.config.value_col] + 1
+                    : _this.measure.results[0];
+            };
+            this.uln = function(d) {
+                return d instanceof Object
+                    ? d[_this.config.value_col] - 1
+                    : _this.measure.results[_this.measure.results.length - 1];
+            };
+        }
     }
 
     function onPreprocess() {
@@ -796,6 +1028,9 @@
 
         // 4b Update y-axis limit controls to match y-axis domain.
         updateYaxisLimitControls.call(this);
+
+        // 4c Define normal range statistics.
+        deriveStatistics.call(this);
     }
 
     function onDatatransform() {}
@@ -839,7 +1074,7 @@
         );
     }
 
-    function clearSmallMultiples() {
+    function resetChart() {
         delete this.hovered_id;
         delete this.selected_id;
         this.wrap
@@ -848,12 +1083,19 @@
             .remove();
     }
 
+    function updateBottomMargin() {
+        this.config.margin.bottom = this.config.x.vertical_space;
+    }
+
     function onDraw() {
         //Annotate participant count.
         updateParticipantCount(this, '#participant-count');
 
         //Clear current multiples.
-        clearSmallMultiples.call(this);
+        resetChart.call(this);
+
+        //Update bottom margin for tick label rotation.
+        updateBottomMargin.call(this);
     }
 
     function highlight() {
@@ -918,6 +1160,29 @@
 
     function maintainHighlight() {
         if (this.selected_id) highlight.call(this);
+    }
+
+    function drawNormalRange() {
+        this.wrap.select('.normal-range').remove();
+        if (this.config.normal_range_method) {
+            var normalRange = this.svg
+                .insert('g', '.line-supergroup')
+                .classed('normal-range', true);
+            normalRange
+                .append('rect')
+                .attr({
+                    x: 0,
+                    y: this.y(this.uln()),
+                    width: this.plot_width,
+                    height: this.y(this.lln()) - this.y(this.uln()),
+                    'clip-path': 'url(#' + this.id + ')'
+                })
+                .style({
+                    fill: 'blue',
+                    'fill-opacity': 0.1
+                });
+            normalRange.append('title').text('Normal range: ' + this.lln() + '-' + this.uln());
+        }
     }
 
     function clearHighlight() {
@@ -1167,17 +1432,22 @@
         this.svg.select('.norms').remove();
 
         //add new
-        this.svg
-            .append('path')
+        var normalRange = this.svg
+            .append('g')
             .datum(myRows)
-            .attr('class', 'norms')
+            .attr('class', 'norms');
+        normalRange
+            .append('path')
             .attr('fill', 'blue')
             .attr('fill-opacity', 0.1)
             .attr('d', area);
+        normalRange.append('title').text(function(d) {
+            return 'Normal range: ' + d[0].STNRLO + '-' + d[0].STNRHI;
+        });
     }
 
     function adjustTicks() {
-        if (this.config.rotate_x_tick_labels)
+        if (this.config.x.rotate_tick_labels)
             this.svg
                 .selectAll('.x.axis .tick text')
                 .attr({
@@ -1276,9 +1546,12 @@
             this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
 
             //Set y-label to measure unit.
-            this.config.y.label = this.raw_data.find(function(d) {
-                return d[_this.config.measure_col] === _this.wrap.select('.wc-chart-title').text();
-            })[this.config.unit_col];
+            this.config.y.label =
+                this.raw_data.find(function(d) {
+                    return (
+                        d[_this.config.measure_col] === _this.wrap.select('.wc-chart-title').text()
+                    );
+                })[this.config.unit_col] || '';
         });
 
         multiples.on('preprocess', function() {
@@ -1362,7 +1635,19 @@
             return f[chart.config.id_col] === id[chart.config.id_col];
         });
 
-        webcharts.multiply(multiples, ptData, chart.config.measure_col);
+        webcharts.multiply(
+            multiples,
+            ptData,
+            chart.config.measure_col,
+            d3
+                .set(
+                    ptData.map(function(d) {
+                        return d[chart.config.measure_col];
+                    })
+                )
+                .values()
+                .sort()
+        );
     }
 
     function addLineEventListeners() {
@@ -1612,6 +1897,9 @@
     function onResize() {
         //Maintain mark highlighting.
         maintainHighlight.call(this);
+
+        //Draw normal range.
+        drawNormalRange.call(this);
 
         //Add event listeners to lines, points, and overlay.
         addEventListeners.call(this);

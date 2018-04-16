@@ -1,5 +1,5 @@
 import clone from '../../../util/clone';
-import { min, max } from 'd3';
+import { min, max, set } from 'd3';
 import { createChart, multiply } from 'webcharts';
 import rangePolygon from './smallMultiples/rangePolygon';
 import adjustTicks from '../../adjustTicks';
@@ -80,9 +80,10 @@ export default function smallMultiples(id, chart) {
         this.wrap.selectAll('.wc-chart').style('padding-bottom', '2px');
 
         //Set y-label to measure unit.
-        this.config.y.label = this.raw_data.find(
-            d => d[this.config.measure_col] === this.wrap.select('.wc-chart-title').text()
-        )[this.config.unit_col];
+        this.config.y.label =
+            this.raw_data.find(
+                d => d[this.config.measure_col] === this.wrap.select('.wc-chart-title').text()
+            )[this.config.unit_col] || '';
     });
 
     multiples.on('preprocess', function() {
@@ -140,5 +141,12 @@ export default function smallMultiples(id, chart) {
         f => f[chart.config.id_col] === id[chart.config.id_col]
     );
 
-    multiply(multiples, ptData, chart.config.measure_col);
+    multiply(
+        multiples,
+        ptData,
+        chart.config.measure_col,
+        set(ptData.map(d => d[chart.config.measure_col]))
+            .values()
+            .sort()
+    );
 }
