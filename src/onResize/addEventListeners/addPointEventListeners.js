@@ -5,15 +5,20 @@ import applySelected from './functions/applySelected';
 import smallMultiples from './functions/smallMultiples';
 
 export default function addPointEventListeners() {
-    this.svg
-        .selectAll('.point')
-        .on('mouseover', d => {
-            this.hovered_id = d.values.raw[0][this.config.id_col];
-            highlight.call(this);
+    const context = this;
+    const lines = this.svg.selectAll('.line');
+    const points = this.svg.selectAll('.point');
+
+    points
+        .on('mouseover', function(d) {
+            delete context.hovered_id;
+            clearHighlight.call(context);
+            context.hovered_id = d.values.raw[0][context.config.id_col];
+            highlight.call(context);
         })
-        .on('mouseout', d => {
-            delete this.hovered_id;
-            clearHighlight.call(this);
+        .on('mouseout', function(d) {
+            delete context.hovered_id;
+            clearHighlight.call(context);
         })
         .on('click', d => {
             this.selected_id = d.values.raw[0][this.config.id_col];

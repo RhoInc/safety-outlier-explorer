@@ -1079,7 +1079,7 @@
         );
     }
 
-    function clearSmallMultiples() {
+    function resetChart() {
         delete this.hovered_id;
         delete this.selected_id;
         this.wrap
@@ -1097,23 +1097,27 @@
         updateParticipantCount(this, '#participant-count');
 
         //Clear current multiples.
-        clearSmallMultiples.call(this);
+        resetChart.call(this);
 
         //Update bottom margin for tick label rotation.
         updateBottomMargin.call(this);
     }
 
-    d3.selection.prototype.moveToFront = function() {
-        return this.each(function() {
-            this.parentNode.appendChild(this);
-        });
-    };
-
     function highlight() {
         var _this = this;
 
-        var myLine = this.svg
+        //Highlight line and move in front of all other lines.
+        this.svg
             .selectAll('.line')
+            .sort(function(a, b) {
+                return a.key.indexOf(_this.selected_id) === 0
+                    ? 2
+                    : b.key.indexOf(_this.selected_id) === 0
+                      ? -2
+                      : a.key.indexOf(_this.hovered_id) === 0
+                        ? 1
+                        : b.key.indexOf(_this.hovered_id) === 0 ? -1 : 0;
+            })
             .filter(function(d) {
                 return (
                     [_this.hovered_id, _this.selected_id].indexOf(
@@ -1121,16 +1125,26 @@
                     ) > -1
                 );
             })
-            .moveToFront();
-        myLine.select('path').attr(
-            'stroke-width',
-            this.config.marks.find(function(mark) {
-                return mark.type === 'line';
-            }).attributes['stroke-width'] * 8
-        );
+            .select('path')
+            .attr(
+                'stroke-width',
+                this.config.marks.find(function(mark) {
+                    return mark.type === 'line';
+                }).attributes['stroke-width'] * 8
+            );
 
-        var myPoints = this.svg
+        //Highlight points and move in front of all other points.
+        this.svg
             .selectAll('.point')
+            .sort(function(a, b) {
+                return a.key.indexOf(_this.selected_id) === 0
+                    ? 2
+                    : b.key.indexOf(_this.selected_id) === 0
+                      ? -2
+                      : a.key.indexOf(_this.hovered_id) === 0
+                        ? 1
+                        : b.key.indexOf(_this.hovered_id) === 0 ? -1 : 0;
+            })
             .filter(function(d) {
                 return (
                     [_this.hovered_id, _this.selected_id].indexOf(
@@ -1138,8 +1152,6 @@
                     ) > -1
                 );
             })
-            .moveToFront();
-        myPoints
             .select('circle')
             .attr(
                 'r',
@@ -1183,7 +1195,6 @@
             .selectAll('.line:not(.selected)')
             .select('path')
             .attr(this.config.line_attributes);
-        this.svg.selectAll('.line.selected').moveToFront();
         this.svg
             .selectAll('.point:not(.selected)')
             .select('circle')
@@ -1194,24 +1205,31 @@
                     return mark.type === 'circle';
                 }).radius
             );
-        this.svg.selectAll('.point.selected').moveToFront();
     }
 
     function addOverlayEventListener() {
         var _this = this;
 
-        this.svg.select('.overlay').on('click', function() {
-            //clear current multiples
-            _this.wrap
-                .select('.multiples')
-                .select('.wc-small-multiples')
-                .remove();
-            _this.svg.selectAll('.line').classed('selected', false);
-            _this.svg.selectAll('.point').classed('selected', false);
-            delete _this.hovered_id;
-            delete _this.selected_id;
-            clearHighlight.call(_this);
-        });
+        var context = this;
+
+        this.svg
+            .select('.overlay')
+            .on('mouseover', function() {
+                delete context.hovered_id;
+                clearHighlight.call(context);
+            })
+            .on('click', function() {
+                //clear current multiples
+                _this.wrap
+                    .select('.multiples')
+                    .select('.wc-small-multiples')
+                    .remove();
+                _this.svg.selectAll('.line').classed('selected', false);
+                _this.svg.selectAll('.point').classed('selected', false);
+                delete _this.hovered_id;
+                delete _this.selected_id;
+                clearHighlight.call(_this);
+            });
     }
 
     function clearSelected() {
@@ -1669,15 +1687,20 @@
     function addLineEventListeners() {
         var _this = this;
 
-        this.svg
-            .selectAll('.line')
+        var context = this;
+        var lines = this.svg.selectAll('.line');
+        var points = this.svg.selectAll('.point');
+
+        lines
             .on('mouseover', function(d) {
-                _this.hovered_id = d.values[0].values.raw[0][_this.config.id_col];
-                highlight.call(_this);
+                delete context.hovered_id;
+                clearHighlight.call(context);
+                context.hovered_id = d.values[0].values.raw[0][context.config.id_col];
+                highlight.call(context);
             })
             .on('mouseout', function(d) {
-                delete _this.hovered_id;
-                clearHighlight.call(_this);
+                delete context.hovered_id;
+                clearHighlight.call(context);
             })
             .on('click', function(d) {
                 _this.selected_id = d.values[0].values.raw[0][_this.config.id_col];
@@ -1691,15 +1714,20 @@
     function addPointEventListeners() {
         var _this = this;
 
-        this.svg
-            .selectAll('.point')
+        var context = this;
+        var lines = this.svg.selectAll('.line');
+        var points = this.svg.selectAll('.point');
+
+        points
             .on('mouseover', function(d) {
-                _this.hovered_id = d.values.raw[0][_this.config.id_col];
-                highlight.call(_this);
+                delete context.hovered_id;
+                clearHighlight.call(context);
+                context.hovered_id = d.values.raw[0][context.config.id_col];
+                highlight.call(context);
             })
             .on('mouseout', function(d) {
-                delete _this.hovered_id;
-                clearHighlight.call(_this);
+                delete context.hovered_id;
+                clearHighlight.call(context);
             })
             .on('click', function(d) {
                 _this.selected_id = d.values.raw[0][_this.config.id_col];
