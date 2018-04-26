@@ -15,7 +15,7 @@ import onDatatransform from './onDatatransform';
 import onDraw from './onDraw';
 import onResize from './onResize';
 
-export default function safetyOutlierExplorer(element, settings) {
+export default function safetyOutlierExplorer(element, settings, dom) {
     //Merge user settings with default settings.
     let mergedSettings = Object.assign({}, defaultSettings, settings);
 
@@ -28,6 +28,8 @@ export default function safetyOutlierExplorer(element, settings) {
 
     //Create chart.
     let chart = createChart(element, mergedSettings, controls);
+    chart.test = !!dom;
+    chart.dom = dom ? dom.window.document : document;
     chart.on('init', onInit);
     chart.on('layout', onLayout);
     chart.on('preprocess', onPreprocess);

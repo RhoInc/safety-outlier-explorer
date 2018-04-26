@@ -1,6 +1,6 @@
 export default function addParticipantCountContainer() {
-    this.controls.wrap
+    this.populationAnnotation = this.controls.wrap
         .append('div')
-        .attr('id', 'participant-count')
+        .attr('id', 'population-count')
         .style('font-style', 'italic');
 }

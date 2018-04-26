@@ -17,14 +17,13 @@ export default function updateParticipantCount(chart, selector, id_unit) {
     var percentage = format('0.1%')(currentObs / chart.populationCount);
 
     //clear the annotation
-    var annotation = select(selector);
-    select(selector)
+    chart.populationAnnotation
         .selectAll('*')
         .remove();
 
     //update the annotation
     var units = id_unit ? ' ' + id_unit : ' participant(s)';
-    annotation.text(
+    chart.populationAnnotation.text(
         '\n' + currentObs + ' of ' + chart.populationCount + units + ' shown (' + percentage + ')'
     );
 }

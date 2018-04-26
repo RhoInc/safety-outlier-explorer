@@ -33,5 +33,5 @@ export default function smallMultiples() {
     onResize.call(this);
 
     //Initialize small multiples.
-    multiply(this.multiples, this.participantData, 'measure_unit', this.measures);
+    multiply(this.multiples, this.participantData, 'measure_unit', this.measures, null, this.test);
 }
