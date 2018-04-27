@@ -5,6 +5,7 @@ import setYdomain from './onPreprocess/setYdomain';
 import updateYaxisLimitControls from './onPreprocess/updateYaxisLimitControls';
 import setYaxisLabel from './onPreprocess/setYaxisLabel';
 import updateYaxisResetButton from './onPreprocess/updateYaxisResetButton';
+import deriveStatistics from './onPreprocess/deriveStatistics';
 
 export default function onPreprocess() {
     // 1. Capture currently selected measure.
@@ -27,4 +28,7 @@ export default function onPreprocess() {
 
     // 4b Update y-axis limit controls to match y-axis domain.
     updateYaxisLimitControls.call(this);
+
+    // 4c Define normal range statistics.
+    deriveStatistics.call(this);
 }

@@ -1,10 +1,14 @@
 import updateParticipantCount from './onDraw/updateParticipantCount';
-import clearSmallMultiples from './onDraw/clearSmallMultiples';
+import resetChart from './onDraw/resetChart';
+import updateBottomMargin from './onDraw/updateBottomMargin';
 
 export default function onDraw() {
     //Annotate participant count.
     updateParticipantCount(this, '#participant-count');
 
     //Clear current multiples.
-    clearSmallMultiples.call(this);
+    resetChart.call(this);
+
+    //Update bottom margin for tick label rotation.
+    updateBottomMargin.call(this);
 }

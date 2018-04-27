@@ -14,6 +14,8 @@ export const rendererSpecificSettings = {
             type: 'linear',
             value_col: 'DY',
             label: 'Study Day',
+            order_col: 'DY',
+            order: null,
             rotate_tick_labels: false,
             vertical_space: 0
         }
@@ -35,10 +37,27 @@ export const rendererSpecificSettings = {
         width: 300,
         height: 100
     },
+    normal_range_method: 'LLN-ULN',
+    normal_range_sd: 1.96,
+    normal_range_quantile_low: 0.05,
+    normal_range_quantile_high: 0.95,
     visits_without_data: false,
     unscheduled_visits: false,
     unscheduled_visit_pattern: '/unscheduled|early termination/i',
-    unscheduled_visit_values: null // takes precedence over unscheduled_visit_pattern
+    unscheduled_visit_values: null, // takes precedence over unscheduled_visit_pattern
+    line_attributes: {
+        stroke: 'black',
+        'stroke-width': 0.5,
+        'stroke-opacity': 0.75
+    },
+    point_attributes: {
+        stroke: 'rgb(102,194,165)',
+        'stroke-width': 0.5,
+        'stroke-opacity': 1,
+        radius: 3,
+        fill: 'rgb(102,194,165)',
+        'fill-opacity': 1
+    }
 };
 
 export const webchartsSettings = {
@@ -60,9 +79,6 @@ export const webchartsSettings = {
             per: null, //set in syncSettings()
             type: 'line',
             attributes: {
-                'stroke-width': 0.5,
-                'stroke-opacity': 0.5,
-                stroke: '#999',
                 'clip-path': 'url(#1)'
             },
             tooltip: null //set in syncSettings()
@@ -70,11 +86,7 @@ export const webchartsSettings = {
         {
             per: null, //set in syncSettings()
             type: 'circle',
-            radius: 2,
             attributes: {
-                'stroke-width': 0.5,
-                'stroke-opacity': 0.5,
-                'fill-opacity': 1,
                 'clip-path': 'url(#1)'
             },
             tooltip: null //set in syncSettings()
@@ -91,25 +103,30 @@ export default Object.assign({}, rendererSpecificSettings, webchartsSettings);
 export function syncSettings(settings) {
     const time_col = settings.time_cols[0];
 
+    //x-axis
     settings.x.column = time_col.value_col;
     settings.x.type = time_col.type;
     settings.x.label = time_col.label;
     settings.x.order = time_col.order;
 
+    //y-axis
     settings.y.column = settings.value_col;
 
-    settings.marks[0].per = [settings.id_col, settings.measure_col];
-    settings.marks[0].tooltip = `[${settings.id_col}]`;
+    //lines
+    const lines = settings.marks.find(mark => mark.type === 'line');
+    lines.per = [settings.id_col, settings.measure_col];
+    lines.tooltip = `[${settings.id_col}]`;
+    Object.assign(lines.attributes, settings.line_attributes);
+    lines.attributes['stroke-width'] = settings.line_attributes['stroke-width'] || 0.5;
 
-    settings.marks[1].per = [
-        settings.id_col,
-        settings.measure_col,
-        time_col.value_col,
-        settings.value_col
-    ];
-    settings.marks[1].tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${
-        settings.unit_col
-    }] at ${settings.x.column} = [${settings.x.column}]`;
+    //points
+    const points = settings.marks.find(mark => mark.type === 'circle');
+    points.per = [settings.id_col, settings.measure_col, time_col.value_col, settings.value_col];
+    points.tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${settings.unit_col}] at ${
+        settings.x.column
+    } = [${settings.x.column}]`;
+    Object.assign(points.attributes, settings.point_attributes);
+    points.radius = settings.point_attributes.radius || 3;
 
     //Add custom marks to settings.marks.
     if (settings.custom_marks) settings.custom_marks.forEach(mark => settings.marks.push(mark));
@@ -142,19 +159,68 @@ export function syncSettings(settings) {
 
 // Default Control objects
 export const controlInputs = [
-    { label: 'Measure', type: 'subsetter', start: null },
-    { type: 'dropdown', label: 'X-axis', option: 'x.column', require: true },
-    { type: 'number', label: 'Lower Limit', option: 'y.domain[0]', require: true },
-    { type: 'number', label: 'Upper Limit', option: 'y.domain[1]', require: true },
-    { type: 'checkbox', inline: true, option: 'visits_without_data', label: 'Visits without data' },
-    { type: 'checkbox', inline: true, option: 'unscheduled_visits', label: 'Unscheduled visits' }
+    {
+        type: 'subsetter',
+        value_col: 'measure_unit', // set in syncControlInputs()
+        label: 'Measure',
+        start: null
+    },
+    {
+        type: 'dropdown',
+        option: 'x.column',
+        label: 'X-axis',
+        require: true
+    },
+    {
+        type: 'number',
+        option: 'y.domain[0]',
+        label: 'Lower',
+        require: true
+    },
+    {
+        type: 'number',
+        option: 'y.domain[1]',
+        label: 'Upper',
+        require: true
+    },
+    {
+        type: 'dropdown',
+        option: 'normal_range_method',
+        label: 'Method',
+        values: ['None', 'LLN-ULN', 'Standard Deviation', 'Quantiles'],
+        require: true
+    },
+    {
+        type: 'number',
+        option: 'normal_range_sd',
+        label: '# Std. Dev.'
+    },
+    {
+        type: 'number',
+        label: 'Lower',
+        option: 'normal_range_quantile_low'
+    },
+    {
+        type: 'number',
+        label: 'Upper',
+        option: 'normal_range_quantile_high'
+    },
+    {
+        type: 'checkbox',
+        inline: true,
+        option: 'visits_without_data',
+        label: 'Without Data'
+    },
+    {
+        type: 'checkbox',
+        inline: true,
+        option: 'unscheduled_visits',
+        label: 'Unscheduled'
+    }
 ];
 
 // Map values from settings to control inputs
 export function syncControlInputs(controlInputs, settings) {
-    const labTestControl = controlInputs.find(d => d.label === 'Measure');
-    labTestControl.value_col = settings.measure_col;
-
     const xAxisControl = controlInputs.find(d => d.label === 'X-axis');
     xAxisControl.values = settings.time_cols.map(d => d.value_col);
 
@@ -175,9 +241,15 @@ export function syncControlInputs(controlInputs, settings) {
     }
 
     //Remove unscheduled visit control if unscheduled visit pattern is unscpecified.
-    if (!settings.unscheduled_visit_regex)
+    if (
+        !settings.unscheduled_visit_regex &&
+        !(
+            Array.isArray(settings.unscheduled_visit_values) &&
+            settings.unscheduled_visit_values.length
+        )
+    )
         controlInputs.splice(
-            controlInputs.map(controlInput => controlInput.label).indexOf('Unscheduled visits'),
+            controlInputs.map(controlInput => controlInput.label).indexOf('Unscheduled Visits'),
             1
         );
 

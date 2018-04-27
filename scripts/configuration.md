@@ -231,6 +231,42 @@ Height
 
 
 
+## settings.normal_range_method
+`string`
+
+method for identifying the normal range
+
+**default:** `"LLN-ULN"`
+
+
+
+## settings.normal_range_sd
+`number`
+
+the number of standard deviations from the mean with which to define the normal range
+
+**default:** `1.96`
+
+
+
+## settings.normal_range_quantile_low
+`number`
+
+this quantile defines the lower bound of the normal range
+
+**default:** `0.05`
+
+
+
+## settings.normal_range_quantile_high
+`number`
+
+this quantile defines the upper bound of the normal range
+
+**default:** `0.95`
+
+
+
 ## settings.visits_without_data
 `boolean`
 
@@ -265,9 +301,86 @@ an array of strings that identify unscheduled visits; overrides unscheduled_visi
 
 **default:** none
 
+
+
+## settings.line_attributes
+`object`
+
+an object that defines the line color, thickness, and opacity
+
+### settings.line_attributes.stroke
+`string`
+
+Line Color
+
+**default:** `"black"`
+
+### settings.line_attributes.stroke-width
+`number`
+
+Line Thickness
+
+**default:** `0.5`
+
+### settings.line_attributes.stroke-opacity
+`number`
+
+Line Opacity
+
+**default:** `0.75`
+
+
+
+## settings.point_attributes
+`object`
+
+an object that defines the point color, radius, and opacity and its outline color, thickness, and opacity
+
+### settings.point_attributes.stroke
+`string`
+
+Point Outline Color
+
+**default:** `"rgb(102,194,165)"`
+
+### settings.point_attributes.stroke-width
+`number`
+
+Point Outline Thickness
+
+**default:** `0.5`
+
+### settings.point_attributes.stroke-opacity
+`number`
+
+Point Outline Opacity
+
+**default:** `1`
+
+### settings.point_attributes.fill
+`string`
+
+Point Color
+
+**default:** `"rgb(102,194,165)"`
+
+### settings.point_attributes.radius
+`number`
+
+Point Radius
+
+**default:** `3`
+
+### settings.point_attributes.fill-opacity
+`number`
+
+Point Opacity
+
+**default:** `1`
+
 # Webcharts settings
 The object below contains each Webcharts setting as of version 2.2.2.
 
 ```
-{    x: {        column: null, //set in syncSettings()        type: null, //set in syncSettings()        behavior: 'raw'    },    y: {        column: null, //set in syncSettings()        stat: 'mean',        type: 'linear',        label: 'Value',        behavior: 'raw',        format: '0.2f'    },    marks: [        {            per: null, //set in syncSettings()            type: 'line',            attributes: {                'stroke-width': 0.5,                'stroke-opacity': 0.5,                stroke: '#999',                'clip-path': 'url(#1)'            },            tooltip: null //set in syncSettings()        },        {            per: null, //set in syncSettings()            type: 'circle',            radius: 2,            attributes: {                'stroke-width': 0.5,                'stroke-opacity': 0.5,                'fill-opacity': 1,                'clip-path': 'url(#1)'            },            tooltip: null //set in syncSettings()        }    ],    resizable: true,    margin: { right: 20 }, //create space for box plot    aspect: 3}
+{    x: {        column: null, //set in syncSettings()        type: null, //set in syncSettings()        behavior: 'raw'    },    y: {        column: null, //set in syncSettings()        stat: 'mean',        type: 'linear',        label: 'Value',        behavior: 'raw',        format: '0.2f'    },    marks: [        {            per: null, //set in syncSettings()            type: 'line',            attributes: {                'clip-path': 'url(#1)'            },            tooltip: null //set in syncSettings()        },        {            per: null, //set in syncSettings()            type: 'circle',            attributes: {                'clip-path': 'url(#1)'            },            tooltip: null //set in syncSettings()        }    ],    resizable: true,    margin: { right: 20 }, //create space for box plot    aspect: 3}
 ```
