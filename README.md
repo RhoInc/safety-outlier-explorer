@@ -67,7 +67,7 @@ The chart can be configured to facilitate non-standard data formats and to alter
 
 ## Links 
 
-- [Interactive Example](https://rhoinc.github.io/viz-library/examples/0008-safetyExplorer-default/safety-outlier-explorer/)
+- [Interactive Example](https://rhoinc.github.io/safety-outlier-explorer/build/test-page/)
 - [Configuration](https://github.com/RhoInc/safety-outlier-explorer/wiki/Configuration) 
 - [API](https://github.com/RhoInc/safety-outlier-explorer/wiki/API)
 - [Technical Documentations](https://github.com/RhoInc/safety-outlier-explorer/wiki/Technical-Documentation) 
