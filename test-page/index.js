@@ -4,7 +4,9 @@ d3.csv(
         if (error)
             console.log(error);
 
-        var settings = {};
+        var settings = {
+          tooltip_cols: [{label:"Date",value_col:"DT"}],
+        };
         var instance = safetyOutlierExplorer(
             '#container',
             settings

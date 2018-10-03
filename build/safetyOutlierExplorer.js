@@ -111,6 +111,7 @@
             { value_col: 'SEX', label: 'Sex' },
             { value_col: 'RACE', label: 'Race' }
         ],
+        tooltip_cols: null,
         multiples_sizing: {
             width: 300,
             height: 100
@@ -171,7 +172,7 @@
             }
         ],
         resizable: true,
-        margin: { right: 20 }, //create space for box plot
+        margin: { top: 5, bottom: 5, right: 20 }, //create space for box plot
         aspect: 3
     };
 
@@ -210,17 +211,28 @@
             settings.value_col
         ];
         points.tooltip =
-            '[' +
+            'ID = [' +
             settings.id_col +
-            ']:  [' +
+            ']\n[' +
+            settings.measure_col +
+            '] = [' +
             settings.value_col +
             '] [' +
             settings.unit_col +
-            '] at ' +
+            ']\n' +
             settings.x.column +
             ' = [' +
             settings.x.column +
             ']';
+        //add custom tooltip values
+        if (settings.tooltip_cols) {
+            settings.tooltip_cols.forEach(function(tooltip) {
+                var obj =
+                    typeof tooltip == 'string' ? { label: tooltip, value_col: tooltip } : tooltip;
+                points.tooltip = points.tooltip + ('\n' + obj.label + ' = [' + obj.value_col + ']');
+            });
+        }
+
         Object.assign(points.attributes, settings.point_attributes);
         points.radius = settings.point_attributes.radius || 3;
 
