@@ -4,10 +4,13 @@ export default function updateYaxisLimitControls() {
         .selectAll('.control-group')
         .filter(f => f.option === 'y.domain[0]')
         .select('input')
-        .property('value', this.config.y.domain[0]);
+        .property('value', this.config.y.domain[0])
+        .style('box-shadow', 'none');
+
     this.controls.wrap
         .selectAll('.control-group')
         .filter(f => f.option === 'y.domain[1]')
         .select('input')
-        .property('value', this.config.y.domain[1]);
+        .property('value', this.config.y.domain[1])
+        .style('box-shadow', 'none');
 }
