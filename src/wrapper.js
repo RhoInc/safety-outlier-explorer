@@ -1,6 +1,7 @@
 //polyfills
 import './util/object-assign';
 import './util/array-find';
+import './util/moveTo';
 
 //settings
 import defaultSettings from './defaultSettings';

@@ -1,6 +1,6 @@
 export default function highlight() {
     //Highlight line and move in front of all other lines.
-    this.svg
+    var lines = this.svg
         .selectAll('.line')
         .sort(
             (a, b) =>
@@ -11,13 +11,18 @@ export default function highlight() {
                       : a.key.indexOf(this.hovered_id) === 0
                         ? 1
                         : b.key.indexOf(this.hovered_id) === 0 ? -1 : 0
-        )
-        .filter(
-            d =>
-                [this.hovered_id, this.selected_id].indexOf(
-                    d.values[0].values.raw[0][this.config.id_col]
-                ) > -1
-        )
+        );
+
+    lines
+        .filter(d => d.values[0].values.raw[0][this.config.id_col] == this.hovered_id)
+        .select('path')
+        .attr(
+            'stroke-width',
+            this.config.marks.find(mark => mark.type === 'line').attributes['stroke-width'] * 4
+        );
+
+    lines
+        .filter(d => d.values[0].values.raw[0][this.config.id_col] == this.selected_id)
         .select('path')
         .attr(
             'stroke-width',
@@ -30,9 +35,9 @@ export default function highlight() {
         .sort(
             (a, b) =>
                 a.key.indexOf(this.selected_id) === 0
-                    ? 2
+                    ? -2
                     : b.key.indexOf(this.selected_id) === 0
-                      ? -2
+                      ? 2
                       : a.key.indexOf(this.hovered_id) === 0
                         ? 1
                         : b.key.indexOf(this.hovered_id) === 0 ? -1 : 0

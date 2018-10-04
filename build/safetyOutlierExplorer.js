@@ -4,7 +4,7 @@
         : typeof define === 'function' && define.amd
           ? define(['webcharts', 'd3'], factory)
           : (global.safetyOutlierExplorer = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3) {
+})(this, function(webcharts, d3$1) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -76,6 +76,22 @@
         });
     }
 
+    // https://github.com/wbkd/d3-extended
+    d3.selection.prototype.moveToFront = function() {
+        return this.each(function() {
+            this.parentNode.appendChild(this);
+        });
+    };
+
+    d3.selection.prototype.moveToBack = function() {
+        return this.each(function() {
+            var firstChild = this.parentNode.firstChild;
+            if (firstChild) {
+                this.parentNode.insertBefore(this, firstChild);
+            }
+        });
+    };
+
     var rendererSpecificSettings = {
         id_col: 'USUBJID',
         time_cols: [
@@ -130,12 +146,12 @@
             'stroke-opacity': 0.75
         },
         point_attributes: {
-            stroke: 'rgb(102,194,165)',
+            stroke: '#1f78b4',
             'stroke-width': 0.5,
             'stroke-opacity': 1,
             radius: 3,
-            fill: 'rgb(102,194,165)',
-            'fill-opacity': 1
+            fill: '#1f78b4',
+            'fill-opacity': 0.2
         }
     };
 
@@ -382,7 +398,7 @@
     function countParticipants() {
         var _this = this;
 
-        this.populationCount = d3
+        this.populationCount = d3$1
             .set(
                 this.raw_data.map(function(d) {
                     return d[_this.config.id_col];
@@ -449,7 +465,7 @@
     }
 
     function captureMeasures() {
-        this.measures = d3
+        this.measures = d3$1
             .set(
                 this.initial_data.map(function(d) {
                     return d.measure_unit;
@@ -477,7 +493,7 @@
                     _this.raw_data[0].hasOwnProperty(time_settings.order_col)
                 ) {
                     //Define a unique set of visits with visit order concatenated.
-                    visits = d3
+                    visits = d3$1
                         .set(
                             _this.raw_data.map(function(d) {
                                 return (
@@ -493,7 +509,7 @@
                             var aOrder = a.split('|')[0],
                                 bOrder = b.split('|')[0],
                                 diff = +aOrder - +bOrder;
-                            return diff ? diff : d3.ascending(a, b);
+                            return diff ? diff : d3$1.ascending(a, b);
                         })
                         .map(function(visit) {
                             return visit.split('|')[1];
@@ -501,7 +517,7 @@
                 } else {
                     //Otherwise sort a unique set of visits alphanumerically.
                     //Define a unique set of visits.
-                    visits = d3
+                    visits = d3$1
                         .set(
                             _this.raw_data.map(function(d) {
                                 return d[time_settings.value_col];
@@ -559,7 +575,7 @@
                         ' ] filter has been removed because the variable does not exist.'
                 );
             } else {
-                var levels = d3
+                var levels = d3$1
                     .set(
                         _this.raw_data.map(function(d) {
                             return d[input.value_col];
@@ -622,7 +638,7 @@
                 return d.label.toLowerCase().replace(' ', '-');
             })
             .each(function(d) {
-                d3.select(this).classed(d.type, true);
+                d3$1.select(this).classed(d.type, true);
             });
 
         //Give y-axis controls a common class name.
@@ -783,7 +799,7 @@
         normalRangeInputs.select('input').attr('step', 0.01);
 
         normalRangeMethodControl.on('change', function() {
-            var normal_range_method = d3
+            var normal_range_method = d3$1
                 .select(this)
                 .select('option:checked')
                 .text();
@@ -863,7 +879,7 @@
             .sort(function(a, b) {
                 return a - b;
             });
-        this.measure.domain = d3.extent(this.measure.results);
+        this.measure.domain = d3$1.extent(this.measure.results);
         this.measure.range = this.measure.domain[1] - this.measure.domain[0];
         this.raw_data = this.measure.data.filter(function(d) {
             return _this.config.unscheduled_visits || !d.unscheduled;
@@ -876,7 +892,7 @@
         if (!this.config.visits_without_data)
             this.config.x.domain = this.config.x.domain.filter(function(visit) {
                 return (
-                    d3
+                    d3$1
                         .set(
                             _this.raw_data.map(function(d) {
                                 return d[_this.config.time_settings.value_col];
@@ -986,20 +1002,20 @@
             this.lln = function(d) {
                 return d instanceof Object
                     ? +d[_this.config.normal_col_low]
-                    : d3.median(_this.measure.data, function(d) {
+                    : d3$1.median(_this.measure.data, function(d) {
                           return +d[_this.config.normal_col_low];
                       });
             };
             this.uln = function(d) {
                 return d instanceof Object
                     ? +d[_this.config.normal_col_high]
-                    : d3.median(_this.measure.data, function(d) {
+                    : d3$1.median(_this.measure.data, function(d) {
                           return +d[_this.config.normal_col_high];
                       });
             };
         } else if (this.config.normal_range_method === 'Standard Deviation') {
-            this.mean = d3.mean(this.measure.results);
-            this.sd = d3.deviation(this.measure.results);
+            this.mean = d3$1.mean(this.measure.results);
+            this.sd = d3$1.deviation(this.measure.results);
             this.lln = function() {
                 return _this.mean - _this.config.normal_range_sd * _this.sd;
             };
@@ -1008,10 +1024,13 @@
             };
         } else if (this.config.normal_range_method === 'Quantiles') {
             this.lln = function() {
-                return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_low);
+                return d3$1.quantile(_this.measure.results, _this.config.normal_range_quantile_low);
             };
             this.uln = function() {
-                return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_high);
+                return d3$1.quantile(
+                    _this.measure.results,
+                    _this.config.normal_range_quantile_high
+                );
             };
         } else {
             this.lln = function(d) {
@@ -1064,18 +1083,18 @@
     // - id_unit - a text string to label the units in the annotation (default = "participants")
     function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
-        var currentObs = d3
+        var currentObs = d3$1
             .set(
                 chart.filtered_data.map(function(d) {
                     return d[chart.config.id_col];
                 })
             )
             .values().length;
-        var percentage = d3.format('0.1%')(currentObs / chart.populationCount);
+        var percentage = d3$1.format('0.1%')(currentObs / chart.populationCount);
 
         //clear the annotation
-        var annotation = d3.select(selector);
-        d3
+        var annotation = d3$1.select(selector);
+        d3$1
             .select(selector)
             .selectAll('*')
             .remove();
@@ -1122,23 +1141,31 @@
         var _this = this;
 
         //Highlight line and move in front of all other lines.
-        this.svg
-            .selectAll('.line')
-            .sort(function(a, b) {
-                return a.key.indexOf(_this.selected_id) === 0
-                    ? 2
-                    : b.key.indexOf(_this.selected_id) === 0
-                      ? -2
-                      : a.key.indexOf(_this.hovered_id) === 0
-                        ? 1
-                        : b.key.indexOf(_this.hovered_id) === 0 ? -1 : 0;
-            })
+        var lines = this.svg.selectAll('.line').sort(function(a, b) {
+            return a.key.indexOf(_this.selected_id) === 0
+                ? 2
+                : b.key.indexOf(_this.selected_id) === 0
+                  ? -2
+                  : a.key.indexOf(_this.hovered_id) === 0
+                    ? 1
+                    : b.key.indexOf(_this.hovered_id) === 0 ? -1 : 0;
+        });
+
+        lines
             .filter(function(d) {
-                return (
-                    [_this.hovered_id, _this.selected_id].indexOf(
-                        d.values[0].values.raw[0][_this.config.id_col]
-                    ) > -1
-                );
+                return d.values[0].values.raw[0][_this.config.id_col] == _this.hovered_id;
+            })
+            .select('path')
+            .attr(
+                'stroke-width',
+                this.config.marks.find(function(mark) {
+                    return mark.type === 'line';
+                }).attributes['stroke-width'] * 4
+            );
+
+        lines
+            .filter(function(d) {
+                return d.values[0].values.raw[0][_this.config.id_col] == _this.selected_id;
             })
             .select('path')
             .attr(
@@ -1153,9 +1180,9 @@
             .selectAll('.point')
             .sort(function(a, b) {
                 return a.key.indexOf(_this.selected_id) === 0
-                    ? 2
+                    ? -2
                     : b.key.indexOf(_this.selected_id) === 0
-                      ? -2
+                      ? 2
                       : a.key.indexOf(_this.hovered_id) === 0
                         ? 1
                         : b.key.indexOf(_this.hovered_id) === 0 ? -1 : 0;
@@ -1558,7 +1585,7 @@
             );
 
             //Calculate range of data.
-            var ylo = d3.min(
+            var ylo = d3$1.min(
                 filtered_data
                     .map(function(m) {
                         return +m[_this.config.y.column];
@@ -1567,7 +1594,7 @@
                         return +f || +f === 0;
                     })
             );
-            var yhi = d3.max(
+            var yhi = d3$1.max(
                 filtered_data
                     .map(function(m) {
                         return +m[_this.config.y.column];
@@ -1597,7 +1624,7 @@
     function rangePolygon() {
         var _this = this;
 
-        var area = d3.svg
+        var area = d3$1.svg
             .area()
             .x(function(d) {
                 return (
@@ -1768,19 +1795,19 @@
             .map(function(d) {
                 return +d.values.y;
             })
-            .sort(d3.ascending);
+            .sort(d3$1.ascending);
         var height = this.plot_height;
         var width = 1;
         var domain = this.y_dom;
         var boxPlotWidth = 10;
         var boxColor = '#bbb';
         var boxInsideColor = 'white';
-        var fmt = d3.format('.2f');
+        var fmt = d3$1.format('.2f');
         var horizontal = true;
 
         //set up scales
-        var x = d3.scale.linear().range([0, width]);
-        var y = d3.scale.linear().range([height, 0]);
+        var x = d3$1.scale.linear().range([0, width]);
+        var y = d3$1.scale.linear().range([height, 0]);
 
         if (horizontal) {
             y.domain(domain);
@@ -1790,7 +1817,7 @@
 
         var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
         for (var i = 0; i < probs.length; i++) {
-            probs[i] = d3.quantile(results, probs[i]);
+            probs[i] = d3$1.quantile(results, probs[i]);
         }
 
         var boxplot = this.svg
@@ -1856,8 +1883,8 @@
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
-            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
+            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
+            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3))
             .style('fill', boxInsideColor)
             .style('stroke', boxColor);
@@ -1865,8 +1892,8 @@
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
-            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
+            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
+            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
             .style('fill', boxColor)
             .style('stroke', 'None');
@@ -1880,31 +1907,31 @@
                     d.values.length +
                     '\n' +
                     'Min = ' +
-                    d3.min(d.values) +
+                    d3$1.min(d.values) +
                     '\n' +
                     '5th % = ' +
-                    fmt(d3.quantile(d.values, 0.05)) +
+                    fmt(d3$1.quantile(d.values, 0.05)) +
                     '\n' +
                     'Q1 = ' +
-                    fmt(d3.quantile(d.values, 0.25)) +
+                    fmt(d3$1.quantile(d.values, 0.25)) +
                     '\n' +
                     'Median = ' +
-                    fmt(d3.median(d.values)) +
+                    fmt(d3$1.median(d.values)) +
                     '\n' +
                     'Q3 = ' +
-                    fmt(d3.quantile(d.values, 0.75)) +
+                    fmt(d3$1.quantile(d.values, 0.75)) +
                     '\n' +
                     '95th % = ' +
-                    fmt(d3.quantile(d.values, 0.95)) +
+                    fmt(d3$1.quantile(d.values, 0.95)) +
                     '\n' +
                     'Max = ' +
-                    d3.max(d.values) +
+                    d3$1.max(d.values) +
                     '\n' +
                     'Mean = ' +
-                    fmt(d3.mean(d.values)) +
+                    fmt(d3$1.mean(d.values)) +
                     '\n' +
                     'StDev = ' +
-                    fmt(d3.deviation(d.values))
+                    fmt(d3$1.deviation(d.values))
                 );
             });
     }
