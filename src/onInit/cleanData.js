@@ -1,7 +1,8 @@
 export default function cleanData() {
     //Remove missing and non-numeric data.
     const preclean = this.raw_data;
-    const clean = this.raw_data.filter(d => /^-?[0-9.]+$/.test(d[this.config.value_col]));
+    const clean = this.raw_data
+        .filter(d => /^-?[0-9.]+$/.test(d[this.config.value_col]));
     const nPreclean = preclean.length;
     const nClean = clean.length;
     const nRemoved = nPreclean - nClean;

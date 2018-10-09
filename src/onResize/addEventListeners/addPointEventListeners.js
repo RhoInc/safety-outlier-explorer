@@ -21,6 +21,7 @@ export default function addPointEventListeners() {
             clearHighlight.call(context);
         })
         .on('click', d => {
+            delete context.hovered_id;
             this.selected_id = d.values.raw[0][this.config.id_col];
             clearSelected.call(this);
             applySelected.call(this);

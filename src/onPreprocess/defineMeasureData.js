@@ -1,7 +1,8 @@
 import { extent } from 'd3';
 
 export default function defineMeasureData() {
-    this.measure.data = this.initial_data.filter(d => d.measure_unit === this.measure.current);
+    this.measure.data = this.initial_data
+        .filter(d => d.measure_unit === this.measure.current);
     this.measure.unit =
         this.config.unit_col && this.measure.data[0].hasOwnProperty(this.config.unit_col)
             ? this.measure.data[0][this.config.unit_col]
