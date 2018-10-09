@@ -1,6 +1,5 @@
 //polyfills
-import './util/object-assign';
-import './util/array-find';
+import './util/polyfills';
 import './util/moveTo';
 
 //settings

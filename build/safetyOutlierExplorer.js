@@ -1,35 +1,44 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts'), require('d3')))
+        ? (module.exports = factory(require('d3'), require('webcharts')))
         : typeof define === 'function' && define.amd
-          ? define(['webcharts', 'd3'], factory)
-          : (global.safetyOutlierExplorer = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3$1) {
+          ? define(['d3', 'webcharts'], factory)
+          : (global.safetyOutlierExplorer = factory(global.d3, global.webCharts));
+})(this, function(d3, webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
-        (function() {
-            Object.assign = function(target) {
+        Object.defineProperty(Object, 'assign', {
+            value: function assign(target, varArgs) {
+                // .length of function is 2
                 'use strict';
 
-                if (target === undefined || target === null) {
+                if (target == null) {
+                    // TypeError if undefined or null
                     throw new TypeError('Cannot convert undefined or null to object');
                 }
 
-                var output = Object(target);
+                var to = Object(target);
+
                 for (var index = 1; index < arguments.length; index++) {
-                    var source = arguments[index];
-                    if (source !== undefined && source !== null) {
-                        for (var nextKey in source) {
-                            if (source.hasOwnProperty(nextKey)) {
-                                output[nextKey] = source[nextKey];
+                    var nextSource = arguments[index];
+
+                    if (nextSource != null) {
+                        // Skip over if undefined or null
+                        for (var nextKey in nextSource) {
+                            // Avoid bugs when hasOwnProperty is shadowed
+                            if (Object.prototype.hasOwnProperty.call(nextSource, nextKey)) {
+                                to[nextKey] = nextSource[nextKey];
                             }
                         }
                     }
                 }
-                return output;
-            };
-        })();
+
+                return to;
+            },
+            writable: true,
+            configurable: true
+        });
     }
 
     if (!Array.prototype.find) {
@@ -42,7 +51,7 @@
 
                 var o = Object(this);
 
-                // 2. Let len be ? ToLength(? Get(O, "length")).
+                // 2. Let len be ? ToLength(? Get(O, 'length')).
                 var len = o.length >>> 0;
 
                 // 3. If IsCallable(predicate) is false, throw a TypeError exception.
@@ -72,6 +81,50 @@
 
                 // 7. Return undefined.
                 return undefined;
+            }
+        });
+    }
+
+    if (!Array.prototype.findIndex) {
+        Object.defineProperty(Array.prototype, 'findIndex', {
+            value: function value(predicate) {
+                // 1. Let O be ? ToObject(this value).
+                if (this == null) {
+                    throw new TypeError('"this" is null or not defined');
+                }
+
+                var o = Object(this);
+
+                // 2. Let len be ? ToLength(? Get(O, "length")).
+                var len = o.length >>> 0;
+
+                // 3. If IsCallable(predicate) is false, throw a TypeError exception.
+                if (typeof predicate !== 'function') {
+                    throw new TypeError('predicate must be a function');
+                }
+
+                // 4. If thisArg was supplied, let T be thisArg; else let T be undefined.
+                var thisArg = arguments[1];
+
+                // 5. Let k be 0.
+                var k = 0;
+
+                // 6. Repeat, while k < len
+                while (k < len) {
+                    // a. Let Pk be ! ToString(k).
+                    // b. Let kValue be ? Get(O, Pk).
+                    // c. Let testResult be ToBoolean(? Call(predicate, T, � kValue, k, O �)).
+                    // d. If testResult is true, return k.
+                    var kValue = o[k];
+                    if (predicate.call(thisArg, kValue, k, o)) {
+                        return k;
+                    }
+                    // e. Increase k by 1.
+                    k++;
+                }
+
+                // 7. Return -1.
+                return -1;
             }
         });
     }
@@ -398,7 +451,7 @@
     function countParticipants() {
         var _this = this;
 
-        this.populationCount = d3$1
+        this.populationCount = d3
             .set(
                 this.raw_data.map(function(d) {
                     return d[_this.config.id_col];
@@ -465,7 +518,7 @@
     }
 
     function captureMeasures() {
-        this.measures = d3$1
+        this.measures = d3
             .set(
                 this.initial_data.map(function(d) {
                     return d.measure_unit;
@@ -493,7 +546,7 @@
                     _this.raw_data[0].hasOwnProperty(time_settings.order_col)
                 ) {
                     //Define a unique set of visits with visit order concatenated.
-                    visits = d3$1
+                    visits = d3
                         .set(
                             _this.raw_data.map(function(d) {
                                 return (
@@ -509,7 +562,7 @@
                             var aOrder = a.split('|')[0],
                                 bOrder = b.split('|')[0],
                                 diff = +aOrder - +bOrder;
-                            return diff ? diff : d3$1.ascending(a, b);
+                            return diff ? diff : d3.ascending(a, b);
                         })
                         .map(function(visit) {
                             return visit.split('|')[1];
@@ -517,7 +570,7 @@
                 } else {
                     //Otherwise sort a unique set of visits alphanumerically.
                     //Define a unique set of visits.
-                    visits = d3$1
+                    visits = d3
                         .set(
                             _this.raw_data.map(function(d) {
                                 return d[time_settings.value_col];
@@ -575,7 +628,7 @@
                         ' ] filter has been removed because the variable does not exist.'
                 );
             } else {
-                var levels = d3$1
+                var levels = d3
                     .set(
                         _this.raw_data.map(function(d) {
                             return d[input.value_col];
@@ -638,7 +691,7 @@
                 return d.label.toLowerCase().replace(' ', '-');
             })
             .each(function(d) {
-                d3$1.select(this).classed(d.type, true);
+                d3.select(this).classed(d.type, true);
             });
 
         //Give y-axis controls a common class name.
@@ -799,7 +852,7 @@
         normalRangeInputs.select('input').attr('step', 0.01);
 
         normalRangeMethodControl.on('change', function() {
-            var normal_range_method = d3$1
+            var normal_range_method = d3
                 .select(this)
                 .select('option:checked')
                 .text();
@@ -879,7 +932,7 @@
             .sort(function(a, b) {
                 return a - b;
             });
-        this.measure.domain = d3$1.extent(this.measure.results);
+        this.measure.domain = d3.extent(this.measure.results);
         this.measure.range = this.measure.domain[1] - this.measure.domain[0];
         this.raw_data = this.measure.data.filter(function(d) {
             return _this.config.unscheduled_visits || !d.unscheduled;
@@ -892,7 +945,7 @@
         if (!this.config.visits_without_data)
             this.config.x.domain = this.config.x.domain.filter(function(visit) {
                 return (
-                    d3$1
+                    d3
                         .set(
                             _this.raw_data.map(function(d) {
                                 return d[_this.config.time_settings.value_col];
@@ -1002,20 +1055,20 @@
             this.lln = function(d) {
                 return d instanceof Object
                     ? +d[_this.config.normal_col_low]
-                    : d3$1.median(_this.measure.data, function(d) {
+                    : d3.median(_this.measure.data, function(d) {
                           return +d[_this.config.normal_col_low];
                       });
             };
             this.uln = function(d) {
                 return d instanceof Object
                     ? +d[_this.config.normal_col_high]
-                    : d3$1.median(_this.measure.data, function(d) {
+                    : d3.median(_this.measure.data, function(d) {
                           return +d[_this.config.normal_col_high];
                       });
             };
         } else if (this.config.normal_range_method === 'Standard Deviation') {
-            this.mean = d3$1.mean(this.measure.results);
-            this.sd = d3$1.deviation(this.measure.results);
+            this.mean = d3.mean(this.measure.results);
+            this.sd = d3.deviation(this.measure.results);
             this.lln = function() {
                 return _this.mean - _this.config.normal_range_sd * _this.sd;
             };
@@ -1024,13 +1077,10 @@
             };
         } else if (this.config.normal_range_method === 'Quantiles') {
             this.lln = function() {
-                return d3$1.quantile(_this.measure.results, _this.config.normal_range_quantile_low);
+                return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_low);
             };
             this.uln = function() {
-                return d3$1.quantile(
-                    _this.measure.results,
-                    _this.config.normal_range_quantile_high
-                );
+                return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_high);
             };
         } else {
             this.lln = function(d) {
@@ -1083,18 +1133,18 @@
     // - id_unit - a text string to label the units in the annotation (default = "participants")
     function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
-        var currentObs = d3$1
+        var currentObs = d3
             .set(
                 chart.filtered_data.map(function(d) {
                     return d[chart.config.id_col];
                 })
             )
             .values().length;
-        var percentage = d3$1.format('0.1%')(currentObs / chart.populationCount);
+        var percentage = d3.format('0.1%')(currentObs / chart.populationCount);
 
         //clear the annotation
-        var annotation = d3$1.select(selector);
-        d3$1
+        var annotation = d3.select(selector);
+        d3
             .select(selector)
             .selectAll('*')
             .remove();
@@ -1175,7 +1225,7 @@
                 }).attributes['stroke-width'] * 8
             );
 
-        //Highlight points and move in front of all other points.
+        //Highlight points and move behind all other points.
         this.svg
             .selectAll('.point')
             .sort(function(a, b) {
@@ -1585,7 +1635,7 @@
             );
 
             //Calculate range of data.
-            var ylo = d3$1.min(
+            var ylo = d3.min(
                 filtered_data
                     .map(function(m) {
                         return +m[_this.config.y.column];
@@ -1594,7 +1644,7 @@
                         return +f || +f === 0;
                     })
             );
-            var yhi = d3$1.max(
+            var yhi = d3.max(
                 filtered_data
                     .map(function(m) {
                         return +m[_this.config.y.column];
@@ -1624,7 +1674,7 @@
     function rangePolygon() {
         var _this = this;
 
-        var area = d3$1.svg
+        var area = d3.svg
             .area()
             .x(function(d) {
                 return (
@@ -1795,19 +1845,19 @@
             .map(function(d) {
                 return +d.values.y;
             })
-            .sort(d3$1.ascending);
+            .sort(d3.ascending);
         var height = this.plot_height;
         var width = 1;
         var domain = this.y_dom;
         var boxPlotWidth = 10;
         var boxColor = '#bbb';
         var boxInsideColor = 'white';
-        var fmt = d3$1.format('.2f');
+        var fmt = d3.format('.2f');
         var horizontal = true;
 
         //set up scales
-        var x = d3$1.scale.linear().range([0, width]);
-        var y = d3$1.scale.linear().range([height, 0]);
+        var x = d3.scale.linear().range([0, width]);
+        var y = d3.scale.linear().range([height, 0]);
 
         if (horizontal) {
             y.domain(domain);
@@ -1817,7 +1867,7 @@
 
         var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
         for (var i = 0; i < probs.length; i++) {
-            probs[i] = d3$1.quantile(results, probs[i]);
+            probs[i] = d3.quantile(results, probs[i]);
         }
 
         var boxplot = this.svg
@@ -1883,8 +1933,8 @@
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
-            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
+            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
+            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3))
             .style('fill', boxInsideColor)
             .style('stroke', boxColor);
@@ -1892,8 +1942,8 @@
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
-            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
+            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
+            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
             .style('fill', boxColor)
             .style('stroke', 'None');
@@ -1907,31 +1957,31 @@
                     d.values.length +
                     '\n' +
                     'Min = ' +
-                    d3$1.min(d.values) +
+                    d3.min(d.values) +
                     '\n' +
                     '5th % = ' +
-                    fmt(d3$1.quantile(d.values, 0.05)) +
+                    fmt(d3.quantile(d.values, 0.05)) +
                     '\n' +
                     'Q1 = ' +
-                    fmt(d3$1.quantile(d.values, 0.25)) +
+                    fmt(d3.quantile(d.values, 0.25)) +
                     '\n' +
                     'Median = ' +
-                    fmt(d3$1.median(d.values)) +
+                    fmt(d3.median(d.values)) +
                     '\n' +
                     'Q3 = ' +
-                    fmt(d3$1.quantile(d.values, 0.75)) +
+                    fmt(d3.quantile(d.values, 0.75)) +
                     '\n' +
                     '95th % = ' +
-                    fmt(d3$1.quantile(d.values, 0.95)) +
+                    fmt(d3.quantile(d.values, 0.95)) +
                     '\n' +
                     'Max = ' +
-                    d3$1.max(d.values) +
+                    d3.max(d.values) +
                     '\n' +
                     'Mean = ' +
-                    fmt(d3$1.mean(d.values)) +
+                    fmt(d3.mean(d.values)) +
                     '\n' +
                     'StDev = ' +
-                    fmt(d3$1.deviation(d.values))
+                    fmt(d3.deviation(d.values))
                 );
             });
     }

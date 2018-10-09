@@ -29,7 +29,7 @@ export default function highlight() {
             this.config.marks.find(mark => mark.type === 'line').attributes['stroke-width'] * 8
         );
 
-    //Highlight points and move in front of all other points.
+    //Highlight points and move behind all other points.
     this.svg
         .selectAll('.point')
         .sort(
