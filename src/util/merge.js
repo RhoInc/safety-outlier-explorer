@@ -28,8 +28,8 @@ function assignKey(to, from, key) {
     }
 
     if (!hasOwnProperty.call(to, key) || !isObj(val)) to[key] = val;
-    else if (val instanceof Array)
-        to[key] = from[key]; // figure out how to merge arrays without converting them into objects
+    else if (val instanceof Array) to[key] = from[key];
+    // figure out how to merge arrays without converting them into objects
     else to[key] = assign(Object(to[key]), from[key]);
 }
 

@@ -38,9 +38,9 @@ export default function defineVisitOrder() {
             time_settings.order = time_settings.order.concat(
                 visitOrder.filter(visit => time_settings.order.indexOf(visit) < 0)
             );
-        } else
-            //Otherwise use data-driven visit order.
-            time_settings.order = visitOrder;
+        }
+        //Otherwise use data-driven visit order.
+        else time_settings.order = visitOrder;
 
         //Define domain.
         time_settings.domain = time_settings.order;

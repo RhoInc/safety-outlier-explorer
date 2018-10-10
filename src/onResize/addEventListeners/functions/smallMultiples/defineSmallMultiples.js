@@ -25,24 +25,22 @@ export default function defineSmallMultiples() {
 
     //Add participant dropdown.
     multiples_settings.selected_id = this.selected_id;
-    const participantDropdown = createControls(
-        this.wrap.select('.multiples').node(),
-        {
-            inputs: [
-                {
-                    type: 'dropdown',
-                    option: 'selected_id',
-                    values: this.IDOrder.map(d => d.ID),
-                    require: true,
-                }
-            ]
-        },
-    );
+    const participantDropdown = createControls(this.wrap.select('.multiples').node(), {
+        inputs: [
+            {
+                type: 'dropdown',
+                label: 'All Measures for',
+                option: 'selected_id',
+                values: this.IDOrder.map(d => d.ID),
+                require: true
+            }
+        ]
+    });
 
     //Initialize small multiples.
     this.multiples = createChart(
         this.wrap.select('.multiples').node(),
         multiples_settings,
-        participantDropdown,
+        participantDropdown
     );
 }

@@ -18,7 +18,9 @@ export default function participantCharacteristics() {
             const value_col = detail.value_col ? detail.value_col : detail;
             const label = detail.label
                 ? detail.label
-                : detail.value_col ? detail.value_col : detail;
+                : detail.value_col
+                    ? detail.value_col
+                    : detail;
 
             if (id[value_col] !== undefined)
                 detail_table
