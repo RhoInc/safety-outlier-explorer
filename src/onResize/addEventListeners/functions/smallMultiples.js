@@ -5,8 +5,13 @@ import onLayout from './smallMultiples/callbacks/onLayout';
 import onPreprocess from './smallMultiples/callbacks/onPreprocess';
 import onResize from './smallMultiples/callbacks/onResize';
 import { multiply } from 'webcharts';
+import clearSelected from './clearSelected';
+import applySelected from './applySelected';
+import highlight from './highlight';
 
 export default function smallMultiples() {
+    const context = this; // chart
+
     //Clear current multiples.
     this.wrap
         .select('.multiples')
@@ -34,4 +39,24 @@ export default function smallMultiples() {
 
     //Initialize small multiples.
     multiply(this.multiples, this.participantData, 'measure_unit', this.measures);
+    this.multiples.controls.wrap
+        .selectAll('.control-group select')
+        .on('change', function(d) {
+            context.wrap
+                .select('.multiples')
+                .selectAll('.wc-controls')
+                .remove();
+            context.wrap
+                .select('.multiples')
+                .selectAll('.wc-small-multiples')
+                .remove();
+            delete context.hovered_id;
+            context.selected_id = d3.select(this)
+                .selectAll('option:checked')
+                .text();
+            clearSelected.call(context);
+            applySelected.call(context);
+            highlight.call(context);
+            smallMultiples.call(context);
+        });
 }

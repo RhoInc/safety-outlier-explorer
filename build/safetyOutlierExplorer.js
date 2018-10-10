@@ -2,7 +2,7 @@
 	typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('webcharts')) :
 	typeof define === 'function' && define.amd ? define(['d3', 'webcharts'], factory) :
 	(global.safetyOutlierExplorer = factory(global.d3,global.webCharts));
-}(this, (function (d3,webcharts) { 'use strict';
+}(this, (function (d3$1,webcharts) { 'use strict';
 
 if (typeof Object.assign != 'function') {
     Object.defineProperty(Object, 'assign', {
@@ -126,13 +126,13 @@ if (!Array.prototype.findIndex) {
     });
 }
 
-d3.selection.prototype.moveToFront = function () {
+d3$1.selection.prototype.moveToFront = function () {
     return this.each(function () {
         this.parentNode.appendChild(this);
     });
 };
 
-d3.selection.prototype.moveToBack = function () {
+d3$1.selection.prototype.moveToBack = function () {
     return this.each(function () {
         var firstChild = this.parentNode.firstChild;
         if (firstChild) {
@@ -191,7 +191,7 @@ var rendererSpecificSettings = {
         stroke: '#1f78b4',
         'stroke-width': 0.5,
         'stroke-opacity': 1,
-        radius: 3,
+        radius: 10,
         fill: '#1f78b4',
         'fill-opacity': 0.2
     }
@@ -383,7 +383,7 @@ function syncControlInputs(controlInputs, settings) {
 function countParticipants() {
     var _this = this;
 
-    this.populationCount = d3.set(this.raw_data.map(function (d) {
+    this.populationCount = d3$1.set(this.raw_data.map(function (d) {
         return d[_this.config.id_col];
     })).values().length;
 }
@@ -428,7 +428,7 @@ function addVariables() {
 }
 
 function captureMeasures() {
-    this.measures = d3.set(this.initial_data.map(function (d) {
+    this.measures = d3$1.set(this.initial_data.map(function (d) {
         return d.measure_unit;
     })).values().sort();
 }
@@ -446,7 +446,7 @@ function defineVisitOrder() {
         //Given an ordering variable sort a unique set of visits by the ordering variable.
         if (time_settings.order_col && _this.raw_data[0].hasOwnProperty(time_settings.order_col)) {
             //Define a unique set of visits with visit order concatenated.
-            visits = d3.set(_this.raw_data.map(function (d) {
+            visits = d3$1.set(_this.raw_data.map(function (d) {
                 return d[time_settings.order_col] + '|' + d[time_settings.value_col];
             })).values();
 
@@ -455,14 +455,14 @@ function defineVisitOrder() {
                 var aOrder = a.split('|')[0],
                     bOrder = b.split('|')[0],
                     diff = +aOrder - +bOrder;
-                return diff ? diff : d3.ascending(a, b);
+                return diff ? diff : d3$1.ascending(a, b);
             }).map(function (visit) {
                 return visit.split('|')[1];
             });
         } else {
             //Otherwise sort a unique set of visits alphanumerically.
             //Define a unique set of visits.
-            visits = d3.set(_this.raw_data.map(function (d) {
+            visits = d3$1.set(_this.raw_data.map(function (d) {
                 return d[time_settings.value_col];
             })).values();
 
@@ -504,7 +504,7 @@ function checkFilters() {
         } else if (!_this.raw_data[0].hasOwnProperty(input.value_col)) {
             console.warn('The [ ' + input.label + ' ] filter has been removed because the variable does not exist.');
         } else {
-            var levels = d3.set(_this.raw_data.map(function (d) {
+            var levels = d3$1.set(_this.raw_data.map(function (d) {
                 return d[input.value_col];
             })).values();
 
@@ -520,6 +520,19 @@ function setInitialMeasure() {
     this.controls.config.inputs.find(function (input) {
         return input.label === 'Measure';
     }).start = this.config.start_value || this.measures[0];
+}
+
+function addIDOrdering() {
+    var _this = this;
+
+    this.IDOrder = d3.set(this.raw_data.map(function (d) {
+        return d[_this.config.id_col];
+    })).values().sort().map(function (ID, i) {
+        return {
+            ID: ID,
+            order: i
+        };
+    });
 }
 
 function onInit() {
@@ -546,6 +559,9 @@ function onInit() {
 
     // 3f Choose the start value for the Test filter
     setInitialMeasure.call(this);
+
+    // 3g Capture unique set of IDs and apply an ordering.
+    addIDOrdering.call(this);
 }
 
 function identifyControls() {
@@ -555,7 +571,7 @@ function identifyControls() {
     controlGroups.attr('id', function (d) {
         return d.label.toLowerCase().replace(' ', '-');
     }).each(function (d) {
-        d3.select(this).classed(d.type, true);
+        d3$1.select(this).classed(d.type, true);
     });
 
     //Give y-axis controls a common class name.
@@ -660,7 +676,7 @@ function hideNormalRangeInputs() {
     normalRangeInputs.select('input').attr('step', 0.01);
 
     normalRangeMethodControl.on('change', function () {
-        var normal_range_method = d3.select(this).select('option:checked').text();
+        var normal_range_method = d3$1.select(this).select('option:checked').text();
 
         normalRangeInputs.style('display', function (d) {
             return normal_range_method !== 'Standard Deviation' && d.option === 'normal_range_sd' || normal_range_method !== 'Quantiles' && ['normal_range_quantile_low', 'normal_range_quantile_high'].indexOf(d.option) > -1 ? 'none' : 'inline-table';
@@ -718,7 +734,7 @@ function defineMeasureData() {
     }).sort(function (a, b) {
         return a - b;
     });
-    this.measure.domain = d3.extent(this.measure.results);
+    this.measure.domain = d3$1.extent(this.measure.results);
     this.measure.range = this.measure.domain[1] - this.measure.domain[0];
     this.raw_data = this.measure.data.filter(function (d) {
         return _this.config.unscheduled_visits || !d.unscheduled;
@@ -729,7 +745,7 @@ function removeVisitsWithoutData() {
     var _this = this;
 
     if (!this.config.visits_without_data) this.config.x.domain = this.config.x.domain.filter(function (visit) {
-        return d3.set(_this.raw_data.map(function (d) {
+        return d3$1.set(_this.raw_data.map(function (d) {
             return d[_this.config.time_settings.value_col];
         })).values().indexOf(visit) > -1;
     });
@@ -805,18 +821,18 @@ function deriveStatistics() {
 
     if (this.config.normal_range_method === 'LLN-ULN') {
         this.lln = function (d) {
-            return d instanceof Object ? +d[_this.config.normal_col_low] : d3.median(_this.measure.data, function (d) {
+            return d instanceof Object ? +d[_this.config.normal_col_low] : d3$1.median(_this.measure.data, function (d) {
                 return +d[_this.config.normal_col_low];
             });
         };
         this.uln = function (d) {
-            return d instanceof Object ? +d[_this.config.normal_col_high] : d3.median(_this.measure.data, function (d) {
+            return d instanceof Object ? +d[_this.config.normal_col_high] : d3$1.median(_this.measure.data, function (d) {
                 return +d[_this.config.normal_col_high];
             });
         };
     } else if (this.config.normal_range_method === 'Standard Deviation') {
-        this.mean = d3.mean(this.measure.results);
-        this.sd = d3.deviation(this.measure.results);
+        this.mean = d3$1.mean(this.measure.results);
+        this.sd = d3$1.deviation(this.measure.results);
         this.lln = function () {
             return _this.mean - _this.config.normal_range_sd * _this.sd;
         };
@@ -825,10 +841,10 @@ function deriveStatistics() {
         };
     } else if (this.config.normal_range_method === 'Quantiles') {
         this.lln = function () {
-            return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_low);
+            return d3$1.quantile(_this.measure.results, _this.config.normal_range_quantile_low);
         };
         this.uln = function () {
-            return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_high);
+            return d3$1.quantile(_this.measure.results, _this.config.normal_range_quantile_high);
         };
     } else {
         this.lln = function (d) {
@@ -877,14 +893,14 @@ function onDatatransform() {}
 // - id_unit - a text string to label the units in the annotation (default = "participants")
 function updateParticipantCount(chart, selector, id_unit) {
     //count the number of unique ids in the current chart and calculate the percentage
-    var currentObs = d3.set(chart.filtered_data.map(function (d) {
+    var currentObs = d3$1.set(chart.filtered_data.map(function (d) {
         return d[chart.config.id_col];
     })).values().length;
-    var percentage = d3.format('0.1%')(currentObs / chart.populationCount);
+    var percentage = d3$1.format('0.1%')(currentObs / chart.populationCount);
 
     //clear the annotation
-    var annotation = d3.select(selector);
-    d3.select(selector).selectAll('*').remove();
+    var annotation = d3$1.select(selector);
+    d3$1.select(selector).selectAll('*').remove();
 
     //update the annotation
     var units = id_unit ? ' ' + id_unit : ' participant(s)';
@@ -934,7 +950,14 @@ function highlight() {
 
     //Highlight points and move behind all other points.
     this.svg.selectAll('.point').sort(function (a, b) {
-        return a.key.indexOf(_this.selected_id) === 0 ? -1 : b.key.indexOf(_this.selected_id) === 0 ? 1 : 0;
+        var aComp = a.key.indexOf(_this.selected_id) === 0; // sort clicked ID last
+        var bComp = b.key.indexOf(_this.selected_id) === 0; // sort clicked ID last
+        var orderDiff = b.order - a.order; // otherwise sort in reverse order
+        var comp = aComp ? -1 : bComp ? 1 : orderDiff;
+
+        return comp;
+    }).each(function (d, i) {
+        d.order = d.key.indexOf(_this.selected_id) ? -1 : i;
     }).filter(function (d) {
         return [_this.hovered_id, _this.selected_id].indexOf(d.values.raw[0][_this.config.id_col]) > -1;
     }).select('circle').attr('r', this.config.marks.find(function (mark) {
@@ -962,6 +985,14 @@ function drawNormalRange() {
         });
         normalRange.append('title').text('Normal range: ' + this.lln() + '-' + this.uln());
     }
+}
+
+function orderPoints() {
+    this.marks.find(function (mark) {
+        return mark.type === 'circle';
+    }).groups.each(function (d, i) {
+        return d.order = i;
+    });
 }
 
 function clearHighlight() {
@@ -1168,6 +1199,7 @@ function clone(obj) {
 }
 
 function defineSmallMultiples() {
+    //Define small multiples settings.
     var multiples_settings = Object.assign({}, clone(this.config), clone(Object.getPrototypeOf(this.config)));
     multiples_settings.x.domain = null;
     multiples_settings.y.domain = null;
@@ -1179,7 +1211,21 @@ function defineSmallMultiples() {
 
     multiples_settings.margin = { bottom: multiples_settings.margin.bottom || 20 };
 
-    this.multiples = webcharts.createChart(this.wrap.select('.multiples').node(), multiples_settings);
+    //Add participant dropdown.
+    multiples_settings.selected_id = this.selected_id;
+    var participantDropdown = webcharts.createControls(this.wrap.select('.multiples').node(), {
+        inputs: [{
+            type: 'dropdown',
+            option: 'selected_id',
+            values: this.IDOrder.map(function (d) {
+                return d.ID;
+            }),
+            require: true
+        }]
+    });
+
+    //Initialize small multiples.
+    this.multiples = webcharts.createChart(this.wrap.select('.multiples').node(), multiples_settings, participantDropdown);
 }
 
 function insertHeader() {
@@ -1242,12 +1288,12 @@ function onPreprocess$1() {
         }));
 
         //Calculate range of data.
-        var ylo = d3.min(filtered_data.map(function (m) {
+        var ylo = d3$1.min(filtered_data.map(function (m) {
             return +m[_this.config.y.column];
         }).filter(function (f) {
             return +f || +f === 0;
         }));
-        var yhi = d3.max(filtered_data.map(function (m) {
+        var yhi = d3$1.max(filtered_data.map(function (m) {
             return +m[_this.config.y.column];
         }).filter(function (f) {
             return +f || +f === 0;
@@ -1269,7 +1315,7 @@ function adjustTicks() {
 function rangePolygon() {
     var _this = this;
 
-    var area = d3.svg.area().x(function (d) {
+    var area = d3$1.svg.area().x(function (d) {
         return _this.x(d['TIME']) + (_this.config.x.type === 'ordinal' ? _this.x.rangeBand() / 2 : 0);
     }).y0(function (d) {
         return (/^-?[0-9.]+$/.test(d[_this.config.normal_col_low]) ? _this.y(d[_this.config.normal_col_low]) : 0
@@ -1323,6 +1369,8 @@ function onResize$1() {
 function smallMultiples() {
     var _this = this;
 
+    var context = this; // chart
+
     //Clear current multiples.
     this.wrap.select('.multiples').select('.wc-small-multiples').remove();
 
@@ -1347,30 +1395,41 @@ function smallMultiples() {
 
     //Initialize small multiples.
     webcharts.multiply(this.multiples, this.participantData, 'measure_unit', this.measures);
+    this.multiples.controls.wrap.selectAll('.control-group select').on('change', function (d) {
+        context.wrap.select('.multiples').selectAll('.wc-controls').remove();
+        context.wrap.select('.multiples').selectAll('.wc-small-multiples').remove();
+        delete context.hovered_id;
+        context.selected_id = d3.select(this).selectAll('option:checked').text();
+        clearSelected.call(context);
+        applySelected.call(context);
+        highlight.call(context);
+        smallMultiples.call(context);
+    });
 }
 
 function addLineEventListeners() {
-    var _this = this;
-
-    var context = this;
     var lines = this.svg.selectAll('.line');
     var points = this.svg.selectAll('.point');
 
-    lines.on('mouseover', function (d) {
-        delete context.hovered_id;
-        clearHighlight.call(context);
-        context.hovered_id = d.values[0].values.raw[0][context.config.id_col];
-        highlight.call(context);
-    }).on('mouseout', function (d) {
-        delete context.hovered_id;
-        clearHighlight.call(context);
-    }).on('click', function (d) {
-        _this.selected_id = d.values[0].values.raw[0][_this.config.id_col];
-        clearSelected.call(_this);
-        applySelected.call(_this);
-        highlight.call(_this);
-        smallMultiples.call(_this);
-    });
+    //lines
+    //    .on('mouseover', function(d) {
+    //        delete context.hovered_id;
+    //        clearHighlight.call(context);
+    //        context.hovered_id = d.values[0].values.raw[0][context.config.id_col];
+    //        highlight.call(context);
+    //    })
+    //    .on('mouseout', function(d) {
+    //        delete context.hovered_id;
+    //        clearHighlight.call(context);
+    //    })
+    //    .on('click', d => {
+    //        delete context.hovered_id;
+    //        this.selected_id = d.values[0].values.raw[0][this.config.id_col];
+    //        clearSelected.call(this);
+    //        applySelected.call(this);
+    //        highlight.call(this);
+    //        smallMultiples.call(this);
+    //    });
 }
 
 function addPointEventListeners() {
@@ -1380,15 +1439,18 @@ function addPointEventListeners() {
     var lines = this.svg.selectAll('.line');
     var points = this.svg.selectAll('.point');
 
-    points.on('mouseover', function (d) {
-        delete context.hovered_id;
-        clearHighlight.call(context);
-        context.hovered_id = d.values.raw[0][context.config.id_col];
-        highlight.call(context);
-    }).on('mouseout', function (d) {
-        delete context.hovered_id;
-        clearHighlight.call(context);
-    }).on('click', function (d) {
+    points
+    //.on('mouseover', function(d) {
+    //    delete context.hovered_id;
+    //    clearHighlight.call(context);
+    //    context.hovered_id = d.values.raw[0][context.config.id_col];
+    //    highlight.call(context);
+    //})
+    //.on('mouseout', function(d) {
+    //    delete context.hovered_id;
+    //    clearHighlight.call(context);
+    //})
+    .on('click', function (d) {
         delete context.hovered_id;
         _this.selected_id = d.values.raw[0][_this.config.id_col];
         clearSelected.call(_this);
@@ -1411,19 +1473,19 @@ function addBoxPlot() {
     //Customize box plot.
     var results = this.current_data.map(function (d) {
         return +d.values.y;
-    }).sort(d3.ascending);
+    }).sort(d3$1.ascending);
     var height = this.plot_height;
     var width = 1;
     var domain = this.y_dom;
     var boxPlotWidth = 10;
     var boxColor = '#bbb';
     var boxInsideColor = 'white';
-    var fmt = d3.format('.2f');
+    var fmt = d3$1.format('.2f');
     var horizontal = true;
 
     //set up scales
-    var x = d3.scale.linear().range([0, width]);
-    var y = d3.scale.linear().range([height, 0]);
+    var x = d3$1.scale.linear().range([0, width]);
+    var y = d3$1.scale.linear().range([height, 0]);
 
     if (horizontal) {
         y.domain(domain);
@@ -1433,7 +1495,7 @@ function addBoxPlot() {
 
     var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
     for (var i = 0; i < probs.length; i++) {
-        probs[i] = d3.quantile(results, probs[i]);
+        probs[i] = d3$1.quantile(results, probs[i]);
     }
 
     var boxplot = this.svg.append('g').attr('class', 'boxplot').datum({
@@ -1463,12 +1525,12 @@ function addBoxPlot() {
         boxplot.append('line').attr('class', 'boxplot').attr('x1', horizontal ? x(0.5) : x(probs[iS[i][0]])).attr('x2', horizontal ? x(0.5) : x(probs[iS[i][1]])).attr('y1', horizontal ? y(probs[iS[i][0]]) : y(0.5)).attr('y2', horizontal ? y(probs[iS[i][1]]) : y(0.5)).style('stroke', boxColor);
     }
 
-    boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', horizontal ? x(0.5) : x(d3.mean(results))).attr('cy', horizontal ? y(d3.mean(results)) : y(0.5)).attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3)).style('fill', boxInsideColor).style('stroke', boxColor);
+    boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results))).attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5)).attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3)).style('fill', boxInsideColor).style('stroke', boxColor);
 
-    boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', horizontal ? x(0.5) : x(d3.mean(results))).attr('cy', horizontal ? y(d3.mean(results)) : y(0.5)).attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6)).style('fill', boxColor).style('stroke', 'None');
+    boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results))).attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5)).attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6)).style('fill', boxColor).style('stroke', 'None');
 
     boxplot.selectAll('.boxplot').append('title').text(function (d) {
-        return 'N = ' + d.values.length + '\n' + 'Min = ' + d3.min(d.values) + '\n' + '5th % = ' + fmt(d3.quantile(d.values, 0.05)) + '\n' + 'Q1 = ' + fmt(d3.quantile(d.values, 0.25)) + '\n' + 'Median = ' + fmt(d3.median(d.values)) + '\n' + 'Q3 = ' + fmt(d3.quantile(d.values, 0.75)) + '\n' + '95th % = ' + fmt(d3.quantile(d.values, 0.95)) + '\n' + 'Max = ' + d3.max(d.values) + '\n' + 'Mean = ' + fmt(d3.mean(d.values)) + '\n' + 'StDev = ' + fmt(d3.deviation(d.values));
+        return 'N = ' + d.values.length + '\n' + 'Min = ' + d3$1.min(d.values) + '\n' + '5th % = ' + fmt(d3$1.quantile(d.values, 0.05)) + '\n' + 'Q1 = ' + fmt(d3$1.quantile(d.values, 0.25)) + '\n' + 'Median = ' + fmt(d3$1.median(d.values)) + '\n' + 'Q3 = ' + fmt(d3$1.quantile(d.values, 0.75)) + '\n' + '95th % = ' + fmt(d3$1.quantile(d.values, 0.95)) + '\n' + 'Max = ' + d3$1.max(d.values) + '\n' + 'Mean = ' + fmt(d3$1.mean(d.values)) + '\n' + 'StDev = ' + fmt(d3$1.deviation(d.values));
     });
 }
 
@@ -1478,6 +1540,9 @@ function onResize() {
 
     //Draw normal range.
     drawNormalRange.call(this);
+
+    //Add initial ordering to points; ordering will update as points are clicked.
+    orderPoints.call(this);
 
     //Add event listeners to lines, points, and overlay.
     addEventListeners.call(this);

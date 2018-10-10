@@ -6,6 +6,7 @@ import defineVisitOrder from './onInit/defineVisitOrder';
 import updateControlInputs from './onInit/updateControlInputs';
 import checkFilters from './onInit/checkFilters';
 import setInitialMeasure from './onInit/setInitialMeasure';
+import attachIDOrdering from './onInit/attachIDOrdering';
 
 export default function onInit() {
     // 1. Count total participants prior to data cleaning.
@@ -31,4 +32,7 @@ export default function onInit() {
 
     // 3f Choose the start value for the Test filter
     setInitialMeasure.call(this);
+
+    // 3g Capture unique set of IDs and apply an ordering.
+    attachIDOrdering.call(this);
 }

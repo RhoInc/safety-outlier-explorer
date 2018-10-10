@@ -55,7 +55,7 @@ export const rendererSpecificSettings = {
         stroke: '#1f78b4',
         'stroke-width': 0.5,
         'stroke-opacity': 1,
-        radius: 3,
+        radius: 10,
         fill: '#1f78b4',
         'fill-opacity': 0.2
     }

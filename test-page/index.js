@@ -3,7 +3,7 @@ d3.csv(
     '../../viz-library/data/safetyData/ADBDS.csv', // use local data file for development because it's faster
     function(d,i) {
         if (d.VISIT === 'Visit 1' && d.STRESN !== '')
-            d.STRESN = 25;
+            d.STRESN = 45;
         return d;
     },
     function(error,data) {
@@ -17,6 +17,13 @@ d3.csv(
             '#container',
             settings
         );
-        instance.init(data);
+        const ids = d3.set(data.filter(d => d.STRESN !== '').map(d => d.USUBJID)).values();
+        instance.init(
+            data.filter(d => (
+                d.STRESN !== ''
+                && ids.slice(0,5).indexOf(d.USUBJID) > -1
+                && ['Screening', 'Visit 1', 'Visit 2'].indexOf(d.VISIT) > -1
+            ))
+        );
     }
 );

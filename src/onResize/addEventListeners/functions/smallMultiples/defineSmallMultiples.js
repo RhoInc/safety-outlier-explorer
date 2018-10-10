@@ -1,7 +1,9 @@
 import clone from '../../../../util/clone';
+import { createControls } from 'webcharts';
 import { createChart } from 'webcharts';
 
 export default function defineSmallMultiples() {
+    //Define small multiples settings.
     const multiples_settings = Object.assign(
         {},
         clone(this.config),
@@ -21,5 +23,26 @@ export default function defineSmallMultiples() {
 
     multiples_settings.margin = { bottom: multiples_settings.margin.bottom || 20 };
 
-    this.multiples = createChart(this.wrap.select('.multiples').node(), multiples_settings);
+    //Add participant dropdown.
+    multiples_settings.selected_id = this.selected_id;
+    const participantDropdown = createControls(
+        this.wrap.select('.multiples').node(),
+        {
+            inputs: [
+                {
+                    type: 'dropdown',
+                    option: 'selected_id',
+                    values: this.IDOrder.map(d => d.ID),
+                    require: true,
+                }
+            ]
+        },
+    );
+
+    //Initialize small multiples.
+    this.multiples = createChart(
+        this.wrap.select('.multiples').node(),
+        multiples_settings,
+        participantDropdown,
+    );
 }
