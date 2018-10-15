@@ -1,5 +1,5 @@
 export default function onLayout() {
-    this.multiples.on('layout', function() {
+    this.multiples.chart.on('layout', function() {
         //Define multiple styling.
         this.wrap.style('display', 'block');
         this.wrap

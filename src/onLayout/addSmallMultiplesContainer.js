@@ -1,3 +1,8 @@
 export default function addSmallMultiplesContainer() {
-    this.wrap.append('div').attr('class', 'multiples');
+    this.multiples = {
+        container: this.wrap
+            .append('div')
+            .classed('multiples', true),
+        id: null,
+    };
 }

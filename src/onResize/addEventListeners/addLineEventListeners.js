@@ -1,33 +1,28 @@
-import highlight from './functions/highlight';
-import clearHighlight from './functions/clearHighlight';
+import clearHovered from './functions/clearHovered';
+import highlightHovered from './functions/highlightHovered';
 import clearSelected from './functions/clearSelected';
-import applySelected from './functions/applySelected';
+import highlightSelected from './functions/highlightSelected';
+import reorderMarks from './functions/reorderMarks';
 import smallMultiples from './functions/smallMultiples';
 
 export default function addLineEventListeners() {
-    const context = this;
-    const lines = this.svg.selectAll('.line');
-    const points = this.svg.selectAll('.point');
-
-    lines
-        .on('mouseover', function(d) {
-            delete context.hovered_id;
-            clearHighlight.call(context);
-            context.hovered_id = d.values[0].values.raw[0][context.config.id_col];
-            highlight.call(context);
+    this.lines
+        .on('mouseover', d => {
+            clearHovered.call(this);
+            this.hovered_id = d.values[0].values.raw[0][this.config.id_col];
+            if (this.hovered_id !== this.selected_id)
+                highlightHovered.call(this);
         })
-        .on('mouseout', function(d) {
-            delete context.hovered_id;
-            clearHighlight.call(context);
+        .on('mouseout', d => {
+            clearHovered.call(this);
         })
         .on('click', d => {
-            delete context.hovered_id;
+            clearHovered.call(this);
+            clearSelected.call(this);
             this.selected_id = d.values[0].values.raw[0][this.config.id_col];
             this.selected_id_order = this.IDOrder.find(di => di.ID === this.selected_id).order;
-            clearSelected.call(this);
-            applySelected.call(this);
-            clearHighlight.call(this);
-            highlight.call(this);
+            highlightSelected.call(this);
+            reorderMarks.call(this);
             smallMultiples.call(this);
         });
 }

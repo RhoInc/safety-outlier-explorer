@@ -1,8 +1,12 @@
 export default function drawNormalRange() {
-    this.wrap.select('.normal-range').remove();
+    if (this.normalRange)
+        this.normalRange.remove();
+
     if (this.config.normal_range_method) {
-        const normalRange = this.svg.insert('g', '.line-supergroup').classed('normal-range', true);
-        normalRange
+        this.normalRange = this.svg
+            .insert('g', '.line-supergroup')
+            .classed('normal-range', true);
+        this.normalRange
             .append('rect')
             .attr({
                 x: 0,
@@ -15,6 +19,6 @@ export default function drawNormalRange() {
                 fill: 'blue',
                 'fill-opacity': 0.1
             });
-        normalRange.append('title').text(`Normal range: ${this.lln()}-${this.uln()}`);
+        this.normalRange.append('title').text(`Normal range: ${this.lln()}-${this.uln()}`);
     }
 }

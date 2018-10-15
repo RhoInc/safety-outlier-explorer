@@ -2,7 +2,7 @@ import clearHovered from './functions/clearHovered';
 import clearSelected from './functions/clearSelected';
 
 export default function addOverlayEventListener() {
-    this.overlay
+    this.normalRange
         .on('mouseover', () => {
             clearHovered.call(this);
         })
