@@ -8,9 +8,7 @@ import updateParticipantDropdown from './smallMultiples/updateParticipantDropdow
 
 export default function smallMultiples() {
     //Define participant data.
-    this.multiples.data = this.initial_data.filter(
-        d => d[this.config.id_col] === this.selected_id
-    );
+    this.multiples.data = this.initial_data.filter(d => d[this.config.id_col] === this.selected_id);
 
     //Define small multiples.
     defineSmallMultiples.call(this);
@@ -24,11 +22,7 @@ export default function smallMultiples() {
     onResize.call(this);
 
     //Initialize small multiples.
-    multiply(
-        this.multiples.chart,
-        this.multiples.data,
-        'measure_unit', this.measures
-    );
+    multiply(this.multiples.chart, this.multiples.data, 'measure_unit', this.measures);
 
     //Update participant dropdown.
     updateParticipantDropdown.call(this);

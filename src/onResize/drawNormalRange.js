@@ -1,11 +1,8 @@
 export default function drawNormalRange() {
-    if (this.normalRange)
-        this.normalRange.remove();
+    if (this.normalRange) this.normalRange.remove();
 
     if (this.config.normal_range_method) {
-        this.normalRange = this.svg
-            .insert('g', '.line-supergroup')
-            .classed('normal-range', true);
+        this.normalRange = this.svg.insert('g', '.line-supergroup').classed('normal-range', true);
         this.normalRange
             .append('rect')
             .attr({

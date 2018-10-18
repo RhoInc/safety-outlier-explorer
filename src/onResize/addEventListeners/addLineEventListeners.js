@@ -10,8 +10,7 @@ export default function addLineEventListeners() {
         .on('mouseover', d => {
             clearHovered.call(this);
             this.hovered_id = d.values[0].values.raw[0][this.config.id_col];
-            if (this.hovered_id !== this.selected_id)
-                highlightHovered.call(this);
+            if (this.hovered_id !== this.selected_id) highlightHovered.call(this);
         })
         .on('mouseout', d => {
             clearHovered.call(this);

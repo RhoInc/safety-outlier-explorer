@@ -10,5 +10,17 @@ export default function onLayout() {
 
         //Set y-label to measure unit.
         this.config.y.label = '';
+
+        //Outline currently selected measure.
+        //if (this.filters[0].val === this.parent.safetyOutlierExplorer.measure.current)
+        //    this.wrap
+        //        .select('.wc-chart-title')
+        //        .append('span')
+        //        .html(' &#9432;')
+        //        .style({
+        //            'font-weight': 'bold',
+        //            'cursor': 'default',
+        //        })
+        //        .attr('title', 'Currently selected measure');
     });
 }

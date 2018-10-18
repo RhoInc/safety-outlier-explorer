@@ -25,8 +25,7 @@ export default function defineSmallMultiples() {
 
     //Add participant dropdown.
     this.multiples.settings.selected_id = this.selected_id;
-    this.multiples.controls = createControls(
-        this.multiples.container.node(), {
+    this.multiples.controls = createControls(this.multiples.container.node(), {
         inputs: [
             {
                 type: 'dropdown',
@@ -44,4 +43,5 @@ export default function defineSmallMultiples() {
         this.multiples.settings,
         this.multiples.controls
     );
+    this.multiples.chart.safetyOutlierExplorer = this;
 }

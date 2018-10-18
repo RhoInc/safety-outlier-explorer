@@ -8,16 +8,15 @@ export default function updateParticipantDropdown() {
     const participantDropdown = this.multiples.controls.wrap
         .style('margin', 0)
         .selectAll('.control-group')
-        .style('margin', 0);
-    participantDropdown
-        .selectAll('*')
-        .style('display', 'inline-block');
-    participantDropdown
-        .selectAll('.wc-control-label')
-        .style('font-weight', 'bold');
+        .style('margin', 0)
+        .style('display', 'block'); // firefox is being weird about inline-table
+    participantDropdown.selectAll('*').style('display', 'inline-block');
+    participantDropdown.selectAll('.wc-control-label').style('font-weight', 'bold');
     participantDropdown
         .selectAll('select')
         .style('margin-left', '3px')
+        .style('width', null)
+        .style('max-width', '10%')
         .on('change', function(d) {
             context.multiples.id = d3
                 .select(this)

@@ -24,20 +24,13 @@ export default function safetyOutlierExplorer(element, settings) {
 
     //Sync control inputs with with settings object.
     const syncedControlInputs = syncControlInputs(controlInputs, syncedSettings);
-    const controls = createControls(
-        element,
-        {
-            location: 'top',
-            inputs: syncedControlInputs
-        }
-    );
+    const controls = createControls(element, {
+        location: 'top',
+        inputs: syncedControlInputs
+    });
 
     //Create chart.
-    const chart = createChart(
-        element,
-        syncedSettings,
-        controls
-    );
+    const chart = createChart(element, syncedSettings, controls);
     chart.on('init', onInit);
     chart.on('layout', onLayout);
     chart.on('preprocess', onPreprocess);
