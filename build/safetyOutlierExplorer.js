@@ -2,9 +2,9 @@
     typeof exports === 'object' && typeof module !== 'undefined'
         ? (module.exports = factory(require('d3'), require('webcharts')))
         : typeof define === 'function' && define.amd
-          ? define(['d3', 'webcharts'], factory)
-          : (global.safetyOutlierExplorer = factory(global.d3, global.webCharts));
-})(this, function(d3, webcharts) {
+            ? define(['d3', 'webcharts'], factory)
+            : (global.safetyOutlierExplorer = factory(global.d3, global.webCharts));
+})(this, function(d3$1, webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
@@ -130,13 +130,13 @@
     }
 
     // https://github.com/wbkd/d3-extended
-    d3.selection.prototype.moveToFront = function() {
+    d3$1.selection.prototype.moveToFront = function() {
         return this.each(function() {
             this.parentNode.appendChild(this);
         });
     };
 
-    d3.selection.prototype.moveToBack = function() {
+    d3$1.selection.prototype.moveToBack = function() {
         return this.each(function() {
             var firstChild = this.parentNode.firstChild;
             if (firstChild) {
@@ -451,7 +451,7 @@
     function countParticipants() {
         var _this = this;
 
-        this.populationCount = d3
+        this.populationCount = d3$1
             .set(
                 this.raw_data.map(function(d) {
                     return d[_this.config.id_col];
@@ -518,7 +518,7 @@
     }
 
     function captureMeasures() {
-        this.measures = d3
+        this.measures = d3$1
             .set(
                 this.initial_data.map(function(d) {
                     return d.measure_unit;
@@ -546,7 +546,7 @@
                     _this.raw_data[0].hasOwnProperty(time_settings.order_col)
                 ) {
                     //Define a unique set of visits with visit order concatenated.
-                    visits = d3
+                    visits = d3$1
                         .set(
                             _this.raw_data.map(function(d) {
                                 return (
@@ -562,7 +562,7 @@
                             var aOrder = a.split('|')[0],
                                 bOrder = b.split('|')[0],
                                 diff = +aOrder - +bOrder;
-                            return diff ? diff : d3.ascending(a, b);
+                            return diff ? diff : d3$1.ascending(a, b);
                         })
                         .map(function(visit) {
                             return visit.split('|')[1];
@@ -570,7 +570,7 @@
                 } else {
                     //Otherwise sort a unique set of visits alphanumerically.
                     //Define a unique set of visits.
-                    visits = d3
+                    visits = d3$1
                         .set(
                             _this.raw_data.map(function(d) {
                                 return d[time_settings.value_col];
@@ -590,9 +590,9 @@
                             return time_settings.order.indexOf(visit) < 0;
                         })
                     );
-                } else
-                    //Otherwise use data-driven visit order.
-                    time_settings.order = visitOrder;
+                }
+                //Otherwise use data-driven visit order.
+                else time_settings.order = visitOrder;
 
                 //Define domain.
                 time_settings.domain = time_settings.order;
@@ -628,7 +628,7 @@
                         ' ] filter has been removed because the variable does not exist.'
                 );
             } else {
-                var levels = d3
+                var levels = d3$1
                     .set(
                         _this.raw_data.map(function(d) {
                             return d[input.value_col];
@@ -652,8 +652,26 @@
         this.measure = {};
         this.controls.config.inputs.find(function(input) {
             return input.label === 'Measure';
-        }).start =
-            this.config.start_value || this.measures[0];
+        }).start = this.config.start_value || this.measures[0];
+    }
+
+    function addIDOrdering() {
+        var _this = this;
+
+        this.IDOrder = d3
+            .set(
+                this.raw_data.map(function(d) {
+                    return d[_this.config.id_col];
+                })
+            )
+            .values()
+            .sort()
+            .map(function(ID, i) {
+                return {
+                    ID: ID,
+                    order: i
+                };
+            });
     }
 
     function onInit() {
@@ -680,6 +698,9 @@
 
         // 3f Choose the start value for the Test filter
         setInitialMeasure.call(this);
+
+        // 3g Capture unique set of IDs and apply an ordering.
+        addIDOrdering.call(this);
     }
 
     function identifyControls() {
@@ -691,7 +712,7 @@
                 return d.label.toLowerCase().replace(' ', '-');
             })
             .each(function(d) {
-                d3.select(this).classed(d.type, true);
+                d3$1.select(this).classed(d.type, true);
             });
 
         //Give y-axis controls a common class name.
@@ -852,7 +873,7 @@
         normalRangeInputs.select('input').attr('step', 0.01);
 
         normalRangeMethodControl.on('change', function() {
-            var normal_range_method = d3
+            var normal_range_method = d3$1
                 .select(this)
                 .select('option:checked')
                 .text();
@@ -878,7 +899,10 @@
     }
 
     function addSmallMultiplesContainer() {
-        this.wrap.append('div').attr('class', 'multiples');
+        this.multiples = {
+            container: this.wrap.append('div').classed('multiples', true),
+            id: null
+        };
     }
 
     function onLayout() {
@@ -932,7 +956,7 @@
             .sort(function(a, b) {
                 return a - b;
             });
-        this.measure.domain = d3.extent(this.measure.results);
+        this.measure.domain = d3$1.extent(this.measure.results);
         this.measure.range = this.measure.domain[1] - this.measure.domain[0];
         this.raw_data = this.measure.data.filter(function(d) {
             return _this.config.unscheduled_visits || !d.unscheduled;
@@ -945,7 +969,7 @@
         if (!this.config.visits_without_data)
             this.config.x.domain = this.config.x.domain.filter(function(visit) {
                 return (
-                    d3
+                    d3$1
                         .set(
                             _this.raw_data.map(function(d) {
                                 return d[_this.config.time_settings.value_col];
@@ -1055,20 +1079,20 @@
             this.lln = function(d) {
                 return d instanceof Object
                     ? +d[_this.config.normal_col_low]
-                    : d3.median(_this.measure.data, function(d) {
+                    : d3$1.median(_this.measure.data, function(d) {
                           return +d[_this.config.normal_col_low];
                       });
             };
             this.uln = function(d) {
                 return d instanceof Object
                     ? +d[_this.config.normal_col_high]
-                    : d3.median(_this.measure.data, function(d) {
+                    : d3$1.median(_this.measure.data, function(d) {
                           return +d[_this.config.normal_col_high];
                       });
             };
         } else if (this.config.normal_range_method === 'Standard Deviation') {
-            this.mean = d3.mean(this.measure.results);
-            this.sd = d3.deviation(this.measure.results);
+            this.mean = d3$1.mean(this.measure.results);
+            this.sd = d3$1.deviation(this.measure.results);
             this.lln = function() {
                 return _this.mean - _this.config.normal_range_sd * _this.sd;
             };
@@ -1077,10 +1101,13 @@
             };
         } else if (this.config.normal_range_method === 'Quantiles') {
             this.lln = function() {
-                return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_low);
+                return d3$1.quantile(_this.measure.results, _this.config.normal_range_quantile_low);
             };
             this.uln = function() {
-                return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_high);
+                return d3$1.quantile(
+                    _this.measure.results,
+                    _this.config.normal_range_quantile_high
+                );
             };
         } else {
             this.lln = function(d) {
@@ -1133,19 +1160,18 @@
     // - id_unit - a text string to label the units in the annotation (default = "participants")
     function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
-        var currentObs = d3
+        var currentObs = d3$1
             .set(
                 chart.filtered_data.map(function(d) {
                     return d[chart.config.id_col];
                 })
             )
             .values().length;
-        var percentage = d3.format('0.1%')(currentObs / chart.populationCount);
+        var percentage = d3$1.format('0.1%')(currentObs / chart.populationCount);
 
         //clear the annotation
-        var annotation = d3.select(selector);
-        d3
-            .select(selector)
+        var annotation = d3$1.select(selector);
+        d3$1.select(selector)
             .selectAll('*')
             .remove();
 
@@ -1164,12 +1190,11 @@
     }
 
     function resetChart() {
-        delete this.hovered_id;
-        delete this.selected_id;
-        this.wrap
-            .select('.multiples')
-            .select('.wc-small-multiples')
-            .remove();
+        this.svg.selectAll('.line,.point').remove();
+        //delete this.hovered_id;
+        //delete this.selected_id;
+        //if (this.multiples.chart)
+        //    this.multiples.chart.destroy();
     }
 
     function updateBottomMargin() {
@@ -1187,85 +1212,60 @@
         updateBottomMargin.call(this);
     }
 
-    function highlight() {
+    function attachMarks() {
         var _this = this;
 
-        //Highlight line and move in front of all other lines.
-        var lines = this.svg.selectAll('.line').sort(function(a, b) {
-            return a.key.indexOf(_this.selected_id) === 0
-                ? 2
-                : b.key.indexOf(_this.selected_id) === 0
-                  ? -2
-                  : a.key.indexOf(_this.hovered_id) === 0
-                    ? 1
-                    : b.key.indexOf(_this.hovered_id) === 0 ? -1 : 0;
+        this.marks.forEach(function(mark) {
+            var type = mark.type === 'circle' ? 'point' : mark.type;
+            _this[type + 's'] = mark.groups;
+        });
+    }
+
+    function highlightSelected() {
+        var _this = this;
+
+        //Add _selected_ class to participant's marks.
+        this.marks.forEach(function(mark) {
+            mark.groups.classed('selected', function(d) {
+                return mark.type === 'line'
+                    ? d.values[0].values.raw[0][_this.config.id_col] === _this.selected_id
+                    : d.values.raw[0][_this.config.id_col] === _this.selected_id;
+            });
         });
 
-        lines
+        //Update attributes of selected line.
+        this.lines
             .filter(function(d) {
-                return d.values[0].values.raw[0][_this.config.id_col] == _this.hovered_id;
+                return d.values[0].values.raw[0][_this.config.id_col] === _this.selected_id;
             })
             .select('path')
-            .attr(
-                'stroke-width',
-                this.config.marks.find(function(mark) {
-                    return mark.type === 'line';
-                }).attributes['stroke-width'] * 4
-            );
+            .attr('stroke-width', this.config.line_attributes['stroke-width'] * 8);
 
-        lines
+        //Update attributes of selected points.
+        this.points
             .filter(function(d) {
-                return d.values[0].values.raw[0][_this.config.id_col] == _this.selected_id;
-            })
-            .select('path')
-            .attr(
-                'stroke-width',
-                this.config.marks.find(function(mark) {
-                    return mark.type === 'line';
-                }).attributes['stroke-width'] * 8
-            );
-
-        //Highlight points and move behind all other points.
-        this.svg
-            .selectAll('.point')
-            .sort(function(a, b) {
-                return a.key.indexOf(_this.selected_id) === 0
-                    ? -2
-                    : b.key.indexOf(_this.selected_id) === 0
-                      ? 2
-                      : a.key.indexOf(_this.hovered_id) === 0
-                        ? 1
-                        : b.key.indexOf(_this.hovered_id) === 0 ? -1 : 0;
-            })
-            .filter(function(d) {
-                return (
-                    [_this.hovered_id, _this.selected_id].indexOf(
-                        d.values.raw[0][_this.config.id_col]
-                    ) > -1
-                );
+                return d.values.raw[0][_this.config.id_col] === _this.selected_id;
             })
             .select('circle')
-            .attr(
-                'r',
-                this.config.marks.find(function(mark) {
-                    return mark.type === 'circle';
-                }).radius * 1.5
-            )
-            .attr('stroke', 'black')
-            .attr('stroke-width', 3);
+            .attr({
+                r: this.config.point_attributes.radius * 1.5,
+                stroke: 'black',
+                'stroke-width': this.config.point_attributes['stroke-width'] * 8
+            });
     }
 
     function maintainHighlight() {
-        if (this.selected_id) highlight.call(this);
+        if (this.selected_id) highlightSelected.call(this);
     }
 
     function drawNormalRange() {
-        this.wrap.select('.normal-range').remove();
+        if (this.normalRange) this.normalRange.remove();
+
         if (this.config.normal_range_method) {
-            var normalRange = this.svg
+            this.normalRange = this.svg
                 .insert('g', '.line-supergroup')
                 .classed('normal-range', true);
-            normalRange
+            this.normalRange
                 .append('rect')
                 .attr({
                     x: 0,
@@ -1278,17 +1278,35 @@
                     fill: 'blue',
                     'fill-opacity': 0.1
                 });
-            normalRange.append('title').text('Normal range: ' + this.lln() + '-' + this.uln());
+            this.normalRange.append('title').text('Normal range: ' + this.lln() + '-' + this.uln());
         }
     }
 
-    function clearHighlight() {
-        this.svg
-            .selectAll('.line:not(.selected)')
+    function orderPoints() {
+        var _this = this;
+
+        this.marks
+            .find(function(mark) {
+                return mark.type === 'circle';
+            })
+            .groups.each(function(d, i) {
+                d.order = _this.IDOrder.find(function(di) {
+                    return d.key.indexOf(di.ID) === 0;
+                }).order;
+            });
+    }
+
+    function clearHighlighted() {
+        this.lines
+            .filter(function() {
+                return !d3.select(this).classed('selected');
+            })
             .select('path')
             .attr(this.config.line_attributes);
-        this.svg
-            .selectAll('.point:not(.selected)')
+        this.points
+            .filter(function() {
+                return !d3.select(this).classed('selected');
+            })
             .select('circle')
             .attr(this.config.point_attributes)
             .attr(
@@ -1297,53 +1315,96 @@
                     return mark.type === 'circle';
                 }).radius
             );
+        delete this.hovered_id;
+    }
+
+    function clearSelected() {
+        var _this = this;
+
+        this.marks.forEach(function(mark) {
+            var type = mark.type === 'circle' ? 'point' : mark.type;
+            var element = mark.type === 'line' ? 'path' : mark.type;
+            mark.groups
+                .classed('selected', false)
+                .select(element)
+                .attr(_this.config[type + '_attributes']);
+        });
+        if (this.multiples.chart) this.multiples.chart.destroy();
+        delete this.selected_id;
     }
 
     function addOverlayEventListener() {
         var _this = this;
 
-        var context = this;
-
-        this.svg
-            .select('.overlay')
+        this.overlay
             .on('mouseover', function() {
-                delete context.hovered_id;
-                clearHighlight.call(context);
+                clearHighlighted.call(_this);
             })
             .on('click', function() {
-                //clear current multiples
-                _this.wrap
-                    .select('.multiples')
-                    .select('.wc-small-multiples')
-                    .remove();
-                _this.svg.selectAll('.line').classed('selected', false);
-                _this.svg.selectAll('.point').classed('selected', false);
-                delete _this.hovered_id;
-                delete _this.selected_id;
-                clearHighlight.call(_this);
+                clearHighlighted.call(_this);
+                clearSelected.call(_this);
             });
     }
 
-    function clearSelected() {
-        this.svg.selectAll('.line').classed('selected', false);
-        this.svg.selectAll('.point').classed('selected', false);
-    }
-
-    function applySelected() {
+    function addOverlayEventListener$1() {
         var _this = this;
 
-        this.svg
-            .selectAll('.line')
-            .filter(function(d) {
-                return d.values[0].values.raw[0][_this.config.id_col] === _this.selected_id;
+        this.normalRange
+            .on('mouseover', function() {
+                clearHighlighted.call(_this);
             })
-            .classed('selected', true);
-        this.svg
-            .selectAll('.point')
+            .on('click', function() {
+                clearHighlighted.call(_this);
+                clearSelected.call(_this);
+            });
+    }
+
+    function highlightHovered() {
+        var _this = this;
+
+        //Update attributes of hovered line.
+        this.lines
             .filter(function(d) {
-                return d.values.raw[0][_this.config.id_col] === _this.selected_id;
+                return d.values[0].values.raw[0][_this.config.id_col] === _this.hovered_id;
             })
-            .classed('selected', true);
+            .select('path')
+            .attr('stroke-width', this.config.line_attributes['stroke-width'] * 4);
+
+        //Update attributes of hovered points.
+        this.points
+            .filter(function(d) {
+                return d.values.raw[0][_this.config.id_col] === _this.hovered_id;
+            })
+            .select('circle')
+            .attr({
+                r: this.config.point_attributes.radius * 1.25,
+                stroke: 'black',
+                'stroke-width': this.config.point_attributes['stroke-width'] * 4
+            });
+    }
+
+    function reorderMarks() {
+        var _this = this;
+
+        //Move selected line behind all other lines.
+        this.lines
+            .each(function(d, i) {
+                if (d.key.indexOf(_this.selected_id) === 0) d.order = _this.IDOrder.length - 1;
+                else if (d.order > _this.selected_id_order) d.order = d.order - 1;
+            })
+            .sort(function(a, b) {
+                return b.order - a.order;
+            });
+
+        //Move selected points behind all other points.
+        this.points
+            .each(function(d, i) {
+                if (d.key.indexOf(_this.selected_id) === 0) d.order = _this.IDOrder.length - 1;
+                else if (d.order > _this.selected_id_order) d.order = d.order - 1;
+            })
+            .sort(function(a, b) {
+                return b.order - a.order;
+            });
     }
 
     var _typeof =
@@ -1516,65 +1577,84 @@
     }
 
     function defineSmallMultiples() {
-        var multiples_settings = Object.assign(
+        //Define small multiples settings.
+        this.multiples.settings = Object.assign(
             {},
             clone(this.config),
             clone(Object.getPrototypeOf(this.config))
         );
-        multiples_settings.x.domain = null;
-        multiples_settings.y.domain = null;
-        multiples_settings.resizable = false;
-        multiples_settings.scale_text = false;
+        this.multiples.settings.x.domain = null;
+        this.multiples.settings.y.domain = null;
+        this.multiples.settings.resizable = false;
+        this.multiples.settings.scale_text = false;
 
-        if (multiples_settings.multiples_sizing.width)
-            multiples_settings.width = multiples_settings.multiples_sizing.width;
-        if (multiples_settings.multiples_sizing.height)
-            multiples_settings.height =
-                multiples_settings.multiples_sizing.height +
-                (multiples_settings.margin.bottom ? multiples_settings.margin.bottom : 0);
+        if (this.multiples.settings.multiples_sizing.width)
+            this.multiples.settings.width = this.multiples.settings.multiples_sizing.width;
+        if (this.multiples.settings.multiples_sizing.height)
+            this.multiples.settings.height =
+                this.multiples.settings.multiples_sizing.height +
+                (this.multiples.settings.margin.bottom ? this.multiples.settings.margin.bottom : 0);
 
-        multiples_settings.margin = { bottom: multiples_settings.margin.bottom || 20 };
+        this.multiples.settings.margin = { bottom: this.multiples.settings.margin.bottom || 20 };
 
-        this.multiples = webcharts.createChart(
-            this.wrap.select('.multiples').node(),
-            multiples_settings
+        //Add participant dropdown.
+        this.multiples.settings.selected_id = this.selected_id;
+        this.multiples.controls = webcharts.createControls(this.multiples.container.node(), {
+            inputs: [
+                {
+                    type: 'dropdown',
+                    label: 'All Measures for',
+                    option: 'selected_id',
+                    values: this.IDOrder.map(function(d) {
+                        return d.ID;
+                    }),
+                    require: true
+                }
+            ]
+        });
+
+        //Initialize small multiples.
+        this.multiples.chart = webcharts.createChart(
+            this.multiples.container.node(),
+            this.multiples.settings,
+            this.multiples.controls
         );
-    }
-
-    function insertHeader() {
-        this.multiples.wrap
-            .insert('strong', '.legend')
-            .text('All Measures for ' + this.selected_id);
+        this.multiples.chart.safetyOutlierExplorer = this;
     }
 
     function participantCharacteristics() {
-        var detail_table = this.multiples.wrap
+        var _this = this;
+
+        this.multiples.detail_table = this.multiples.chart.wrap
             .insert('table', '.legend')
             .append('tbody')
             .classed('detail-listing', true);
-        detail_table
+        this.multiples.detail_table
             .append('thead')
             .selectAll('th')
             .data(['', ''])
             .enter()
             .append('th');
-        detail_table.append('tbody');
+        this.multiples.detail_table.append('tbody');
 
         //Insert a line for each item in [ settings.detail_cols ].
         if (Array.isArray(this.config.details) && this.config.details.length) {
-            var id = this.participantData[0];
+            var participantDatum = this.multiples.data[0];
             this.config.details.forEach(function(detail) {
                 var value_col = detail.value_col ? detail.value_col : detail;
                 var label = detail.label
                     ? detail.label
-                    : detail.value_col ? detail.value_col : detail;
+                    : detail.value_col
+                        ? detail.value_col
+                        : detail;
+                var tuple = [label, participantDatum[value_col]];
 
-                if (id[value_col] !== undefined)
-                    detail_table
+                if (tuple[1] !== undefined)
+                    _this.multiples.detail_table
                         .select('tbody')
                         .append('tr')
                         .selectAll('td')
-                        .data([label, id[value_col]])
+                        .data(tuple)
                         .enter()
                         .append('td')
                         .style('text-align', function(d, i) {
@@ -1588,7 +1668,7 @@
     }
 
     function onLayout$1() {
-        this.multiples.on('layout', function() {
+        this.multiples.chart.on('layout', function() {
             //Define multiple styling.
             this.wrap.style('display', 'block');
             this.wrap
@@ -1599,11 +1679,23 @@
 
             //Set y-label to measure unit.
             this.config.y.label = '';
+
+            //Outline currently selected measure.
+            //if (this.filters[0].val === this.parent.safetyOutlierExplorer.measure.current)
+            //    this.wrap
+            //        .select('.wc-chart-title')
+            //        .append('span')
+            //        .html(' &#9432;')
+            //        .style({
+            //            'font-weight': 'bold',
+            //            'cursor': 'default',
+            //        })
+            //        .attr('title', 'Currently selected measure');
         });
     }
 
     function onPreprocess$1() {
-        this.multiples.on('preprocess', function() {
+        this.multiples.chart.on('preprocess', function() {
             var _this = this;
 
             //Define y-domain as minimum of lower limit of normal and minimum result and maximum of
@@ -1635,7 +1727,7 @@
             );
 
             //Calculate range of data.
-            var ylo = d3.min(
+            var ylo = d3$1.min(
                 filtered_data
                     .map(function(m) {
                         return +m[_this.config.y.column];
@@ -1644,7 +1736,7 @@
                         return +f || +f === 0;
                     })
             );
-            var yhi = d3.max(
+            var yhi = d3$1.max(
                 filtered_data
                     .map(function(m) {
                         return +m[_this.config.y.column];
@@ -1674,7 +1766,7 @@
     function rangePolygon() {
         var _this = this;
 
-        var area = d3.svg
+        var area = d3$1.svg
             .area()
             .x(function(d) {
                 return (
@@ -1722,7 +1814,7 @@
     }
 
     function onResize$1() {
-        this.multiples.on('resize', function() {
+        this.multiples.chart.on('resize', function() {
             //Resize text manually.
             this.wrap.select('.wc-chart-title').style('font-size', '12px');
             this.svg.selectAll('.axis .tick text').style('font-size', '10px');
@@ -1744,25 +1836,43 @@
         });
     }
 
+    function updateParticipantDropdown() {
+        var context = this; // chart
+
+        var participantDropdown = this.multiples.controls.wrap
+            .style('margin', 0)
+            .selectAll('.control-group')
+            .style('margin', 0)
+            .style('display', 'block'); // firefox is being weird about inline-table
+        participantDropdown.selectAll('*').style('display', 'inline-block');
+        participantDropdown.selectAll('.wc-control-label').style('font-weight', 'bold');
+        participantDropdown
+            .selectAll('select')
+            .style('margin-left', '3px')
+            .style('width', null)
+            .style('max-width', '10%')
+            .on('change', function(d) {
+                context.multiples.id = d3
+                    .select(this)
+                    .selectAll('option:checked')
+                    .text();
+                clearSelected.call(context);
+                context.selected_id = context.multiples.id;
+                highlightSelected.call(context);
+                smallMultiples.call(context);
+            });
+    }
+
     function smallMultiples() {
         var _this = this;
 
-        //Clear current multiples.
-        this.wrap
-            .select('.multiples')
-            .select('.wc-small-multiples')
-            .remove();
-
         //Define participant data.
-        this.participantData = this.initial_data.filter(function(d) {
+        this.multiples.data = this.initial_data.filter(function(d) {
             return d[_this.config.id_col] === _this.selected_id;
         });
 
         //Define small multiples.
         defineSmallMultiples.call(this);
-
-        //Insert header.
-        insertHeader.call(this);
 
         //Insert participant characteristics table.
         participantCharacteristics.call(this);
@@ -1773,32 +1883,38 @@
         onResize$1.call(this);
 
         //Initialize small multiples.
-        webcharts.multiply(this.multiples, this.participantData, 'measure_unit', this.measures);
+        webcharts.multiply(
+            this.multiples.chart,
+            this.multiples.data,
+            'measure_unit',
+            this.measures
+        );
+
+        //Update participant dropdown.
+        updateParticipantDropdown.call(this);
     }
 
     function addLineEventListeners() {
         var _this = this;
 
-        var context = this;
-        var lines = this.svg.selectAll('.line');
-        var points = this.svg.selectAll('.point');
-
-        lines
+        this.lines
             .on('mouseover', function(d) {
-                delete context.hovered_id;
-                clearHighlight.call(context);
-                context.hovered_id = d.values[0].values.raw[0][context.config.id_col];
-                highlight.call(context);
+                clearHighlighted.call(_this);
+                _this.hovered_id = d.values[0].values.raw[0][_this.config.id_col];
+                if (_this.hovered_id !== _this.selected_id) highlightHovered.call(_this);
             })
             .on('mouseout', function(d) {
-                delete context.hovered_id;
-                clearHighlight.call(context);
+                clearHighlighted.call(_this);
             })
             .on('click', function(d) {
-                _this.selected_id = d.values[0].values.raw[0][_this.config.id_col];
+                clearHighlighted.call(_this);
                 clearSelected.call(_this);
-                applySelected.call(_this);
-                highlight.call(_this);
+                _this.selected_id = d.values[0].values.raw[0][_this.config.id_col];
+                _this.selected_id_order = _this.IDOrder.find(function(di) {
+                    return di.ID === _this.selected_id;
+                }).order;
+                highlightSelected.call(_this);
+                reorderMarks.call(_this);
                 smallMultiples.call(_this);
             });
     }
@@ -1806,32 +1922,31 @@
     function addPointEventListeners() {
         var _this = this;
 
-        var context = this;
-        var lines = this.svg.selectAll('.line');
-        var points = this.svg.selectAll('.point');
-
-        points
+        this.points
             .on('mouseover', function(d) {
-                delete context.hovered_id;
-                clearHighlight.call(context);
-                context.hovered_id = d.values.raw[0][context.config.id_col];
-                highlight.call(context);
+                clearHighlighted.call(_this);
+                _this.hovered_id = d.values.raw[0][_this.config.id_col];
+                if (_this.hovered_id !== _this.selected_id) highlightHovered.call(_this);
             })
             .on('mouseout', function(d) {
-                delete context.hovered_id;
-                clearHighlight.call(context);
+                clearHighlighted.call(_this);
             })
             .on('click', function(d) {
-                _this.selected_id = d.values.raw[0][_this.config.id_col];
+                clearHighlighted.call(_this);
                 clearSelected.call(_this);
-                applySelected.call(_this);
-                highlight.call(_this);
+                _this.selected_id = d.values.raw[0][_this.config.id_col];
+                _this.selected_id_order = _this.IDOrder.find(function(di) {
+                    return di.ID === _this.selected_id;
+                }).order;
+                highlightSelected.call(_this);
+                reorderMarks.call(_this);
                 smallMultiples.call(_this);
             });
     }
 
     function addEventListeners() {
         addOverlayEventListener.call(this);
+        addOverlayEventListener$1.call(this);
         addLineEventListeners.call(this);
         addPointEventListeners.call(this);
     }
@@ -1845,19 +1960,19 @@
             .map(function(d) {
                 return +d.values.y;
             })
-            .sort(d3.ascending);
+            .sort(d3$1.ascending);
         var height = this.plot_height;
         var width = 1;
         var domain = this.y_dom;
         var boxPlotWidth = 10;
         var boxColor = '#bbb';
         var boxInsideColor = 'white';
-        var fmt = d3.format('.2f');
+        var fmt = d3$1.format('.2f');
         var horizontal = true;
 
         //set up scales
-        var x = d3.scale.linear().range([0, width]);
-        var y = d3.scale.linear().range([height, 0]);
+        var x = d3$1.scale.linear().range([0, width]);
+        var y = d3$1.scale.linear().range([height, 0]);
 
         if (horizontal) {
             y.domain(domain);
@@ -1867,7 +1982,7 @@
 
         var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
         for (var i = 0; i < probs.length; i++) {
-            probs[i] = d3.quantile(results, probs[i]);
+            probs[i] = d3$1.quantile(results, probs[i]);
         }
 
         var boxplot = this.svg
@@ -1933,8 +2048,8 @@
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
-            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
+            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
+            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3))
             .style('fill', boxInsideColor)
             .style('stroke', boxColor);
@@ -1942,8 +2057,8 @@
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
-            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
+            .attr('cx', horizontal ? x(0.5) : x(d3$1.mean(results)))
+            .attr('cy', horizontal ? y(d3$1.mean(results)) : y(0.5))
             .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
             .style('fill', boxColor)
             .style('stroke', 'None');
@@ -1957,41 +2072,47 @@
                     d.values.length +
                     '\n' +
                     'Min = ' +
-                    d3.min(d.values) +
+                    d3$1.min(d.values) +
                     '\n' +
                     '5th % = ' +
-                    fmt(d3.quantile(d.values, 0.05)) +
+                    fmt(d3$1.quantile(d.values, 0.05)) +
                     '\n' +
                     'Q1 = ' +
-                    fmt(d3.quantile(d.values, 0.25)) +
+                    fmt(d3$1.quantile(d.values, 0.25)) +
                     '\n' +
                     'Median = ' +
-                    fmt(d3.median(d.values)) +
+                    fmt(d3$1.median(d.values)) +
                     '\n' +
                     'Q3 = ' +
-                    fmt(d3.quantile(d.values, 0.75)) +
+                    fmt(d3$1.quantile(d.values, 0.75)) +
                     '\n' +
                     '95th % = ' +
-                    fmt(d3.quantile(d.values, 0.95)) +
+                    fmt(d3$1.quantile(d.values, 0.95)) +
                     '\n' +
                     'Max = ' +
-                    d3.max(d.values) +
+                    d3$1.max(d.values) +
                     '\n' +
                     'Mean = ' +
-                    fmt(d3.mean(d.values)) +
+                    fmt(d3$1.mean(d.values)) +
                     '\n' +
                     'StDev = ' +
-                    fmt(d3.deviation(d.values))
+                    fmt(d3$1.deviation(d.values))
                 );
             });
     }
 
     function onResize() {
+        //Attach mark groups to central chart object.
+        attachMarks.call(this);
+
         //Maintain mark highlighting.
         maintainHighlight.call(this);
 
         //Draw normal range.
         drawNormalRange.call(this);
+
+        //Add initial ordering to points; ordering will update as points are clicked.
+        orderPoints.call(this);
 
         //Add event listeners to lines, points, and overlay.
         addEventListeners.call(this);
@@ -2011,17 +2132,17 @@
         var mergedSettings = Object.assign({}, defaultSettings, settings);
 
         //Sync options within settings object, e.g. data mappings.
-        mergedSettings = syncSettings(mergedSettings);
+        var syncedSettings = syncSettings(mergedSettings);
 
         //Sync control inputs with with settings object.
-        var syncedControlInputs = syncControlInputs(controlInputs, mergedSettings);
+        var syncedControlInputs = syncControlInputs(controlInputs, syncedSettings);
         var controls = webcharts.createControls(element, {
             location: 'top',
             inputs: syncedControlInputs
         });
 
         //Create chart.
-        var chart = webcharts.createChart(element, mergedSettings, controls);
+        var chart = webcharts.createChart(element, syncedSettings, controls);
         chart.on('init', onInit);
         chart.on('layout', onLayout);
         chart.on('preprocess', onPreprocess);

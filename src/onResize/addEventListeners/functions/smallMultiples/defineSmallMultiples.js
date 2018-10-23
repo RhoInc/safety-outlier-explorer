@@ -1,25 +1,47 @@
 import clone from '../../../../util/clone';
+import { createControls } from 'webcharts';
 import { createChart } from 'webcharts';
 
 export default function defineSmallMultiples() {
-    const multiples_settings = Object.assign(
+    //Define small multiples settings.
+    this.multiples.settings = Object.assign(
         {},
         clone(this.config),
         clone(Object.getPrototypeOf(this.config))
     );
-    multiples_settings.x.domain = null;
-    multiples_settings.y.domain = null;
-    multiples_settings.resizable = false;
-    multiples_settings.scale_text = false;
+    this.multiples.settings.x.domain = null;
+    this.multiples.settings.y.domain = null;
+    this.multiples.settings.resizable = false;
+    this.multiples.settings.scale_text = false;
 
-    if (multiples_settings.multiples_sizing.width)
-        multiples_settings.width = multiples_settings.multiples_sizing.width;
-    if (multiples_settings.multiples_sizing.height)
-        multiples_settings.height =
-            multiples_settings.multiples_sizing.height +
-            (multiples_settings.margin.bottom ? multiples_settings.margin.bottom : 0);
+    if (this.multiples.settings.multiples_sizing.width)
+        this.multiples.settings.width = this.multiples.settings.multiples_sizing.width;
+    if (this.multiples.settings.multiples_sizing.height)
+        this.multiples.settings.height =
+            this.multiples.settings.multiples_sizing.height +
+            (this.multiples.settings.margin.bottom ? this.multiples.settings.margin.bottom : 0);
 
-    multiples_settings.margin = { bottom: multiples_settings.margin.bottom || 20 };
+    this.multiples.settings.margin = { bottom: this.multiples.settings.margin.bottom || 20 };
 
-    this.multiples = createChart(this.wrap.select('.multiples').node(), multiples_settings);
+    //Add participant dropdown.
+    this.multiples.settings.selected_id = this.selected_id;
+    this.multiples.controls = createControls(this.multiples.container.node(), {
+        inputs: [
+            {
+                type: 'dropdown',
+                label: 'All Measures for',
+                option: 'selected_id',
+                values: this.IDOrder.map(d => d.ID),
+                require: true
+            }
+        ]
+    });
+
+    //Initialize small multiples.
+    this.multiples.chart = createChart(
+        this.multiples.container.node(),
+        this.multiples.settings,
+        this.multiples.controls
+    );
+    this.multiples.chart.safetyOutlierExplorer = this;
 }
