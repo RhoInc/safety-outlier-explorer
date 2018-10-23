@@ -52,12 +52,12 @@ export const rendererSpecificSettings = {
         'stroke-opacity': 0.75
     },
     point_attributes: {
-        stroke: 'rgb(102,194,165)',
+        stroke: '#1f78b4',
         'stroke-width': 0.5,
         'stroke-opacity': 1,
         radius: 3,
-        fill: 'rgb(102,194,165)',
-        'fill-opacity': 1
+        fill: '#1f78b4',
+        'fill-opacity': 0.2
     }
 };
 

@@ -1,7 +1,7 @@
 import { min, max } from 'd3';
 
 export default function onPreprocess() {
-    this.multiples.on('preprocess', function() {
+    this.multiples.chart.on('preprocess', function() {
         //Define y-domain as minimum of lower limit of normal and minimum result and maximum of
         //upper limit of normal and maximum result.
         const filtered_data = this.raw_data.filter(

@@ -1,6 +1,6 @@
 //polyfills
-import './util/object-assign';
-import './util/array-find';
+import './util/polyfills';
+import './util/moveTo';
 
 //settings
 import defaultSettings from './defaultSettings';
@@ -17,17 +17,20 @@ import onResize from './onResize';
 
 export default function safetyOutlierExplorer(element, settings) {
     //Merge user settings with default settings.
-    let mergedSettings = Object.assign({}, defaultSettings, settings);
+    const mergedSettings = Object.assign({}, defaultSettings, settings);
 
     //Sync options within settings object, e.g. data mappings.
-    mergedSettings = syncSettings(mergedSettings);
+    const syncedSettings = syncSettings(mergedSettings);
 
     //Sync control inputs with with settings object.
-    let syncedControlInputs = syncControlInputs(controlInputs, mergedSettings);
-    let controls = createControls(element, { location: 'top', inputs: syncedControlInputs });
+    const syncedControlInputs = syncControlInputs(controlInputs, syncedSettings);
+    const controls = createControls(element, {
+        location: 'top',
+        inputs: syncedControlInputs
+    });
 
     //Create chart.
-    let chart = createChart(element, mergedSettings, controls);
+    const chart = createChart(element, syncedSettings, controls);
     chart.on('init', onInit);
     chart.on('layout', onLayout);
     chart.on('preprocess', onPreprocess);
