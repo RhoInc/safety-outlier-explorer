@@ -1,17 +1,15 @@
 (function(global, factory) {
     typeof exports === 'object' && typeof module !== 'undefined'
-        ? (module.exports = factory(require('webcharts'), require('d3')))
+        ? (module.exports = factory(require('d3'), require('webcharts')))
         : typeof define === 'function' && define.amd
-          ? define(['webcharts', 'd3'], factory)
-          : (global.safetyOutlierExplorer = factory(global.webCharts, global.d3));
-})(this, function(webcharts, d3) {
+          ? define(['d3', 'webcharts'], factory)
+          : (global.safetyOutlierExplorer = factory(global.d3, global.webCharts));
+})(this, function(d3, webcharts) {
     'use strict';
 
     if (typeof Object.assign != 'function') {
         (function() {
             Object.assign = function(target) {
-                'use strict';
-
                 if (target === undefined || target === null) {
                     throw new TypeError('Cannot convert undefined or null to object');
                 }
@@ -749,7 +747,6 @@
 
     function hideNormalRangeInputs() {
         var _this = this;
-
         var controls = this.controls.wrap.selectAll('.control-group');
 
         //Normal range method control
@@ -1056,12 +1053,7 @@
     function onDatatransform() {}
 
     // Takes a webcharts object creates a text annotation giving the
-    // number and percentage of observations shown in the current view
-    //
-    // inputs:
-    // - chart - a webcharts chart object
-    // - selector - css selector for the annotation
-    // - id_unit - a text string to label the units in the annotation (default = "participants")
+
     function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
         var currentObs = d3
@@ -1283,125 +1275,9 @@
                       : typeof obj;
               };
 
-    var asyncGenerator = (function() {
-        function AwaitValue(value) {
-            this.value = value;
-        }
-
-        function AsyncGenerator(gen) {
-            var front, back;
-
-            function send(key, arg) {
-                return new Promise(function(resolve, reject) {
-                    var request = {
-                        key: key,
-                        arg: arg,
-                        resolve: resolve,
-                        reject: reject,
-                        next: null
-                    };
-
-                    if (back) {
-                        back = back.next = request;
-                    } else {
-                        front = back = request;
-                        resume(key, arg);
-                    }
-                });
-            }
-
-            function resume(key, arg) {
-                try {
-                    var result = gen[key](arg);
-                    var value = result.value;
-
-                    if (value instanceof AwaitValue) {
-                        Promise.resolve(value.value).then(
-                            function(arg) {
-                                resume('next', arg);
-                            },
-                            function(arg) {
-                                resume('throw', arg);
-                            }
-                        );
-                    } else {
-                        settle(result.done ? 'return' : 'normal', result.value);
-                    }
-                } catch (err) {
-                    settle('throw', err);
-                }
-            }
-
-            function settle(type, value) {
-                switch (type) {
-                    case 'return':
-                        front.resolve({
-                            value: value,
-                            done: true
-                        });
-                        break;
-
-                    case 'throw':
-                        front.reject(value);
-                        break;
-
-                    default:
-                        front.resolve({
-                            value: value,
-                            done: false
-                        });
-                        break;
-                }
-
-                front = front.next;
-
-                if (front) {
-                    resume(front.key, front.arg);
-                } else {
-                    back = null;
-                }
-            }
-
-            this._invoke = send;
-
-            if (typeof gen.return !== 'function') {
-                this.return = undefined;
-            }
-        }
-
-        if (typeof Symbol === 'function' && Symbol.asyncIterator) {
-            AsyncGenerator.prototype[Symbol.asyncIterator] = function() {
-                return this;
-            };
-        }
-
-        AsyncGenerator.prototype.next = function(arg) {
-            return this._invoke('next', arg);
-        };
-
-        AsyncGenerator.prototype.throw = function(arg) {
-            return this._invoke('throw', arg);
-        };
-
-        AsyncGenerator.prototype.return = function(arg) {
-            return this._invoke('return', arg);
-        };
-
-        return {
-            wrap: function(fn) {
-                return function() {
-                    return new AsyncGenerator(fn.apply(this, arguments));
-                };
-            },
-            await: function(value) {
-                return new AwaitValue(value);
-            }
-        };
-    })();
-
     /*------------------------------------------------------------------------------------------------\
-  Clone a variable (http://stackoverflow.com/a/728694).
-\------------------------------------------------------------------------------------------------*/
+      Clone a variable (http://stackoverflow.com/a/728694).
+    \------------------------------------------------------------------------------------------------*/
 
     function clone(obj) {
         var copy;
@@ -1644,7 +1520,7 @@
         });
     }
 
-    function onResize$1() {
+    function onResize() {
         this.multiples.on('resize', function() {
             //Resize text manually.
             this.wrap.select('.wc-chart-title').style('font-size', '12px');
@@ -1693,7 +1569,7 @@
         //Add callbacks to small multiples.
         onLayout$1.call(this);
         onPreprocess$1.call(this);
-        onResize$1.call(this);
+        onResize.call(this);
 
         //Initialize small multiples.
         webcharts.multiply(this.multiples, this.participantData, 'measure_unit', this.measures);
@@ -1764,6 +1640,7 @@
         this.svg.select('g.boxplot').remove();
 
         //Customize box plot.
+        var svg = this.svg;
         var results = this.current_data
             .map(function(d) {
                 return +d.values.y;
@@ -1776,16 +1653,13 @@
         var boxColor = '#bbb';
         var boxInsideColor = 'white';
         var fmt = d3.format('.2f');
-        var horizontal = true;
 
         //set up scales
         var x = d3.scale.linear().range([0, width]);
         var y = d3.scale.linear().range([height, 0]);
 
-        if (horizontal) {
+        {
             y.domain(domain);
-        } else {
-            x.domain(domain);
         }
 
         var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
@@ -1805,15 +1679,11 @@
                 'translate(' + (this.plot_width + this.config.margin.right / 2) + ',0)'
             );
 
-        //set bar width variable
-        var box_x = horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[1]);
-        var box_width = horizontal
-            ? x(0.5 + boxPlotWidth / 2) - x(0.5 - boxPlotWidth / 2)
-            : x(probs[3]) - x(probs[1]);
-        var box_y = horizontal ? y(probs[3]) : y(0.5 + boxPlotWidth / 2);
-        var box_height = horizontal
-            ? -y(probs[3]) + y(probs[1])
-            : y(0.5 - boxPlotWidth / 2) - y(0.5 + boxPlotWidth / 2);
+        //draw rectangle from q1 to q3
+        var box_x = x(0.5 - boxPlotWidth / 2);
+        var box_width = x(0.5 + boxPlotWidth / 2) - x(0.5 - boxPlotWidth / 2);
+        var box_y = y(probs[3]);
+        var box_height = -y(probs[3]) + y(probs[1]);
 
         boxplot
             .append('rect')
@@ -1832,10 +1702,10 @@
             boxplot
                 .append('line')
                 .attr('class', 'boxplot ' + iSclass[i])
-                .attr('x1', horizontal ? x(0.5 - boxPlotWidth / 2) : x(probs[iS[i]]))
-                .attr('x2', horizontal ? x(0.5 + boxPlotWidth / 2) : x(probs[iS[i]]))
-                .attr('y1', horizontal ? y(probs[iS[i]]) : y(0.5 - boxPlotWidth / 2))
-                .attr('y2', horizontal ? y(probs[iS[i]]) : y(0.5 + boxPlotWidth / 2))
+                .attr('x1', x(0.5 - boxPlotWidth / 2))
+                .attr('x2', x(0.5 + boxPlotWidth / 2))
+                .attr('y1', y(probs[iS[i]]))
+                .attr('y2', y(probs[iS[i]]))
                 .style('fill', iSColor[i])
                 .style('stroke', iSColor[i]);
         }
@@ -1846,28 +1716,28 @@
             boxplot
                 .append('line')
                 .attr('class', 'boxplot')
-                .attr('x1', horizontal ? x(0.5) : x(probs[iS[i][0]]))
-                .attr('x2', horizontal ? x(0.5) : x(probs[iS[i][1]]))
-                .attr('y1', horizontal ? y(probs[iS[i][0]]) : y(0.5))
-                .attr('y2', horizontal ? y(probs[iS[i][1]]) : y(0.5))
+                .attr('x1', x(0.5))
+                .attr('x2', x(0.5))
+                .attr('y1', y(probs[iS[i][0]]))
+                .attr('y2', y(probs[iS[i][1]]))
                 .style('stroke', boxColor);
         }
 
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
-            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
-            .attr('r', horizontal ? x(boxPlotWidth / 3) : y(1 - boxPlotWidth / 3))
+            .attr('cx', x(0.5))
+            .attr('cy', y(d3.mean(results)))
+            .attr('r', x(boxPlotWidth / 3))
             .style('fill', boxInsideColor)
             .style('stroke', boxColor);
 
         boxplot
             .append('circle')
             .attr('class', 'boxplot mean')
-            .attr('cx', horizontal ? x(0.5) : x(d3.mean(results)))
-            .attr('cy', horizontal ? y(d3.mean(results)) : y(0.5))
-            .attr('r', horizontal ? x(boxPlotWidth / 6) : y(1 - boxPlotWidth / 6))
+            .attr('cx', x(0.5))
+            .attr('cy', y(d3.mean(results)))
+            .attr('r', x(boxPlotWidth / 6))
             .style('fill', boxColor)
             .style('stroke', 'None');
 
@@ -1909,7 +1779,7 @@
             });
     }
 
-    function onResize() {
+    function onResize$1() {
         //Maintain mark highlighting.
         maintainHighlight.call(this);
 
@@ -1927,8 +1797,7 @@
     }
 
     //polyfills
-    //settings
-    //webcharts
+
     function safetyOutlierExplorer(element, settings) {
         //Merge user settings with default settings.
         var mergedSettings = Object.assign({}, defaultSettings, settings);
@@ -1950,7 +1819,7 @@
         chart.on('preprocess', onPreprocess);
         chart.on('datatransform', onDatatransform);
         chart.on('draw', onDraw);
-        chart.on('resize', onResize);
+        chart.on('resize', onResize$1);
 
         return chart;
     }
