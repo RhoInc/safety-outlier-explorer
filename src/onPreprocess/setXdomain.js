@@ -1,4 +1,3 @@
-import '../util/object-assign';
 import { extent } from 'd3';
 import removeVisitsWithoutData from './setXdomain/removeVisitsWithoutData';
 import removeUnscheduledVisits from './setXdomain/removeUnscheduledVisits';
