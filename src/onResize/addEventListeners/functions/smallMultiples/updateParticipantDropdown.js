@@ -1,3 +1,4 @@
+import { select } from 'd3';
 import clearSelected from '../clearSelected';
 import highlightSelected from '../highlightSelected';
 import smallMultiples from '../smallMultiples';

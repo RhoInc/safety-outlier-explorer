@@ -656,7 +656,7 @@
     function addIDOrdering() {
         var _this = this;
 
-        this.IDOrder = d3
+        this.IDOrder = d3$1
             .set(
                 this.raw_data.map(function(d) {
                     return d[_this.config.id_col];

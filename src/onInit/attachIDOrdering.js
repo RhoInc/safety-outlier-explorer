@@ -1,6 +1,6 @@
+import { set } from 'd3';
 export default function addIDOrdering() {
-    this.IDOrder = d3
-        .set(this.raw_data.map(d => d[this.config.id_col]))
+    this.IDOrder = set(this.raw_data.map(d => d[this.config.id_col]))
         .values()
         .sort()
         .map((ID, i) => {

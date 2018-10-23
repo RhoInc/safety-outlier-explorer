@@ -1,6 +1,6 @@
-import babel from "rollup-plugin-babel";
+import babel from 'rollup-plugin-babel';
 
-var pkg = require("./package.json");
+var pkg = require('./package.json');
 
 module.exports = {
     input: pkg.module,
@@ -12,10 +12,10 @@ module.exports = {
                 : str)
             .join(''),
         file: pkg.main,
-        format: "umd",
+        format: 'umd',
 		globals: {
-			d3: "d3",
-			webcharts: "webCharts"
+			d3: 'd3',
+			webcharts: 'webCharts'
 		},
     },
     external: (function() {
@@ -25,12 +25,12 @@ module.exports = {
     }()),
     plugins: [
         babel({
-            exclude: "node_modules/**",
+            exclude: 'node_modules/**',
             presets: [
-                [ "env", {modules: false} ]
+                [ 'env', {modules: false} ]
             ],
             plugins: [
-                "external-helpers"
+                'external-helpers'
             ],
             babelrc: false
         })
