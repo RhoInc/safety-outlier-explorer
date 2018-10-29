@@ -33,6 +33,7 @@ export const rendererSpecificSettings = {
         { value_col: 'SEX', label: 'Sex' },
         { value_col: 'RACE', label: 'Race' }
     ],
+    tooltip_cols: null,
     multiples_sizing: {
         width: 300,
         height: 100
@@ -51,12 +52,12 @@ export const rendererSpecificSettings = {
         'stroke-opacity': 0.75
     },
     point_attributes: {
-        stroke: 'rgb(102,194,165)',
+        stroke: '#1f78b4',
         'stroke-width': 0.5,
         'stroke-opacity': 1,
         radius: 3,
-        fill: 'rgb(102,194,165)',
-        'fill-opacity': 1
+        fill: '#1f78b4',
+        'fill-opacity': 0.2
     }
 };
 
@@ -93,7 +94,7 @@ export const webchartsSettings = {
         }
     ],
     resizable: true,
-    margin: { right: 20 }, //create space for box plot
+    margin: { top: 5, bottom: 5, right: 20 }, //create space for box plot
     aspect: 3
 };
 
@@ -122,9 +123,17 @@ export function syncSettings(settings) {
     //points
     const points = settings.marks.find(mark => mark.type === 'circle');
     points.per = [settings.id_col, settings.measure_col, time_col.value_col, settings.value_col];
-    points.tooltip = `[${settings.id_col}]:  [${settings.value_col}] [${settings.unit_col}] at ${
-        settings.x.column
-    } = [${settings.x.column}]`;
+    points.tooltip = `ID = [${settings.id_col}]\n[${settings.measure_col}] = [${
+        settings.value_col
+    }] [${settings.unit_col}]\n${settings.x.column} = [${settings.x.column}]`;
+    //add custom tooltip values
+    if (settings.tooltip_cols) {
+        settings.tooltip_cols.forEach(function(tooltip) {
+            var obj = typeof tooltip == 'string' ? { label: tooltip, value_col: tooltip } : tooltip;
+            points.tooltip = points.tooltip + `\n${obj.label} = [${obj.value_col}]`;
+        });
+    }
+
     Object.assign(points.attributes, settings.point_attributes);
     points.radius = settings.point_attributes.radius || 3;
 

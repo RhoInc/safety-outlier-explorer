@@ -2,7 +2,7 @@ import adjustTicks from '../../../../adjustTicks';
 import rangePolygon from './onResize/rangePolygon';
 
 export default function onResize() {
-    this.multiples.on('resize', function() {
+    this.multiples.chart.on('resize', function() {
         //Resize text manually.
         this.wrap.select('.wc-chart-title').style('font-size', '12px');
         this.svg.selectAll('.axis .tick text').style('font-size', '10px');

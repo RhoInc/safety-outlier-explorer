@@ -1,8 +1,7 @@
 export default function resetChart() {
-    delete this.hovered_id;
-    delete this.selected_id;
-    this.wrap
-        .select('.multiples')
-        .select('.wc-small-multiples')
-        .remove();
+    this.svg.selectAll('.line,.point').remove();
+    //delete this.hovered_id;
+    //delete this.selected_id;
+    //if (this.multiples.chart)
+    //    this.multiples.chart.destroy();
 }

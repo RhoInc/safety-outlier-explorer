@@ -1,6 +1,6 @@
 {
   "name": "safety-outlier-explorer",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Chart showing participant trajectories of lab measures, vital signs and other related measures in clinical trials.",
   "main": "./build/safetyOutlierExplorer.js",
   "module": "./src/wrapper.js",
@@ -11,13 +11,13 @@
     "webcharts": "^1.10"
   },
   "scripts": {
-    "build": "npm run bundle && npm run format && npm run build-md && npm run test-page",
+    "build": "npm run bundle && npm run format && npm run build-md",
     "build-md": "node ./scripts/configuration-markdown.js",
     "bundle": "rollup -c",
     "format": "npm run format-src && npm run format-bundle",
     "format-src": "prettier --print-width=100 --tab-width=4 --single-quote --write \"./src/**/*.js\"",
     "format-bundle": "prettier --print-width=100 --tab-width=4 --single-quote --write ./build/safetyOutlierExplorer.js",
-    "test-page": "start chrome ./build/test-page/index.html && start firefox ./build/test-page/index.html && start iexplore file://%CD%/build/test-page/index.html",
+    "test-page": "start chrome ./test-page/index.html && start firefox ./test-page/index.html && start iexplore file://%CD%/test-page/index.html",
     "watch": "rollup -c -w"
   },
   "devDependencies": {
@@ -25,8 +25,7 @@
     "babel-preset-env": "^1.6.0",
     "babel-register": "^6.26.0",
     "prettier": "^1.7.4",
-    "rollup": "^0.50.0",
-    "rollup-plugin-babel": "^3.0.2",
-    "rollup-watch": "^4.3.1"
+    "rollup": "^0.66.6",
+    "rollup-plugin-babel": "^3.0.2"
   }
 }
