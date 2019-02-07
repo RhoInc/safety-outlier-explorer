@@ -3,7 +3,8 @@
         ? (module.exports = factory(require('d3'), require('webcharts')))
         : typeof define === 'function' && define.amd
           ? define(['d3', 'webcharts'], factory)
-          : (global.safetyOutlierExplorer = factory(global.d3, global.webCharts));
+          : ((global = global || self),
+            (global.safetyOutlierExplorer = factory(global.d3, global.webCharts)));
 })(this, function(d3$1, webcharts) {
     'use strict';
 
