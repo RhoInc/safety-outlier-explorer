@@ -22,7 +22,7 @@ export default function smallMultiples() {
     onResize.call(this);
 
     //Initialize small multiples.
-    multiply(this.multiples.chart, this.multiples.data, 'measure_unit', this.measures);
+    multiply(this.multiples.chart, this.multiples.data, 'soe_measure', this.measures);
 
     //Update participant dropdown.
     updateParticipantDropdown.call(this);
