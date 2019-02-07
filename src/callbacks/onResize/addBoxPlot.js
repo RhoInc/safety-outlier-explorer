@@ -13,7 +13,7 @@ export default function addBoxPlot() {
     const boxPlotWidth = 10;
     const boxColor = '#bbb';
     const boxInsideColor = 'white';
-    const fmt = format(this.config.y.format1);
+    const fmt = format('.2r');
     const horizontal = true;
 
     //set up scales
@@ -115,7 +115,7 @@ export default function addBoxPlot() {
     boxplot
         .append('title')
         .text(function(d) {
-            return (
+            const tooltip = (
                 'N = ' +
                 d.values.length +
                 '\n' +
@@ -146,5 +146,6 @@ export default function addBoxPlot() {
                 'StDev = ' +
                 fmt(deviation(d.values)).replace(/^ */, '')
             );
+            return tooltip;
         });
 }

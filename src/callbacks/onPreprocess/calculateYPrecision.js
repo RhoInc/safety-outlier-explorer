@@ -1,10 +1,10 @@
 export default function calculateYPrecision() {
     //define the precision of the y-axis
-    const log10range = Math.log10(this.measure.range);
-    this.config.y.precision = Math.floor(log10range) + 1;
-    console.log(log10range);
-    console.log(this.config.y.precision);
-    this.config.y.format = `${this.config.y.precision}f`
+    this.config.y.precisionFactor = Math.round(this.measure.log10range);
+    this.config.y.precision = Math.pow(10,this.config.y.precisionFactor);
+    this.config.y.format = this.config.y.precisionFactor > 0
+        ? '.0f'
+        : `.${Math.abs(this.config.y.precisionFactor) + 1}f`;
 
     //define the size of the y-axis limit increments
     let step = this.measure.range/15;

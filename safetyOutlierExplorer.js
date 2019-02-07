@@ -752,6 +752,7 @@
         });
         this.measure.domain = d3$1.extent(this.measure.results);
         this.measure.range = this.measure.domain[1] - this.measure.domain[0];
+        this.measure.log10range = Math.log10(this.measure.range);
         this.raw_data = this.measure.data.filter(function (d) {
             return _this.config.unscheduled_visits || !d.unscheduled;
         });
@@ -808,11 +809,9 @@
 
     function calculateYPrecision() {
         //define the precision of the y-axis
-        var log10range = Math.log10(this.measure.range);
-        this.config.y.precision = Math.floor(log10range) + 1;
-        console.log(log10range);
-        console.log(this.config.y.precision);
-        this.config.y.format = this.config.y.precision + "f";
+        this.config.y.precisionFactor = Math.round(this.measure.log10range);
+        this.config.y.precision = Math.pow(10, this.config.y.precisionFactor);
+        this.config.y.format = this.config.y.precisionFactor > 0 ? '.0f' : '.' + (Math.abs(this.config.y.precisionFactor) + 1) + 'f';
 
         //define the size of the y-axis limit increments
         var step = this.measure.range / 15;
@@ -1450,7 +1449,7 @@
         var boxPlotWidth = 10;
         var boxColor = '#bbb';
         var boxInsideColor = 'white';
-        var fmt = d3$1.format(this.config.y.format1);
+        var fmt = d3$1.format('.2r');
 
         //set up scales
         var x = d3$1.scale.linear().range([0, width]);
@@ -1497,7 +1496,8 @@
         boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', x(0.5)).attr('cy', y(d3$1.mean(results))).attr('r', x(boxPlotWidth / 6)).style('fill', boxColor).style('stroke', 'None');
 
         boxplot.append('title').text(function (d) {
-            return 'N = ' + d.values.length + '\n' + 'Min = ' + d3$1.min(d.values) + '\n' + '5th % = ' + fmt(d3$1.quantile(d.values, 0.05)).replace(/^ */, '') + '\n' + 'Q1 = ' + fmt(d3$1.quantile(d.values, 0.25)).replace(/^ */, '') + '\n' + 'Median = ' + fmt(d3$1.median(d.values)).replace(/^ */, '') + '\n' + 'Q3 = ' + fmt(d3$1.quantile(d.values, 0.75)).replace(/^ */, '') + '\n' + '95th % = ' + fmt(d3$1.quantile(d.values, 0.95)).replace(/^ */, '') + '\n' + 'Max = ' + d3$1.max(d.values) + '\n' + 'Mean = ' + fmt(d3$1.mean(d.values)).replace(/^ */, '') + '\n' + 'StDev = ' + fmt(d3$1.deviation(d.values)).replace(/^ */, '');
+            var tooltip = 'N = ' + d.values.length + '\n' + 'Min = ' + d3$1.min(d.values) + '\n' + '5th % = ' + fmt(d3$1.quantile(d.values, 0.05)).replace(/^ */, '') + '\n' + 'Q1 = ' + fmt(d3$1.quantile(d.values, 0.25)).replace(/^ */, '') + '\n' + 'Median = ' + fmt(d3$1.median(d.values)).replace(/^ */, '') + '\n' + 'Q3 = ' + fmt(d3$1.quantile(d.values, 0.75)).replace(/^ */, '') + '\n' + '95th % = ' + fmt(d3$1.quantile(d.values, 0.95)).replace(/^ */, '') + '\n' + 'Max = ' + d3$1.max(d.values) + '\n' + 'Mean = ' + fmt(d3$1.mean(d.values)).replace(/^ */, '') + '\n' + 'StDev = ' + fmt(d3$1.deviation(d.values)).replace(/^ */, '');
+            return tooltip;
         });
     }
 

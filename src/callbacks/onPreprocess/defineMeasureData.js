@@ -11,5 +11,6 @@ export default function defineMeasureData() {
         .sort((a, b) => a - b);
     this.measure.domain = extent(this.measure.results);
     this.measure.range = this.measure.domain[1] - this.measure.domain[0];
+    this.measure.log10range = Math.log10(this.measure.range);
     this.raw_data = this.measure.data.filter(d => this.config.unscheduled_visits || !d.unscheduled);
 }
