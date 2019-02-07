@@ -15,7 +15,6 @@ d3.csv(
                     value_col:'DT'
                 }
             ],
-            start_value: 'IgE (mg/L)',
         };
         var instance = safetyOutlierExplorer(
             '#container',

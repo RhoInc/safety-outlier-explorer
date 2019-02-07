@@ -198,38 +198,41 @@
         };
     }
 
-    function chartSettings() {
+    function webchartsSettings() {
         return {
             x: {
-                column: null, //set in syncSettings()
-                type: null, //set in syncSettings()
+                column: null, // set in ./syncSettings
+                type: null, // set in ./syncSettings
                 behavior: 'raw'
             },
             y: {
-                column: null, //set in syncSettings()
+                column: null, // set in ./syncSettings
                 stat: 'mean',
                 type: 'linear',
                 label: 'Value',
-                behavior: 'raw',
-                format: '0.2f'
+                behavior: 'raw'
             },
             marks: [{
-                per: null, //set in syncSettings()
+                per: null, // set in ./syncSettings
                 type: 'line',
                 attributes: {
                     'clip-path': 'url(#1)'
                 },
-                tooltip: null //set in syncSettings()
+                tooltip: null // set in ./syncSettings
             }, {
-                per: null, //set in syncSettings()
+                per: null, // set in ./syncSettings
                 type: 'circle',
                 attributes: {
                     'clip-path': 'url(#1)'
                 },
-                tooltip: null //set in syncSettings()
+                tooltip: null // set in ./syncSettings
             }],
             resizable: true,
-            margin: { top: 5, bottom: 5, right: 20 }, //create space for box plot
+            margin: {
+                right: 30, // create space for box plot
+                left: 60
+            },
+            gridlines: 'y',
             aspect: 3
         };
     }
@@ -382,8 +385,8 @@
 
     var configuration = {
         rendererSettings: rendererSettings,
-        webchartsSettings: chartSettings,
-        settings: Object.assign({}, rendererSettings(), chartSettings()),
+        webchartsSettings: webchartsSettings,
+        settings: Object.assign({}, rendererSettings(), webchartsSettings()),
         syncSettings: syncSettings,
         controlInputs: controlInputs,
         syncControlInputs: syncControlInputs
@@ -803,15 +806,37 @@
         else if (this.config.y.domain[0] > this.config.y.domain[1]) this.config.y.domain.reverse(); // reverse y-domain
     }
 
+    function calculateYPrecision() {
+        //define the precision of the y-axis
+        var log10range = Math.log10(this.measure.range);
+        this.config.y.precision = Math.floor(log10range) + 1;
+        console.log(log10range);
+        console.log(this.config.y.precision);
+        this.config.y.format = this.config.y.precision + "f";
+
+        //define the size of the y-axis limit increments
+        var step = this.measure.range / 15;
+        if (step < 1) {
+            var x10 = 0;
+            do {
+                step = step * 10;
+                ++x10;
+            } while (step < 1);
+            step = Math.round(step) / Math.pow(10, x10);
+        } else step = Math.round(step);
+        this.measure.step = step;
+    }
+
     function updateYaxisLimitControls() {
-        //Update y-axis limit controls.
         this.controls.wrap.selectAll('.control-group').filter(function (f) {
             return f.option === 'y.domain[0]';
-        }).select('input').property('value', this.config.y.domain[0]).style('box-shadow', 'none');
+        }).select('input').attr('step', this.measure.step) // set in ./calculateYPrecision
+        .style('box-shadow', 'none').property('value', this.config.y.domain[0]);
 
         this.controls.wrap.selectAll('.control-group').filter(function (f) {
             return f.option === 'y.domain[1]';
-        }).select('input').property('value', this.config.y.domain[1]).style('box-shadow', 'none');
+        }).select('input').attr('step', this.measure.step) // set in ./calculateYPrecision
+        .style('box-shadow', 'none').property('value', this.config.y.domain[1]);
     }
 
     function setYaxisLabel() {
@@ -875,6 +900,9 @@
 
         // 3b Set y-domain given currently selected measure.
         setYdomain.call(this);
+
+        // 3c Calculate precision of y-domain.
+        calculateYPrecision.call(this);
 
         // 3c Set y-axis label to current measure.
         setYaxisLabel.call(this);
@@ -1422,7 +1450,7 @@
         var boxPlotWidth = 10;
         var boxColor = '#bbb';
         var boxInsideColor = 'white';
-        var fmt = d3$1.format('.2f');
+        var fmt = d3$1.format(this.config.y.format1);
 
         //set up scales
         var x = d3$1.scale.linear().range([0, width]);
@@ -1468,8 +1496,8 @@
 
         boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', x(0.5)).attr('cy', y(d3$1.mean(results))).attr('r', x(boxPlotWidth / 6)).style('fill', boxColor).style('stroke', 'None');
 
-        boxplot.selectAll('.boxplot').append('title').text(function (d) {
-            return 'N = ' + d.values.length + '\n' + 'Min = ' + d3$1.min(d.values) + '\n' + '5th % = ' + fmt(d3$1.quantile(d.values, 0.05)) + '\n' + 'Q1 = ' + fmt(d3$1.quantile(d.values, 0.25)) + '\n' + 'Median = ' + fmt(d3$1.median(d.values)) + '\n' + 'Q3 = ' + fmt(d3$1.quantile(d.values, 0.75)) + '\n' + '95th % = ' + fmt(d3$1.quantile(d.values, 0.95)) + '\n' + 'Max = ' + d3$1.max(d.values) + '\n' + 'Mean = ' + fmt(d3$1.mean(d.values)) + '\n' + 'StDev = ' + fmt(d3$1.deviation(d.values));
+        boxplot.append('title').text(function (d) {
+            return 'N = ' + d.values.length + '\n' + 'Min = ' + d3$1.min(d.values) + '\n' + '5th % = ' + fmt(d3$1.quantile(d.values, 0.05)).replace(/^ */, '') + '\n' + 'Q1 = ' + fmt(d3$1.quantile(d.values, 0.25)).replace(/^ */, '') + '\n' + 'Median = ' + fmt(d3$1.median(d.values)).replace(/^ */, '') + '\n' + 'Q3 = ' + fmt(d3$1.quantile(d.values, 0.75)).replace(/^ */, '') + '\n' + '95th % = ' + fmt(d3$1.quantile(d.values, 0.95)).replace(/^ */, '') + '\n' + 'Max = ' + d3$1.max(d.values) + '\n' + 'Mean = ' + fmt(d3$1.mean(d.values)).replace(/^ */, '') + '\n' + 'StDev = ' + fmt(d3$1.deviation(d.values)).replace(/^ */, '');
         });
     }
 

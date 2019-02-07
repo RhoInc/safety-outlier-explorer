@@ -13,7 +13,7 @@ export default function addBoxPlot() {
     const boxPlotWidth = 10;
     const boxColor = '#bbb';
     const boxInsideColor = 'white';
-    const fmt = format('.2f');
+    const fmt = format(this.config.y.format1);
     const horizontal = true;
 
     //set up scales
@@ -113,7 +113,6 @@ export default function addBoxPlot() {
         .style('stroke', 'None');
 
     boxplot
-        .selectAll('.boxplot')
         .append('title')
         .text(function(d) {
             return (
@@ -124,28 +123,28 @@ export default function addBoxPlot() {
                 min(d.values) +
                 '\n' +
                 '5th % = ' +
-                fmt(quantile(d.values, 0.05)) +
+                fmt(quantile(d.values, 0.05)).replace(/^ */, '') +
                 '\n' +
                 'Q1 = ' +
-                fmt(quantile(d.values, 0.25)) +
+                fmt(quantile(d.values, 0.25)).replace(/^ */, '') +
                 '\n' +
                 'Median = ' +
-                fmt(median(d.values)) +
+                fmt(median(d.values)).replace(/^ */, '') +
                 '\n' +
                 'Q3 = ' +
-                fmt(quantile(d.values, 0.75)) +
+                fmt(quantile(d.values, 0.75)).replace(/^ */, '') +
                 '\n' +
                 '95th % = ' +
-                fmt(quantile(d.values, 0.95)) +
+                fmt(quantile(d.values, 0.95)).replace(/^ */, '') +
                 '\n' +
                 'Max = ' +
                 max(d.values) +
                 '\n' +
                 'Mean = ' +
-                fmt(mean(d.values)) +
+                fmt(mean(d.values)).replace(/^ */, '') +
                 '\n' +
                 'StDev = ' +
-                fmt(deviation(d.values))
+                fmt(deviation(d.values)).replace(/^ */, '')
             );
         });
 }
