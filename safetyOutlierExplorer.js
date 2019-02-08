@@ -395,9 +395,11 @@
     function countParticipants() {
         var _this = this;
 
-        this.populationCount = d3$1.set(this.raw_data.map(function (d) {
-            return d[_this.config.id_col];
-        })).values().length;
+        this.participantCount = {
+            N: d3$1.set(this.raw_data.map(function (d) {
+                return d[_this.config.id_col];
+            })).values().length
+        };
     }
 
     function cleanData() {
@@ -405,18 +407,27 @@
 
         //Remove missing and non-numeric data.
         var preclean = this.raw_data;
-        var clean = this.raw_data.filter(function (d) {
+        var nPreclean = preclean.length;
+        var nonMissing = this.raw_data.filter(function (d) {
+            return !/^\s*$/.test(d[_this.config.value_col]);
+        });
+        var nNonMissing = nonMissing.length;
+        var numeric = nonMissing.filter(function (d) {
             return (/^-?[0-9.]+$/.test(d[_this.config.value_col])
             );
         });
-        var nPreclean = preclean.length;
-        var nClean = clean.length;
-        var nRemoved = nPreclean - nClean;
+        var nNumeric = numeric.length;
+
+        this.nMissing = nPreclean - nNonMissing;
+        console.log(this.nMissing);
+        this.nNonNumeric = nNonMissing - nNumeric;
+        console.log(this.nNonNumeric);
 
         //Warn user of removed records.
-        if (nRemoved > 0) console.warn(nRemoved + ' missing or non-numeric result' + (nRemoved > 1 ? 's have' : ' has') + ' been removed.');
-        this.initial_data = clean;
-        this.raw_data = clean;
+        if (this.nMissing > 0) console.warn(this.nMissing + ' missing result' + (this.nMissing > 1 ? 's have' : ' has') + ' been removed.');
+        if (this.nNonNumeric > 0) console.warn(this.nNonNumeric + ' non-numeric result' + (this.nNonNumeric > 1 ? 's have' : ' has') + ' been removed.');
+        this.initial_data = numeric;
+        this.raw_data = numeric;
     }
 
     function addVariables() {
@@ -698,36 +709,61 @@
     }
 
     function addParticipantCountContainer() {
-        this.controls.wrap.append('div').attr('id', 'participant-count').style('font-style', 'italic');
+        this.participantCount.container = this.controls.wrap.style('position', 'relative').append('div').attr('id', 'participant-count').style({
+            'position': 'absolute',
+            'font-style': 'italic',
+            'bottom': '-10px',
+            'left': 0
+        });
+    }
+
+    function addRemovedRecordsNote() {
+        if (this.nNonNumeric > 0) {
+            var removedRecords = this.controls.wrap.append('div').style({
+                'position': 'absolute',
+                'font-style': 'italic',
+                'bottom': '-10px',
+                'right': 0
+            }).text(this.nNonNumeric + ' non-numeric records were removed.');
+            removedRecords.append('span').style({
+                'color': 'blue',
+                'text-decoration': 'underline',
+                'font-style': 'normal',
+                'font-weight': 'bold',
+                'cursor': 'pointer',
+                'font-size': '16px',
+                'margin-left': '5px'
+            }).html('<sup>x</sup>').on('click', function () {
+                return removedRecords.remove();
+            });
+        }
+    }
+
+    function addBorderAboveChart() {
+        this.wrap.style({
+            'border-top': '1px solid #ccc'
+        });
     }
 
     function addSmallMultiplesContainer() {
         this.multiples = {
-            container: this.wrap.append('div').classed('multiples', true),
+            container: this.wrap.append('div').classed('multiples', true).style({
+                'border-top': '1px solid #ccc',
+                'padding-top': '10px'
+            }),
             id: null
         };
     }
 
     function onLayout() {
-        // Distinguish controls to insert y-axis reset button in the correct position.
-        identifyControls.call(this);
-
-        //Label x-axis options.
+        identifyControls.call(this); // Distinguish controls to insert y-axis reset button in the correct position.
         labelXaxisOptions.call(this);
-
-        //Add a button to reset the y-domain
         addYdomainResetButton.call(this);
-
-        //Group related controls visually.
-        groupControls.call(this);
-
-        //Hide normal range input controls depending on the normal range method.
-        hideNormalRangeInputs.call(this);
-
-        //Add participant count container.
+        groupControls.call(this); // Group related controls visually.
+        hideNormalRangeInputs.call(this); // Hide normal range input controls depending on the normal range method.
         addParticipantCountContainer.call(this);
-
-        //Add container for small multiples.
+        addRemovedRecordsNote.call(this);
+        addBorderAboveChart.call(this);
         addSmallMultiplesContainer.call(this);
     }
 
@@ -918,22 +954,20 @@
 
     function onDatatransform() {}
 
-    // Takes a webcharts object creates a text annotation giving the
+    function updateParticipantCount() {
+        var _this = this;
 
-    function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
-        var currentObs = d3$1.set(chart.filtered_data.map(function (d) {
-            return d[chart.config.id_col];
+        this.participantCount.n = d3$1.set(this.filtered_data.map(function (d) {
+            return d[_this.config.id_col];
         })).values().length;
-        var percentage = d3$1.format('0.1%')(currentObs / chart.populationCount);
+        this.participantCount.percentage = d3$1.format('0.1%')(this.participantCount.n / this.participantCount.N);
 
         //clear the annotation
-        var annotation = d3$1.select(selector);
-        d3$1.select(selector).selectAll('*').remove();
+        this.participantCount.container.selectAll('*').remove();
 
         //update the annotation
-        var units = id_unit ? ' ' + id_unit : ' participant(s)';
-        annotation.text('\n' + currentObs + ' of ' + chart.populationCount + units + ' shown (' + percentage + ')');
+        this.participantCount.container.text('\n' + this.participantCount.n + ' of ' + this.participantCount.N + ' participant(s) shown (' + this.participantCount.percentage + ')');
     }
 
     function resetChart() {
@@ -954,7 +988,7 @@
 
     function onDraw() {
         //Annotate participant count.
-        updateParticipantCount(this, '#participant-count');
+        updateParticipantCount.call(this);
 
         //Clear current multiples.
         resetChart.call(this);
