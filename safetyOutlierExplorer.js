@@ -1345,7 +1345,9 @@
     function updateParticipantDropdown() {
         var context = this; // chart
 
-        var participantDropdown = this.multiples.controls.wrap.style('margin', 0).selectAll('.control-group').style('margin', 0).style('display', 'block'); // firefox is being weird about inline-table
+        var participantDropdown = this.multiples.controls.wrap.style('margin', 0).selectAll('.control-group').filter(function (d) {
+            return d.option === 'selected_id';
+        }).style('margin', 0).style('display', 'block'); // firefox is being weird about inline-table
         participantDropdown.selectAll('*').style('display', 'inline-block');
         participantDropdown.selectAll('.wc-control-label').style('font-weight', 'bold');
         participantDropdown.selectAll('select').style('margin-left', '3px').style('width', null).style('max-width', '10%').on('change', function (d) {
@@ -1449,7 +1451,7 @@
         var boxPlotWidth = 10;
         var boxColor = '#bbb';
         var boxInsideColor = 'white';
-        var fmt = d3$1.format('.2r');
+        var fmt = d3$1.format('.3r');
 
         //set up scales
         var x = d3$1.scale.linear().range([0, width]);

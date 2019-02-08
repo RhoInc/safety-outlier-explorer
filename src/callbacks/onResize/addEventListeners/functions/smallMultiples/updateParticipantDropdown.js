@@ -9,6 +9,7 @@ export default function updateParticipantDropdown() {
     const participantDropdown = this.multiples.controls.wrap
         .style('margin', 0)
         .selectAll('.control-group')
+        .filter(d => d.option === 'selected_id')
         .style('margin', 0)
         .style('display', 'block'); // firefox is being weird about inline-table
     participantDropdown.selectAll('*').style('display', 'inline-block');

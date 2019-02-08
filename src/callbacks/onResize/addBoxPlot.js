@@ -13,7 +13,7 @@ export default function addBoxPlot() {
     const boxPlotWidth = 10;
     const boxColor = '#bbb';
     const boxInsideColor = 'white';
-    const fmt = format('.2r');
+    const fmt = format('.3r');
     const horizontal = true;
 
     //set up scales
