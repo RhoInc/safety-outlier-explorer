@@ -294,7 +294,7 @@ a regular expression that identifies unscheduled visits
 
 
 
-## settings.unscheduled_visits_values
+## settings.unscheduled_visit_values
 `array`
 
 an array of strings that identify unscheduled visits; overrides unscheduled_visit_pattern
@@ -377,6 +377,38 @@ the radius of the point
 the opacity of the point
 
 **default:** `0.2`
+
+
+
+## settings.custom_marks
+`array`
+
+an array of Webcharts mark definitions
+
+**default:** none
+
+
+
+## settings.tooltip_cols
+`array`
+
+an array of tooltip variables and associated metadata
+
+**default:** none
+
+### settings.tooltip_cols[].value_col
+`string`
+
+Variable name
+
+**default:** none
+
+### settings.tooltip_cols[].label
+`string`
+
+Variable label
+
+**default:** none
 
 # Webcharts settings
 The object below contains Webcharts settings as of version 2.5.0 of the Safety Outlier Explorer.

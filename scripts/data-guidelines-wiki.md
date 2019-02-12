@@ -9,9 +9,9 @@ required and optional variables:
 | Setting | Default | Data Type | Description | Required? |
 |:--------|:--------|:----------|:------------|:---------:|
 |`id_col`|_USUBJID_|**character**|participant identifier|**Yes**|
-|`time_cols[0].value_col`|VISIT|**character**|visit|**Yes**|
-|`time_cols[0].order_col`|VISITNUM|**numeric**|visit order||
-|`time_cols[1].value_col`|DY|**numeric**|study day||
+|`visit_col`|VISIT|**character**|visit|**Yes**|
+|`visit_order_col`|VISITNUM|**numeric**|visit order||
+|`study_day_col`|DY|**numeric**|study day||
 |`measure_col`|_TEST_|**character**|measure|**Yes**|
 |`unit_col`|_STRESU_|**character**|units of measurement||
 |`value_col`|_STRESN_|**numeric**|result|**Yes**|
@@ -19,3 +19,4 @@ required and optional variables:
 |`normal_col_high`|_STNRHI_|**numeric**|upper limit of normal||
 |`filters[]`||**either**|an array of filter variables and associated metadata||
 |`details[]`||**either**|an array of participant-level variables and associated metadata||
+|`tooltip_cols[]`||**either**|an array of tooltip variables and associated metadata||

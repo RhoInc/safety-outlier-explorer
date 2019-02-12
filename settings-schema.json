@@ -368,7 +368,9 @@
             "title": "Custom Marks",
             "description": "an array of Webcharts mark definitions",
             "items": {
-                "type": "object"
+                "type": "object",
+                "properties": {
+                }
             }
         },
         "tooltip_cols": {

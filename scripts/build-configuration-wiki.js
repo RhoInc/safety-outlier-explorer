@@ -49,51 +49,50 @@ function setDefault(setting) {
 
     var keys = Object.keys(properties);
         keys.forEach((property,i) => {
-                var setting = properties[property];
+            var setting = properties[property];
 
-                markdown.push(`## settings.${property}`);
-                markdown.push(`\`${setting.type}\``);
+            markdown.push(`## settings.${property}`);
+            markdown.push(`\`${setting.type}\``);
+            markdown.push(``);
+            markdown.push(`${setting.description || setting.title}`);
+
+            if (setting.type !== 'object') {
                 markdown.push(``);
-                markdown.push(`${setting.description || setting.title}`);
+                markdown.push(setDefault(setting));
+            } else {
+                var subKeys = Object.keys(setting.properties);
+                    subKeys.forEach((subProperty,i) => {
+                        var subSetting = setting.properties[subProperty];
+                        markdown.push(``);
+                        markdown.push(`### settings.${property}.${subProperty}`);
+                        markdown.push(`\`${subSetting.type}\``);
+                        markdown.push(``);
+                        markdown.push(`${subSetting.description || subSetting.title}`);
+                        markdown.push(``);
+                        markdown.push(setDefault(subSetting));
+                    });
+            }
 
-                if (setting.type !== 'object') {
-                    markdown.push(``);
-                    markdown.push(setDefault(setting));
-                } else {
-                    console.log(setting);
-                    var subKeys = Object.keys(setting.properties);
-                        subKeys.forEach((subProperty,i) => {
-                            var subSetting = setting.properties[subProperty];
-                            markdown.push(``);
-                            markdown.push(`### settings.${property}.${subProperty}`);
-                            markdown.push(`\`${subSetting.type}\``);
-                            markdown.push(``);
-                            markdown.push(`${subSetting.description || subSetting.title}`);
-                            markdown.push(``);
-                            markdown.push(setDefault(subSetting));
-                        });
-                }
+            if (setting.type === 'array' && setting.items.type === 'object') {
+                var subKeys = Object.keys(setting.items.properties);
+                    subKeys.forEach((subProperty,i) => {
+                        var subSetting = setting.items.properties[subProperty];
+                        markdown.push(``);
+                        markdown.push(`### settings.${property}[].${subProperty}`);
+                        markdown.push(`\`${subSetting.type}\``);
+                        markdown.push(``);
+                        markdown.push(`${subSetting.description || subSetting.title}`);
+                        markdown.push(``);
+                        markdown.push(setDefault(subSetting));
+                    });
+            }
 
-                if (setting.type === 'array' && setting.items.type === 'object') {
-                    var subKeys = Object.keys(setting.items.properties);
-                        subKeys.forEach((subProperty,i) => {
-                            var subSetting = setting.items.properties[subProperty];
-                            markdown.push(``);
-                            markdown.push(`### settings.${property}[].${subProperty}`);
-                            markdown.push(`\`${subSetting.type}\``);
-                            markdown.push(``);
-                            markdown.push(`${subSetting.description || subSetting.title}`);
-                            markdown.push(``);
-                            markdown.push(setDefault(subSetting));
-                        });
-                }
-
-                if (i < keys.length - 1) {
-                    markdown.push(``);
-                    markdown.push(``);
-                    markdown.push(``);
-                }
-            });
+            if (i < keys.length - 1) {
+                markdown.push(``);
+                markdown.push(``);
+                markdown.push(``);
+            }
+        });
 
 /*------------------------------------------------------------------------------------------------\
   Webcharts settings
