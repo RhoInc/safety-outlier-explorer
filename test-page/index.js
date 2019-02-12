@@ -2,8 +2,7 @@ d3.csv(
     //'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/renderer-specific/adbds.csv',
     '../../data-library/data/clinical-trials/renderer-specific/adbds.csv',
     function(d,i) {
-        if (!(i%100))
-            d.STRESN = Math.random().toString(36).substring(7);
+        if (i === 0) console.log(Object.keys(d));
         return d;
     },
     function(error,data) {
@@ -15,7 +14,7 @@ d3.csv(
                 {
                     label: 'Treatment Group',
                     value_col: 'ARM'
-                }
+                },
             ],
             tooltip_cols: [
                 {

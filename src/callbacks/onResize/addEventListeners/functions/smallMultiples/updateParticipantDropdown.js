@@ -20,8 +20,7 @@ export default function updateParticipantDropdown() {
         .style('width', null)
         .style('max-width', '10%')
         .on('change', function(d) {
-            context.multiples.id = d3
-                .select(this)
+            context.multiples.id = select(this)
                 .selectAll('option:checked')
                 .text();
             clearSelected.call(context);

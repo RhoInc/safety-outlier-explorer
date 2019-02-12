@@ -1,38 +1,22 @@
 import countParticipants from './onInit/countParticipants';
 import cleanData from './onInit/cleanData';
 import addVariables from './onInit/addVariables';
-import defineMeasureSet from './onInit/defineMeasureSet';
-import defineVisitOrder from './onInit/defineVisitOrder';
-import updateControlInputs from './onInit/updateControlInputs';
-import checkFilters from './onInit/checkFilters';
-import setInitialMeasure from './onInit/setInitialMeasure';
-import attachIDOrdering from './onInit/attachIDOrdering';
+import defineSets from './onInit/defineSets';
+import checkControls from './onInit/checkControls';
 
 export default function onInit() {
-    // 1. Count total participants prior to data cleaning.
+    // 1. Count number of unique participant IDs in data prior to data cleaning.
     countParticipants.call(this);
 
-    // 2. Drop missing values and remove measures with any non-numeric results.
+    // 2. Remove missing and non-numeric results.
     cleanData.call(this);
 
-    // 3a Define additional variables.
+    // 3. Define additional variables.
     addVariables.call(this);
 
-    // 3b Capture unique set of measures.
-    defineMeasureSet.call(this);
+    // 4. Define participant, visit, and measure sets.
+    defineSets.call(this);
 
-    // 3c Define ordered x-axis domain with visit order variable.
-    defineVisitOrder.call(this);
-
-    // 3d Remove invalid control inputs.
-    updateControlInputs.call(this);
-
-    // 3e Remove filters for nonexistent or single-level variables.
-    checkFilters.call(this);
-
-    // 3f Choose the start value for the Test filter
-    setInitialMeasure.call(this);
-
-    // 3g Capture unique set of IDs and apply an ordering.
-    attachIDOrdering.call(this);
+    // 5. Check controls.
+    checkControls.call(this);
 }
