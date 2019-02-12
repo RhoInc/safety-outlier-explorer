@@ -14,15 +14,15 @@ export default function highlightSelected() {
     this.lines
         .filter(d => d.values[0].values.raw[0][this.config.id_col] === this.selected_id)
         .select('path')
-        .attr('stroke-width', this.config.line_attributes['stroke-width'] * 8);
+        .attr('stroke-width', d => d.attributes['stroke-width'] * 8);
 
     //Update attributes of selected points.
     this.points
         .filter(d => d.values.raw[0][this.config.id_col] === this.selected_id)
         .select('circle')
         .attr({
-            r: this.config.point_attributes.radius * 1.5,
+            r: d => d.radius * 1.5,
             stroke: 'black',
-            'stroke-width': this.config.point_attributes['stroke-width'] * 8
+            'stroke-width': d => d.attributes['stroke-width'] * 8
         });
 }

@@ -1,0 +1,21 @@
+The Safety Outlier Explorer accepts [JSON](https://en.wikipedia.org/wiki/JSON) data of the format returned by [`d3.csv()`](https://github.com/d3/d3-3.x-api-reference/blob/master/CSV.md). The renderer visualizes clinical medical signs data with **one row per participant per visit per medical sign** plus the required variables specified below.
+
+## Data structure
+one record per participant per visit per medical sign
+
+## Data specification
+required and optional variables:
+
+| Setting | Default | Data Type | Description | Required? |
+|:--------|:--------|:----------|:------------|:---------:|
+|`id_col`|_USUBJID_|**character**|participant identifier|**Yes**|
+|`time_cols[0].value_col`|VISIT|**character**|visit|**Yes**|
+|`time_cols[0].order_col`|VISITNUM|**numeric**|visit order||
+|`time_cols[1].value_col`|DY|**numeric**|study day||
+|`measure_col`|_TEST_|**character**|measure|**Yes**|
+|`unit_col`|_STRESU_|**character**|units of measurement||
+|`value_col`|_STRESN_|**numeric**|result|**Yes**|
+|`normal_col_low`|_STNRLO_|**numeric**|lower limit of normal||
+|`normal_col_high`|_STNRHI_|**numeric**|upper limit of normal||
+|`filters[]`||**either**|an array of filter variables and associated metadata||
+|`details[]`||**either**|an array of participant-level variables and associated metadata||

@@ -12,7 +12,10 @@ export default function safetyOutlierExplorer(element, settings) {
     const syncedSettings = configuration.syncSettings(mergedSettings);
 
     //Sync control inputs with with settings object.
-    const syncedControlInputs = configuration.syncControlInputs(configuration.controlInputs(), syncedSettings);
+    const syncedControlInputs = configuration.syncControlInputs(
+        configuration.controlInputs(),
+        syncedSettings
+    );
 
     //Define controls.
     const controls = createControls(element, {
@@ -22,6 +25,10 @@ export default function safetyOutlierExplorer(element, settings) {
 
     //Define chart.
     const chart = createChart(element, syncedSettings, controls);
+    chart.config.marks.forEach(mark => {
+        mark.attributes = mark.attributes || {};
+        mark.attributes['clip-path'] = `url(#${chart.id})`;
+    });
 
     //Attach callbacks to chart.
     for (const callback in callbacks)

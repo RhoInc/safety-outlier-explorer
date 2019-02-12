@@ -6,7 +6,7 @@ export default function cleanData() {
         placeholderParticipants: null, // defined in './cleanData/removeMissingResults
         missing: null, // defined in './cleanData/removeMissingResults
         nonNumeric: null, // defined in './cleanData/removeNonNumericResults
-        container: null, // defined in ../onLayout/addRemovedRecordsContainer
+        container: null // defined in ../onLayout/addRemovedRecordsContainer
     };
     removeMissingResults.call(this);
     removeNonNumericResults.call(this);

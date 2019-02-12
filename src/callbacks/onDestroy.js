@@ -1,2 +1,1 @@
-export default function onDestroy() {
-}
+export default function onDestroy() {}

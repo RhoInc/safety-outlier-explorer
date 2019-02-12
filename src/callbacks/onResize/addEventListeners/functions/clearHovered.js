@@ -6,13 +6,17 @@ export default function clearHovered() {
             return !select(this).classed('selected');
         })
         .select('path')
-        .attr(this.config.line_attributes);
+        .each(function(d) {
+            d3.select(this).attr(d.attributes);
+        });
     this.points
         .filter(function() {
             return !select(this).classed('selected');
         })
         .select('circle')
-        .attr(this.config.point_attributes)
-        .attr('r', this.config.marks.find(mark => mark.type === 'circle').radius);
+        .each(function(d) {
+            d3.select(this).attr(d.attributes);
+            d3.select(this).attr('r', d.radius);
+        });
     delete this.hovered_id;
 }
