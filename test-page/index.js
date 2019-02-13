@@ -2,7 +2,6 @@ d3.csv(
     'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/renderer-specific/adbds.csv',
     //'../../data-library/data/clinical-trials/renderer-specific/adbds.csv',
     function(d,i) {
-        d.outlier = +d.STRESN < +d.STNRLO || +d.STNRHI < +d.STRESN;
         return d;
     },
     function(error,data) {
@@ -33,8 +32,9 @@ d3.csv(
                         'stroke-opacity': 1,
                     },
                     radius: 4,
+                    tooltip: '[USUBJID] is right on schedule at [VISIT] (Study day [DY]).',
                     values: {
-                        outlier: [true]
+                        DY: ['56', '112', '168', '224', '280', '336']
                     },
                 }
             ],
