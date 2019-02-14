@@ -124,6 +124,10 @@
         });
     }
 
+    Math.log10 = Math.log10 || function (x) {
+        return Math.log(x) * Math.LOG10E;
+    };
+
     // https://github.com/wbkd/d3-extended
     d3.selection.prototype.moveToFront = function () {
         return this.each(function () {
@@ -403,7 +407,8 @@
             }).length,
             container: null, // set in ../onLayout/addParticipantCountContainer
             n: null, // set in ../onDraw/updateParticipantCount
-            percentage: null };
+            percentage: null // set in ../onDraw/updateParticipantCount
+        };
     }
 
     function removeMissingResults() {
@@ -470,7 +475,8 @@
             placeholderParticipants: null, // defined in './cleanData/removeMissingResults
             missing: null, // defined in './cleanData/removeMissingResults
             nonNumeric: null, // defined in './cleanData/removeNonNumericResults
-            container: null };
+            container: null // defined in ../onLayout/addRemovedRecordsContainer
+        };
         removeMissingResults.call(this);
         removeNonNumericResults.call(this);
         this.initial_data = this.raw_data;
