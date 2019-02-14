@@ -7,7 +7,7 @@ export default function clearHovered() {
         })
         .select('path')
         .each(function(d) {
-            d3.select(this).attr(d.attributes);
+            select(this).attr(d.attributes);
         });
     this.points
         .filter(function() {
@@ -15,8 +15,8 @@ export default function clearHovered() {
         })
         .select('circle')
         .each(function(d) {
-            d3.select(this).attr(d.attributes);
-            d3.select(this).attr('r', d.radius);
+            select(this).attr(d.attributes);
+            select(this).attr('r', d.radius);
         });
     delete this.hovered_id;
 }
