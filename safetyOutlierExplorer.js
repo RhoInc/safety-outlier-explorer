@@ -124,6 +124,10 @@
         });
     }
 
+    Math.log10 = Math.log10 || function (x) {
+        return Math.log(x) * Math.LOG10E;
+    };
+
     // https://github.com/wbkd/d3-extended
     d3$1.selection.prototype.moveToFront = function () {
         return this.each(function () {
