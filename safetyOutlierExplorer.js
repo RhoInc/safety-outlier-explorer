@@ -633,15 +633,6 @@
         var resetLabel = resetContainer.append('span').attr('class', 'wc-control-label').text('Limits');
         var resetButton = resetContainer.append('button').text(' Reset ').style('padding', '0px 5px').on('click', function () {
             _this.config.y.domain = _this.measure.domain; //reset axis to full range
-
-            _this.controls.wrap.selectAll('.control-group').filter(function (f) {
-                return f.option === 'y.domain[0]';
-            }).select('input').property('value', _this.config.y.domain[0]);
-
-            _this.controls.wrap.selectAll('.control-group').filter(function (f) {
-                return f.option === 'y.domain[1]';
-            }).select('input').property('value', _this.config.y.domain[1]);
-
             _this.draw();
         });
     }
@@ -808,14 +799,8 @@
     }
 
     function setYdomain() {
-        //Define y-domain.
-        if (this.measure.current !== this.measure.previous) this.config.y.domain = this.measure.domain;else if (this.config.y.domain[0] > this.config.y.domain[1])
-            // new measure
-            this.config.y.domain.reverse();else if (this.config.y.domain[0] === this.config.y.domain[1])
-            // invalid domain
-            this.config.y.domain = this.config.y.domain.map(function (d, i) {
-                return i === 0 ? d - d * 0.01 : d + d * 0.01;
-            }); // domain with zero range
+        if (this.measure.current !== this.measure.previous) this.config.y.domain = this.measure.domain; // reset y-domain
+        else if (this.config.y.domain[0] > this.config.y.domain[1]) this.config.y.domain.reverse(); // reverse y-domain
     }
 
     function updateYaxisLimitControls() {
@@ -932,6 +917,10 @@
         //    this.multiples.chart.destroy();
     }
 
+    function extendYDomain() {
+        if (this.config.y.domain[0] === this.measure.domain[0] && this.config.y.domain[1] === this.measure.domain[1] && this.config.y.domain[0] < this.measure.domain[1]) this.y_dom = [this.config.y.domain[0] - this.measure.range * .01, this.config.y.domain[1] + this.measure.range * .01];
+    }
+
     function updateBottomMargin() {
         this.config.margin.bottom = this.config.x.vertical_space;
     }
@@ -942,6 +931,9 @@
 
         //Clear current multiples.
         resetChart.call(this);
+
+        //Extend y-domain to avoid obscuring minimum and maximum points.
+        extendYDomain.call(this);
 
         //Update bottom margin for tick label rotation.
         updateBottomMargin.call(this);

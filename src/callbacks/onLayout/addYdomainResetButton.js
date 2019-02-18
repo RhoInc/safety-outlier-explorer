@@ -20,19 +20,6 @@ export default function addYdomainResetButton() {
         .style('padding', '0px 5px')
         .on('click', () => {
             this.config.y.domain = this.measure.domain; //reset axis to full range
-
-            this.controls.wrap
-                .selectAll('.control-group')
-                .filter(f => f.option === 'y.domain[0]')
-                .select('input')
-                .property('value', this.config.y.domain[0]);
-
-            this.controls.wrap
-                .selectAll('.control-group')
-                .filter(f => f.option === 'y.domain[1]')
-                .select('input')
-                .property('value', this.config.y.domain[1]);
-
             this.draw();
         });
 }
