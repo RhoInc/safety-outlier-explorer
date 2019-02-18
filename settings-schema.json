@@ -9,7 +9,10 @@
             "type": "string",
             "title": "ID",
             "description": "unique identifier variable name",
-            "default": "USUBJID"
+            "default": "USUBJID",
+            "data-mapping": true,
+            "data-type": "character",
+            "required": true
         },
         "time_cols": {
             "type": "array",
@@ -77,37 +80,55 @@
                         "default": 100
                     }
                 }
-            }
+            },
+            "data-mapping": true,
+            "data-type": "character",
+            "required": true
         },
         "measure_col": {
             "type": "string",
             "title": "Measure",
             "description": "measure variable name",
-            "default": "TEST"
+            "default": "TEST",
+            "data-mapping": true,
+            "data-type": "character",
+            "required": true
         },
         "unit_col": {
             "type": "string",
             "title": "Unit",
             "description": "measure unit variable name",
-            "default": "STRESU"
+            "default": "STRESU",
+            "data-mapping": true,
+            "data-type": "character",
+            "required": false
         },
         "value_col": {
             "type": "string",
             "title": "Result",
             "description": "result variable name",
-            "default": "STRESN"
+            "default": "STRESN",
+            "data-mapping": true,
+            "data-type": "numeric",
+            "required": true
         },
         "normal_col_low": {
             "type": "string",
             "title": "Lower Limit of Normal",
             "description": "LLN variable name",
-            "default": "STNRLO"
+            "default": "STNRLO",
+            "data-mapping": true,
+            "data-type": "numeric",
+            "required": false
         },
         "normal_col_high": {
             "type": "string",
             "title": "Upper Limit of Normal",
             "description": "ULN variable name",
-            "default": "STNRHI"
+            "default": "STNRHI",
+            "data-mapping": true,
+            "data-type": "numeric",
+            "required": false
         },
         "start_value": {
             "type": "string",

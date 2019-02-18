@@ -1,4 +1,4 @@
-import clone from '../../../../util/clone';
+import clone from '../../../../../util/clone';
 import { createControls } from 'webcharts';
 import { createChart } from 'webcharts';
 

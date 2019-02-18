@@ -2,14 +2,10 @@ export default function addVariables() {
     const ordinalTimeSettings = this.config.time_cols.find(time_col => time_col.type === 'ordinal');
 
     this.raw_data.forEach(d => {
-        //Append units to measure.
-        d.measure_unit = d[this.config.measure_col];
-        if (
-            this.config.unit_col &&
-            d.hasOwnProperty(this.config.unit_col) &&
-            d[this.config.unit_col] !== ''
-        )
-            d.measure_unit = `${d.measure_unit} (${d[this.config.unit_col]})`;
+        //Concatenate unit to measure if provided.
+        d.soe_measure = d.hasOwnProperty(this.config.unit_col)
+            ? `${d[this.config.measure_col]} (${d[this.config.unit_col]})`
+            : d[this.config.measure_col];
 
         //Identify unscheduled visits.
         d.unscheduled = false;

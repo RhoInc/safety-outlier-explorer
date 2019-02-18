@@ -1,7 +1,7 @@
 import countParticipants from './onInit/countParticipants';
 import cleanData from './onInit/cleanData';
 import addVariables from './onInit/addVariables';
-import captureMeasures from './onInit/captureMeasures';
+import defineMeasureSet from './onInit/defineMeasureSet';
 import defineVisitOrder from './onInit/defineVisitOrder';
 import updateControlInputs from './onInit/updateControlInputs';
 import checkFilters from './onInit/checkFilters';
@@ -19,7 +19,7 @@ export default function onInit() {
     addVariables.call(this);
 
     // 3b Capture unique set of measures.
-    captureMeasures.call(this);
+    defineMeasureSet.call(this);
 
     // 3c Define ordered x-axis domain with visit order variable.
     defineVisitOrder.call(this);

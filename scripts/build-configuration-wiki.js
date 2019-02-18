@@ -1,8 +1,12 @@
-var pkg = require('../package'),
-    schema = require('../settings-schema'),
-    properties = schema.properties,
-    markdown = [],
-    fs = require('fs');
+require('babel-register');
+const fs = require('fs');
+const pkg = require('../package');
+const schema = require('../settings-schema');
+const properties = schema.properties;
+const settings = require('../src/configuration/rendererSettings.js').default;
+const chartSettings = require('../src/configuration/chartSettings.js').default;
+const listingSettings = require('../src/configuration/listingSettings.js').default;
+const markdown = [];
 
 function setDefault(setting) {
     let settingDefault = '**default:** ';
@@ -51,7 +55,7 @@ function setDefault(setting) {
                 markdown.push(`## settings.${property}`);
                 markdown.push(`\`${setting.type}\``);
                 markdown.push(``);
-                markdown.push(`${setting.description}`);
+                markdown.push(`${setting.description || setting.title}`);
 
                 if (setting.type !== 'object') {
                     markdown.push(``);
@@ -64,7 +68,7 @@ function setDefault(setting) {
                             markdown.push(`### settings.${property}.${subProperty}`);
                             markdown.push(`\`${subSetting.type}\``);
                             markdown.push(``);
-                            markdown.push(`${subSetting.title}`);
+                            markdown.push(`${subSetting.description || subSetting.title}`);
                             markdown.push(``);
                             markdown.push(setDefault(subSetting));
                         });
@@ -78,7 +82,7 @@ function setDefault(setting) {
                             markdown.push(`### settings.${property}[].${subProperty}`);
                             markdown.push(`\`${subSetting.type}\``);
                             markdown.push(``);
-                            markdown.push(`${subSetting.title}`);
+                            markdown.push(`${subSetting.description || subSetting.title}`);
                             markdown.push(``);
                             markdown.push(setDefault(subSetting));
                         });
@@ -95,38 +99,33 @@ function setDefault(setting) {
   Webcharts settings
 \------------------------------------------------------------------------------------------------*/
 
-    var webchartsSettingsFlag = 0,
-        webchartsSettings = fs.readFileSync('./src/defaultSettings.js', 'utf8')
-            .split('\n')
-            .filter(line => {
-                if (line.indexOf('const webchartsSettings') > -1)
-                    webchartsSettingsFlag = 1;
-
-                if (webchartsSettingsFlag === 1 && /};/.test(line))
-                    webchartsSettingsFlag = 0;
-
-                return webchartsSettingsFlag;
-            });
-        webchartsSettings.splice(0,1,'{\r');
-        webchartsSettings.push('}');
-
     markdown.push(``);
     markdown.push(`# Webcharts settings`);
-    markdown.push(`The object below contains each Webcharts setting as of version ${schema.version}.`);
-    markdown.push(``);
-    markdown.push('```');
-    markdown.push(webchartsSettings.join(''));
-    markdown.push('```');
+    markdown.push(`The objects below contain Webcharts settings for each display as of version ${schema.version} of the ${pkg.name.split('-').map(str => str.substring(0,1).toUpperCase() + str.substring(1).toLowerCase()).join(' ')}.`);
+
+    [
+        chartSettings,
+        listingSettings,
+    ].forEach(settingsFx => {
+        const settings = JSON.stringify(settingsFx(), null, 4);
+        const display = settingsFx.name.replace('Settings', '');
+
+        markdown.push(``);
+        markdown.push(`## ${display.substring(0,1).toUpperCase()}${display.substring(1)}`);
+        markdown.push('```');
+        markdown.push(settings);
+        markdown.push('```');
+    });
 
 /*------------------------------------------------------------------------------------------------\
   Configuration markdown
 \------------------------------------------------------------------------------------------------*/
 
     fs.writeFile(
-        './scripts/configuration.md',
+        './scripts/configuration-wiki.md',
         markdown.join('\n'),
         (err) => {
             if (err)
                 console.log(err);
-            console.log('The configuration markdown file was built!');
+            console.log('The configuration wiki markdown file was built!');
         });

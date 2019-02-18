@@ -1,5 +1,6 @@
 d3.csv(
-    'https://rawgit.com/RhoInc/viz-library/master/data/safetyData/ADBDS.csv',
+    //'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/renderer-specific/adbds.csv',
+    '../../data-library/data/clinical-trials/renderer-specific/adbds.csv',
     function(d,i) {
         return d;
     },
@@ -8,7 +9,13 @@ d3.csv(
             console.log(error);
 
         var settings = {
-          tooltip_cols: [{label:"Date",value_col:"DT"}],
+            tooltip_cols: [
+                {
+                    label:'Date',
+                    value_col:'DT'
+                }
+            ],
+            start_value: 'IgE (mg/L)',
         };
         var instance = safetyOutlierExplorer(
             '#container',
