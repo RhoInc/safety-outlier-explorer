@@ -36,7 +36,7 @@ variables.forEach(variable => {
                     variable.default ? `_${variable.default}_` : ''
                 }|**${
                 variable['data-type']}**|${
-                variable.description.replace(/name of variable that (captures )?/, '')}|${
+                variable.description.replace(/variable: /, '')}|${
                 variable.required ? '**Yes**' : ''
             }|`
         );
@@ -52,6 +52,23 @@ variables.forEach(variable => {
                         variable.required ? '**Yes**' : ''
                     }|`
                 )
+            });
+        else if (variable.properties)
+            Object.keys(variable.properties).forEach(key => {
+                const property = variable.properties[key];
+                markdown.push(
+                    `|\`${
+                        key
+                    }\`|${
+                        property.default
+                    }|**${
+                        property['data-type']
+                    }**|${
+                        property.description.replace('variable: ', '')
+                    }|${
+                        property.required ? '**Yes**' : ''
+                    }|`
+                );
             });
         else
             markdown.push(

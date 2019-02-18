@@ -146,7 +146,11 @@
 
     function rendererSettings() {
         return {
+            //participant
             id_col: 'USUBJID',
+            details: [{ value_col: 'AGE', label: 'Age' }, { value_col: 'SEX', label: 'Sex' }, { value_col: 'RACE', label: 'Race' }],
+
+            //timing
             time_cols: [{
                 type: 'ordinal',
                 value_col: 'VISIT',
@@ -164,28 +168,31 @@
                 rotate_tick_labels: false,
                 vertical_space: 0
             }],
-            measure_col: 'TEST',
-            unit_col: 'STRESU',
-            value_col: 'STRESN',
-            normal_col_low: 'STNRLO',
-            normal_col_high: 'STNRHI',
-            start_value: null,
-            filters: null,
-            custom_marks: null,
-            details: [{ value_col: 'AGE', label: 'Age' }, { value_col: 'SEX', label: 'Sex' }, { value_col: 'RACE', label: 'Race' }],
-            tooltip_cols: null,
-            multiples_sizing: {
-                width: 300,
-                height: 100
-            },
-            normal_range_method: 'LLN-ULN',
-            normal_range_sd: 1.96,
-            normal_range_quantile_low: 0.05,
-            normal_range_quantile_high: 0.95,
             visits_without_data: false,
             unscheduled_visits: false,
             unscheduled_visit_pattern: '/unscheduled|early termination/i',
             unscheduled_visit_values: null, // takes precedence over unscheduled_visit_pattern
+
+            //measure
+            measure_col: 'TEST',
+            start_value: null,
+            unit_col: 'STRESU',
+
+            //result
+            value_col: 'STRESN',
+
+            //normal range
+            normal_col_low: 'STNRLO',
+            normal_col_high: 'STNRHI',
+            normal_range_method: 'LLN-ULN',
+            normal_range_sd: 1.96,
+            normal_range_quantile_low: 0.05,
+            normal_range_quantile_high: 0.95,
+
+            //filters
+            filters: null,
+
+            //marks
             line_attributes: {
                 stroke: 'black',
                 'stroke-width': 0.5,
@@ -198,6 +205,14 @@
                 radius: 3,
                 fill: '#1f78b4',
                 'fill-opacity': 0.2
+            },
+            tooltip_cols: null,
+            custom_marks: null,
+
+            //multiples
+            multiples_sizing: {
+                width: 300,
+                height: 100
             }
         };
     }
@@ -220,16 +235,18 @@
                 per: null, // set in ./syncSettings
                 type: 'line',
                 attributes: {
-                    'clip-path': 'url(#1)'
+                    'clip-path': null // set in ./syncSettings
                 },
-                tooltip: null // set in ./syncSettings
+                tooltip: null, // set in ./syncSettings
+                default: true
             }, {
                 per: null, // set in ./syncSettings
                 type: 'circle',
                 attributes: {
-                    'clip-path': 'url(#1)'
+                    'clip-path': null // set in ./syncSettings
                 },
-                tooltip: null // set in ./syncSettings
+                tooltip: null, // set in ./syncSettings
+                default: true
             }],
             resizable: true,
             margin: {
@@ -267,8 +284,9 @@
             return mark.type === 'circle';
         });
         points.per = [settings.id_col, settings.measure_col, time_col.value_col, settings.value_col];
-        points.tooltip = 'ID = [' + settings.id_col + ']\n[' + settings.measure_col + '] = [' + settings.value_col + '] [' + settings.unit_col + ']\n' + settings.x.column + ' = [' + settings.x.column + ']';
-        //add custom tooltip values
+        points.tooltip = 'Participant = [' + settings.id_col + ']\n[' + settings.measure_col + '] = [' + settings.value_col + '] [' + settings.unit_col + ']\n' + settings.x.label + ' = [' + settings.x.column + ']';
+
+        //Conadd custom tooltip values
         if (settings.tooltip_cols) {
             settings.tooltip_cols.forEach(function (tooltip) {
                 var obj = typeof tooltip == 'string' ? { label: tooltip, value_col: tooltip } : tooltip;
@@ -280,8 +298,15 @@
         points.radius = settings.point_attributes.radius || 3;
 
         //Add custom marks to settings.marks.
-        if (settings.custom_marks) settings.custom_marks.forEach(function (mark) {
-            return settings.marks.push(mark);
+        if (Array.isArray(settings.custom_marks) && settings.custom_marks.length) settings.custom_marks.forEach(function (mark) {
+            if (mark instanceof Object) {
+                mark.default = false; // distinguish custom marks from default marks
+                if (mark.type === 'line') mark.attributes = Object.assign({}, lines.attributes, mark.attributes);else if (mark.type === 'circle') {
+                    mark.attributes = Object.assign({}, points.attributes, mark.attributes);
+                    mark.radius = mark.radius || points.radius;
+                }
+                settings.marks.push(mark);
+            }
         });
 
         //Define margins for box plot and rotated x-axis tick labels.
@@ -762,10 +787,10 @@
 
     function addParticipantCountContainer() {
         this.participantCount.container = this.controls.wrap.style('position', 'relative').append('div').attr('id', 'participant-count').style({
-            'position': 'absolute',
+            position: 'absolute',
             'font-style': 'italic',
-            'bottom': '-10px',
-            'left': 0
+            bottom: '-10px',
+            left: 0
         });
     }
 
@@ -775,17 +800,17 @@
         if (this.removedRecords.missing > 0 || this.removedRecords.nonNumeric > 0) {
             var message = this.removedRecords.missing > 0 && this.removedRecords.nonNumeric > 0 ? this.removedRecords.missing + ' record' + (this.removedRecords.missing > 1 ? 's' : '') + ' with a missing result and ' + this.removedRecords.nonNumeric + ' record' + (this.removedRecords.nonNumeric > 1 ? 's' : '') + ' with a non-numeric result were removed.' : this.removedRecords.missing > 0 ? this.removedRecords.missing + ' record' + (this.removedRecords.missing > 1 ? 's' : '') + ' with a missing result ' + (this.removedRecords.missing > 1 ? 'were' : 'was') + ' removed.' : this.removedRecords.nonNumeric > 0 ? this.removedRecords.nonNumeric + ' record' + (this.removedRecords.nonNumeric > 1 ? 's' : '') + ' with a non-numeric result ' + (this.removedRecords.nonNumeric > 1 ? 'were' : 'was') + ' removed.' : '';
             this.removedRecords.container = this.controls.wrap.append('div').style({
-                'position': 'absolute',
+                position: 'absolute',
                 'font-style': 'italic',
-                'bottom': '-10px',
-                'right': 0
+                bottom: '-10px',
+                right: 0
             }).text(message);
             this.removedRecords.container.append('span').style({
-                'color': 'blue',
+                color: 'blue',
                 'text-decoration': 'underline',
                 'font-style': 'normal',
                 'font-weight': 'bold',
-                'cursor': 'pointer',
+                cursor: 'pointer',
                 'font-size': '16px',
                 'margin-left': '5px'
             }).html('<sup>x</sup>').on('click', function () {
@@ -894,8 +919,9 @@
     }
 
     function setYdomain() {
-        if (this.measure.current !== this.measure.previous) this.config.y.domain = this.measure.domain; // reset y-domain
-        else if (this.config.y.domain[0] > this.config.y.domain[1]) this.config.y.domain.reverse(); // reverse y-domain
+        if (this.measure.current !== this.measure.previous) this.config.y.domain = this.measure.domain;else if (this.config.y.domain[0] > this.config.y.domain[1])
+            // reset y-domain
+            this.config.y.domain.reverse(); // reverse y-domain
     }
 
     function calculateYPrecision() {
@@ -1034,7 +1060,7 @@
     }
 
     function extendYDomain() {
-        if (this.config.y.domain[0] === this.measure.domain[0] && this.config.y.domain[1] === this.measure.domain[1] && this.config.y.domain[0] < this.measure.domain[1]) this.y_dom = [this.config.y.domain[0] - this.measure.range * .01, this.config.y.domain[1] + this.measure.range * .01];
+        if (this.config.y.domain[0] === this.measure.domain[0] && this.config.y.domain[1] === this.measure.domain[1] && this.config.y.domain[0] < this.measure.domain[1]) this.y_dom = [this.config.y.domain[0] - this.measure.range * 0.01, this.config.y.domain[1] + this.measure.range * 0.01];
     }
 
     function updateBottomMargin() {
@@ -1056,12 +1082,14 @@
     }
 
     function attachMarks() {
-        var _this = this;
-
         this.marks.forEach(function (mark) {
-            var type = mark.type === 'circle' ? 'point' : mark.type;
-            _this[type + 's'] = mark.groups;
+            mark.groups.each(function (group) {
+                group.attributes = mark.attributes;
+                if (mark.type === 'circle') group.radius = mark.radius;
+            });
         });
+        this.lines = this.svg.selectAll('.line');
+        this.points = this.svg.selectAll('.point');
     }
 
     function highlightSelected() {
@@ -1077,15 +1105,21 @@
         //Update attributes of selected line.
         this.lines.filter(function (d) {
             return d.values[0].values.raw[0][_this.config.id_col] === _this.selected_id;
-        }).select('path').attr('stroke-width', this.config.line_attributes['stroke-width'] * 8);
+        }).select('path').attr('stroke-width', function (d) {
+            return d.attributes['stroke-width'] * 8;
+        });
 
         //Update attributes of selected points.
         this.points.filter(function (d) {
             return d.values.raw[0][_this.config.id_col] === _this.selected_id;
         }).select('circle').attr({
-            r: this.config.point_attributes.radius * 1.5,
+            r: function r(d) {
+                return d.radius * 1.5;
+            },
             stroke: 'black',
-            'stroke-width': this.config.point_attributes['stroke-width'] * 8
+            'stroke-width': function strokeWidth(d) {
+                return d.attributes['stroke-width'] * 8;
+            }
         });
     }
 
@@ -1115,34 +1149,36 @@
     function orderPoints() {
         var _this = this;
 
-        this.marks.find(function (mark) {
+        this.marks.filter(function (mark) {
             return mark.type === 'circle';
-        }).groups.each(function (d, i) {
-            d.order = _this.IDOrder.find(function (di) {
-                return d.key.indexOf(di.ID) === 0;
-            }).order;
+        }).forEach(function (mark) {
+            mark.groups.each(function (d, i) {
+                d.order = _this.IDOrder.find(function (di) {
+                    return d.key.indexOf(di.ID) === 0;
+                }).order;
+            });
         });
     }
 
     function clearHovered() {
         this.lines.filter(function () {
             return !d3.select(this).classed('selected');
-        }).select('path').attr(this.config.line_attributes);
+        }).select('path').each(function (d) {
+            d3.select(this).attr(d.attributes);
+        });
         this.points.filter(function () {
             return !d3.select(this).classed('selected');
-        }).select('circle').attr(this.config.point_attributes).attr('r', this.config.marks.find(function (mark) {
-            return mark.type === 'circle';
-        }).radius);
+        }).select('circle').each(function (d) {
+            d3.select(this).attr(d.attributes);
+            d3.select(this).attr('r', d.radius);
+        });
         delete this.hovered_id;
     }
 
     function clearSelected() {
-        var _this = this;
-
         this.marks.forEach(function (mark) {
-            var type = mark.type === 'circle' ? 'point' : mark.type;
             var element = mark.type === 'line' ? 'path' : mark.type;
-            mark.groups.classed('selected', false).select(element).attr(_this.config[type + '_attributes']);
+            mark.groups.classed('selected', false).select(element).attr(mark.attributes);
         });
         if (this.multiples.chart) this.multiples.chart.destroy();
         delete this.selected_id;
@@ -1176,15 +1212,21 @@
         //Update attributes of hovered line.
         this.lines.filter(function (d) {
             return d.values[0].values.raw[0][_this.config.id_col] === _this.hovered_id;
-        }).select('path').attr('stroke-width', this.config.line_attributes['stroke-width'] * 4);
+        }).select('path').attr('stroke-width', function (d) {
+            return d.attributes['stroke-width'] * 4;
+        });
 
         //Update attributes of hovered points.
         this.points.filter(function (d) {
             return d.values.raw[0][_this.config.id_col] === _this.hovered_id;
         }).select('circle').attr({
-            r: this.config.point_attributes.radius * 1.25,
+            r: function r(d) {
+                return d.radius * 1.25;
+            },
             stroke: 'black',
-            'stroke-width': this.config.point_attributes['stroke-width'] * 4
+            'stroke-width': function strokeWidth(d) {
+                return d.attributes['stroke-width'] * 4;
+            }
         });
     }
 
@@ -1645,6 +1687,10 @@
 
         //Define chart.
         var chart = webcharts.createChart(element, syncedSettings, controls);
+        chart.config.marks.forEach(function (mark) {
+            mark.attributes = mark.attributes || {};
+            mark.attributes['clip-path'] = 'url(#' + chart.id + ')';
+        });
 
         //Attach callbacks to chart.
         for (var callback in callbacks) {

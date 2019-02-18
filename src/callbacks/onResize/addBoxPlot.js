@@ -112,40 +112,37 @@ export default function addBoxPlot() {
         .style('fill', boxColor)
         .style('stroke', 'None');
 
-    boxplot
-        .append('title')
-        .text(function(d) {
-            const tooltip = (
-                'N = ' +
-                d.values.length +
-                '\n' +
-                'Min = ' +
-                min(d.values) +
-                '\n' +
-                '5th % = ' +
-                fmt(quantile(d.values, 0.05)).replace(/^ */, '') +
-                '\n' +
-                'Q1 = ' +
-                fmt(quantile(d.values, 0.25)).replace(/^ */, '') +
-                '\n' +
-                'Median = ' +
-                fmt(median(d.values)).replace(/^ */, '') +
-                '\n' +
-                'Q3 = ' +
-                fmt(quantile(d.values, 0.75)).replace(/^ */, '') +
-                '\n' +
-                '95th % = ' +
-                fmt(quantile(d.values, 0.95)).replace(/^ */, '') +
-                '\n' +
-                'Max = ' +
-                max(d.values) +
-                '\n' +
-                'Mean = ' +
-                fmt(mean(d.values)).replace(/^ */, '') +
-                '\n' +
-                'StDev = ' +
-                fmt(deviation(d.values)).replace(/^ */, '')
-            );
-            return tooltip;
-        });
+    boxplot.append('title').text(function(d) {
+        const tooltip =
+            'N = ' +
+            d.values.length +
+            '\n' +
+            'Min = ' +
+            min(d.values) +
+            '\n' +
+            '5th % = ' +
+            fmt(quantile(d.values, 0.05)).replace(/^ */, '') +
+            '\n' +
+            'Q1 = ' +
+            fmt(quantile(d.values, 0.25)).replace(/^ */, '') +
+            '\n' +
+            'Median = ' +
+            fmt(median(d.values)).replace(/^ */, '') +
+            '\n' +
+            'Q3 = ' +
+            fmt(quantile(d.values, 0.75)).replace(/^ */, '') +
+            '\n' +
+            '95th % = ' +
+            fmt(quantile(d.values, 0.95)).replace(/^ */, '') +
+            '\n' +
+            'Max = ' +
+            max(d.values) +
+            '\n' +
+            'Mean = ' +
+            fmt(mean(d.values)).replace(/^ */, '') +
+            '\n' +
+            'StDev = ' +
+            fmt(deviation(d.values)).replace(/^ */, '');
+        return tooltip;
+    });
 }

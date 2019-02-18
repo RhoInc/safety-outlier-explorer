@@ -24,3 +24,6 @@ if (missingActualSettings.length > 0) {
     console.log('\x1b[31m%s\x1b[0m', 'These settings are missing from the renderer settings:\n');
     console.log('\x1b[31m%s\x1b[0m', `${JSON.stringify(missingActualSettings, null, 4)}\n`);
 }
+
+if (missingExpectedSettings.length === 0 && missingActualSettings.length === 0)
+    console.log('The settings schema and the renderer settings are *NSYNC!');

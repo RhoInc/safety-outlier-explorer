@@ -4,9 +4,9 @@ export default function addParticipantCountContainer() {
         .append('div')
         .attr('id', 'participant-count')
         .style({
-            'position': 'absolute',
+            position: 'absolute',
             'font-style': 'italic',
-            'bottom': '-10px',
-            'left': 0,
+            bottom: '-10px',
+            left: 0
         });
 }

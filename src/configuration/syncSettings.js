@@ -20,10 +20,11 @@ export default function syncSettings(settings) {
     //points
     const points = settings.marks.find(mark => mark.type === 'circle');
     points.per = [settings.id_col, settings.measure_col, time_col.value_col, settings.value_col];
-    points.tooltip = `ID = [${settings.id_col}]\n[${settings.measure_col}] = [${
+    points.tooltip = `Participant = [${settings.id_col}]\n[${settings.measure_col}] = [${
         settings.value_col
-    }] [${settings.unit_col}]\n${settings.x.column} = [${settings.x.column}]`;
-    //add custom tooltip values
+    }] [${settings.unit_col}]\n${settings.x.label} = [${settings.x.column}]`;
+
+    //Conadd custom tooltip values
     if (settings.tooltip_cols) {
         settings.tooltip_cols.forEach(function(tooltip) {
             var obj = typeof tooltip == 'string' ? { label: tooltip, value_col: tooltip } : tooltip;
@@ -35,7 +36,19 @@ export default function syncSettings(settings) {
     points.radius = settings.point_attributes.radius || 3;
 
     //Add custom marks to settings.marks.
-    if (settings.custom_marks) settings.custom_marks.forEach(mark => settings.marks.push(mark));
+    if (Array.isArray(settings.custom_marks) && settings.custom_marks.length)
+        settings.custom_marks.forEach(mark => {
+            if (mark instanceof Object) {
+                mark.default = false; // distinguish custom marks from default marks
+                if (mark.type === 'line')
+                    mark.attributes = Object.assign({}, lines.attributes, mark.attributes);
+                else if (mark.type === 'circle') {
+                    mark.attributes = Object.assign({}, points.attributes, mark.attributes);
+                    mark.radius = mark.radius || points.radius;
+                }
+                settings.marks.push(mark);
+            }
+        });
 
     //Define margins for box plot and rotated x-axis tick labels.
     if (settings.margin) settings.margin.bottom = time_col.vertical_space;

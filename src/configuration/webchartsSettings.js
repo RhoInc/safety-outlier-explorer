@@ -10,30 +10,32 @@ export default function webchartsSettings() {
             stat: 'mean',
             type: 'linear',
             label: 'Value',
-            behavior: 'raw',
+            behavior: 'raw'
         },
         marks: [
             {
                 per: null, // set in ./syncSettings
                 type: 'line',
                 attributes: {
-                    'clip-path': 'url(#1)'
+                    'clip-path': null // set in ./syncSettings
                 },
-                tooltip: null // set in ./syncSettings
+                tooltip: null, // set in ./syncSettings
+                default: true
             },
             {
                 per: null, // set in ./syncSettings
                 type: 'circle',
                 attributes: {
-                    'clip-path': 'url(#1)'
+                    'clip-path': null // set in ./syncSettings
                 },
-                tooltip: null // set in ./syncSettings
+                tooltip: null, // set in ./syncSettings
+                default: true
             }
         ],
         resizable: true,
         margin: {
             right: 30, // create space for box plot
-            left: 60,
+            left: 60
         },
         gridlines: 'y',
         aspect: 3
