@@ -1,4 +1,4 @@
-export default function setInitialMeasure() {
+export default function updateMeasureFilter() {
     this.measure = {};
     const measureInput = this.controls.config.inputs.find(input => input.label === 'Measure');
     if (

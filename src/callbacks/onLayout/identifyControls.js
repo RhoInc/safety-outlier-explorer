@@ -1,7 +1,9 @@
 import { select } from 'd3';
 
 export default function identifyControls() {
-    const controlGroups = this.controls.wrap.selectAll('.control-group');
+    const controlGroups = this.controls.wrap
+        .style('padding-bottom', '8px')
+        .selectAll('.control-group');
 
     //Give each control a unique ID.
     controlGroups.attr('id', d => d.label.toLowerCase().replace(' ', '-')).each(function(d) {

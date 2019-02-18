@@ -1,4 +1,4 @@
-export default function updateControlInputs() {
+export default function updateNormalRangeControl() {
     //If data do not have normal range variables update normal range method setting and options.
     if (
         Object.keys(this.raw_data[0]).indexOf(this.config.normal_col_low) < 0 ||

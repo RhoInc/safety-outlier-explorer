@@ -5,7 +5,7 @@ import updateBottomMargin from './onDraw/updateBottomMargin';
 
 export default function onDraw() {
     //Annotate participant count.
-    updateParticipantCount(this, '#participant-count');
+    updateParticipantCount.call(this);
 
     //Clear current multiples.
     resetChart.call(this);

@@ -2,7 +2,7 @@
     typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('d3'), require('webcharts')) :
     typeof define === 'function' && define.amd ? define(['d3', 'webcharts'], factory) :
     (global = global || self, global.safetyOutlierExplorer = factory(global.d3, global.webCharts));
-}(this, function (d3$1, webcharts) { 'use strict';
+}(this, function (d3, webcharts) { 'use strict';
 
     if (typeof Object.assign != 'function') {
         Object.defineProperty(Object, 'assign', {
@@ -129,13 +129,13 @@
     };
 
     // https://github.com/wbkd/d3-extended
-    d3$1.selection.prototype.moveToFront = function () {
+    d3.selection.prototype.moveToFront = function () {
         return this.each(function () {
             this.parentNode.appendChild(this);
         });
     };
 
-    d3$1.selection.prototype.moveToBack = function () {
+    d3.selection.prototype.moveToBack = function () {
         return this.each(function () {
             var firstChild = this.parentNode.firstChild;
             if (firstChild) {
@@ -399,28 +399,87 @@
     function countParticipants() {
         var _this = this;
 
-        this.populationCount = d3$1.set(this.raw_data.map(function (d) {
-            return d[_this.config.id_col];
-        })).values().length;
+        this.participantCount = {
+            N: d3.set(this.raw_data.map(function (d) {
+                return d[_this.config.id_col];
+            })).values().filter(function (value) {
+                return !/^\s*$/.test(value);
+            }).length,
+            container: null, // set in ../onLayout/addParticipantCountContainer
+            n: null, // set in ../onDraw/updateParticipantCount
+            percentage: null // set in ../onDraw/updateParticipantCount
+        };
     }
 
-    function cleanData() {
+    function removeMissingResults() {
         var _this = this;
 
-        //Remove missing and non-numeric data.
-        var preclean = this.raw_data;
-        var clean = this.raw_data.filter(function (d) {
+        //Split data into records with missing and nonmissing results.
+        var missingResults = [];
+        var nonMissingResults = [];
+        this.raw_data.forEach(function (d) {
+            if (/^\s*$/.test(d[_this.config.value_col])) missingResults.push(d);else nonMissingResults.push(d);
+        });
+
+        //Nest missing and nonmissing results by participant.
+        var participantsWithMissingResults = d3.nest().key(function (d) {
+            return d[_this.config.id_col];
+        }).rollup(function (d) {
+            return d.length;
+        }).entries(missingResults);
+        var participantsWithNonMissingResults = d3.nest().key(function (d) {
+            return d[_this.config.id_col];
+        }).rollup(function (d) {
+            return d.length;
+        }).entries(nonMissingResults);
+
+        //Identify placeholder records, i.e. participants with a single missing result.
+        this.removedRecords.placeholderRecords = participantsWithMissingResults.filter(function (d) {
+            return participantsWithNonMissingResults.map(function (d) {
+                return d.key;
+            }).indexOf(d.key) < 0 && d.values === 1;
+        }).map(function (d) {
+            return d.key;
+        });
+        if (this.removedRecords.placeholderRecords.length) console.log(this.removedRecords.placeholderRecords.length + ' participants without results have been detected.');
+
+        //Count the number of records with missing results.
+        this.removedRecords.missing = d3.sum(participantsWithMissingResults.filter(function (d) {
+            return _this.removedRecords.placeholderRecords.indexOf(d.key) < 0;
+        }), function (d) {
+            return d.values;
+        });
+        if (this.removedRecords.missing > 0) console.warn(this.removedRecords.missing + ' record' + (this.removedRecords.missing > 1 ? 's with a missing result have' : ' with a missing result has') + ' been removed.');
+
+        //Update data.
+        this.raw_data = nonMissingResults;
+    }
+
+    function removeNonNumericResults() {
+        var _this = this;
+
+        //Filter out non-numeric results.
+        var numericResults = this.raw_data.filter(function (d) {
             return (/^-?[0-9.]+$/.test(d[_this.config.value_col])
             );
         });
-        var nPreclean = preclean.length;
-        var nClean = clean.length;
-        var nRemoved = nPreclean - nClean;
+        this.removedRecords.nonNumeric = this.raw_data.length - numericResults.length;
+        if (this.removedRecords.nonNumeric > 0) console.warn(this.removedRecords.nonNumeric + ' record' + (this.removedRecords.nonNumeric > 1 ? 's with a non-numeric result have' : ' with a non-numeric result has') + ' been removed.');
 
-        //Warn user of removed records.
-        if (nRemoved > 0) console.warn(nRemoved + ' missing or non-numeric result' + (nRemoved > 1 ? 's have' : ' has') + ' been removed.');
-        this.initial_data = clean;
-        this.raw_data = clean;
+        //Update data.
+        this.raw_data = numericResults;
+    }
+
+    function cleanData() {
+        this.removedRecords = {
+            placeholderParticipants: null, // defined in './cleanData/removeMissingResults
+            missing: null, // defined in './cleanData/removeMissingResults
+            nonNumeric: null, // defined in './cleanData/removeNonNumericResults
+            container: null // defined in ../onLayout/addRemovedRecordsContainer
+        };
+        removeMissingResults.call(this);
+        removeNonNumericResults.call(this);
+        this.initial_data = this.raw_data;
     }
 
     function addVariables() {
@@ -442,18 +501,20 @@
         });
     }
 
-    function defineMeasureSet() {
+    function participant() {
         var _this = this;
 
-        this.measures = d3$1.set(this.initial_data.map(function (d) {
-            return d[_this.config.measure_col];
-        })).values().sort();
-        this.soe_measures = d3$1.set(this.initial_data.map(function (d) {
-            return d.soe_measure;
-        })).values().sort();
+        this.IDOrder = d3.set(this.raw_data.map(function (d) {
+            return d[_this.config.id_col];
+        })).values().sort().map(function (ID, i) {
+            return {
+                ID: ID,
+                order: i
+            };
+        });
     }
 
-    function defineVisitOrder() {
+    function visit() {
         var _this = this;
 
         //ordinal
@@ -466,7 +527,7 @@
             //Given an ordering variable sort a unique set of visits by the ordering variable.
             if (time_settings.order_col && _this.raw_data[0].hasOwnProperty(time_settings.order_col)) {
                 //Define a unique set of visits with visit order concatenated.
-                visits = d3$1.set(_this.raw_data.map(function (d) {
+                visits = d3.set(_this.raw_data.map(function (d) {
                     return d[time_settings.order_col] + '|' + d[time_settings.value_col];
                 })).values();
 
@@ -475,14 +536,14 @@
                     var aOrder = a.split('|')[0],
                         bOrder = b.split('|')[0],
                         diff = +aOrder - +bOrder;
-                    return diff ? diff : d3$1.ascending(a, b);
+                    return diff ? diff : d3.ascending(a, b);
                 }).map(function (visit) {
                     return visit.split('|')[1];
                 });
             } else {
                 //Otherwise sort a unique set of visits alphanumerically.
                 //Define a unique set of visits.
-                visits = d3$1.set(_this.raw_data.map(function (d) {
+                visits = d3.set(_this.raw_data.map(function (d) {
                     return d[time_settings.value_col];
                 })).values();
 
@@ -505,37 +566,24 @@
         });
     }
 
-    function updateControlInputs() {
-        //If data do not have normal range variables update normal range method setting and options.
-        if (Object.keys(this.raw_data[0]).indexOf(this.config.normal_col_low) < 0 || Object.keys(this.raw_data[0]).indexOf(this.config.normal_col_high) < 0) {
-            if (this.config.normal_range_method === 'LLN-ULN') this.config.normal_range_method = 'Standard Deviation';
-            this.controls.config.inputs.find(function (input) {
-                return input.option === 'normal_range_method';
-            }).values.splice(1, 1);
-        }
-    }
-
-    function checkFilters() {
+    function measure() {
         var _this = this;
 
-        this.controls.config.inputs = this.controls.config.inputs.filter(function (input) {
-            if (input.type !== 'subsetter') {
-                return true;
-            } else if (!_this.raw_data[0].hasOwnProperty(input.value_col)) {
-                console.warn('The [ ' + input.label + ' ] filter has been removed because the variable does not exist.');
-            } else {
-                var levels = d3$1.set(_this.raw_data.map(function (d) {
-                    return d[input.value_col];
-                })).values();
-
-                if (levels.length === 1) console.warn('The [ ' + input.label + ' ] filter has been removed because the variable has only one level.');
-
-                return levels.length > 1;
-            }
-        });
+        this.measures = d3.set(this.initial_data.map(function (d) {
+            return d[_this.config.measure_col];
+        })).values().sort();
+        this.soe_measures = d3.set(this.initial_data.map(function (d) {
+            return d.soe_measure;
+        })).values().sort();
     }
 
-    function setInitialMeasure() {
+    function defineSets() {
+        participant.call(this);
+        visit.call(this);
+        measure.call(this);
+    }
+
+    function updateMeasureFilter() {
         this.measure = {};
         var measureInput = this.controls.config.inputs.find(function (input) {
             return input.label === 'Measure';
@@ -549,56 +597,67 @@
         } else measureInput.start = this.config.start_value || this.soe_measures[0];
     }
 
-    function addIDOrdering() {
+    function removeFilters() {
         var _this = this;
 
-        this.IDOrder = d3$1.set(this.raw_data.map(function (d) {
-            return d[_this.config.id_col];
-        })).values().sort().map(function (ID, i) {
-            return {
-                ID: ID,
-                order: i
-            };
+        this.controls.config.inputs = this.controls.config.inputs.filter(function (input) {
+            if (input.type !== 'subsetter' || input.value_col === 'soe_measure') {
+                return true;
+            } else if (!_this.raw_data[0].hasOwnProperty(input.value_col)) {
+                console.warn('The [ ' + input.label + ' ] filter has been removed because the variable does not exist.');
+            } else {
+                var levels = d3.set(_this.raw_data.map(function (d) {
+                    return d[input.value_col];
+                })).values();
+
+                if (levels.length === 1) console.warn('The [ ' + input.label + ' ] filter has been removed because the variable has only one level.');
+
+                return levels.length > 1;
+            }
         });
     }
 
+    function updateNormalRangeControl() {
+        //If data do not have normal range variables update normal range method setting and options.
+        if (Object.keys(this.raw_data[0]).indexOf(this.config.normal_col_low) < 0 || Object.keys(this.raw_data[0]).indexOf(this.config.normal_col_high) < 0) {
+            if (this.config.normal_range_method === 'LLN-ULN') this.config.normal_range_method = 'Standard Deviation';
+            this.controls.config.inputs.find(function (input) {
+                return input.option === 'normal_range_method';
+            }).values.splice(1, 1);
+        }
+    }
+
+    function checkControls() {
+        updateMeasureFilter.call(this);
+        removeFilters.call(this);
+        updateNormalRangeControl.call(this);
+    }
+
     function onInit() {
-        // 1. Count total participants prior to data cleaning.
+        // 1. Count number of unique participant IDs in data prior to data cleaning.
         countParticipants.call(this);
 
-        // 2. Drop missing values and remove measures with any non-numeric results.
+        // 2. Remove missing and non-numeric results.
         cleanData.call(this);
 
-        // 3a Define additional variables.
+        // 3. Define additional variables.
         addVariables.call(this);
 
-        // 3b Capture unique set of measures.
-        defineMeasureSet.call(this);
+        // 4. Define participant, visit, and measure sets.
+        defineSets.call(this);
 
-        // 3c Define ordered x-axis domain with visit order variable.
-        defineVisitOrder.call(this);
-
-        // 3d Remove invalid control inputs.
-        updateControlInputs.call(this);
-
-        // 3e Remove filters for nonexistent or single-level variables.
-        checkFilters.call(this);
-
-        // 3f Choose the start value for the Test filter
-        setInitialMeasure.call(this);
-
-        // 3g Capture unique set of IDs and apply an ordering.
-        addIDOrdering.call(this);
+        // 5. Check controls.
+        checkControls.call(this);
     }
 
     function identifyControls() {
-        var controlGroups = this.controls.wrap.selectAll('.control-group');
+        var controlGroups = this.controls.wrap.style('padding-bottom', '8px').selectAll('.control-group');
 
         //Give each control a unique ID.
         controlGroups.attr('id', function (d) {
             return d.label.toLowerCase().replace(' ', '-');
         }).each(function (d) {
-            d3$1.select(this).classed(d.type, true);
+            d3.select(this).classed(d.type, true);
         });
 
         //Give y-axis controls a common class name.
@@ -693,7 +752,7 @@
         normalRangeInputs.select('input').attr('step', 0.01);
 
         normalRangeMethodControl.on('change', function () {
-            var normal_range_method = d3$1.select(this).select('option:checked').text();
+            var normal_range_method = d3.select(this).select('option:checked').text();
 
             normalRangeInputs.style('display', function (d) {
                 return normal_range_method !== 'Standard Deviation' && d.option === 'normal_range_sd' || normal_range_method !== 'Quantiles' && ['normal_range_quantile_low', 'normal_range_quantile_high'].indexOf(d.option) > -1 ? 'none' : 'inline-table';
@@ -702,36 +761,64 @@
     }
 
     function addParticipantCountContainer() {
-        this.controls.wrap.append('div').attr('id', 'participant-count').style('font-style', 'italic');
+        this.participantCount.container = this.controls.wrap.style('position', 'relative').append('div').attr('id', 'participant-count').style({
+            'position': 'absolute',
+            'font-style': 'italic',
+            'bottom': '-10px',
+            'left': 0
+        });
+    }
+
+    function addRemovedRecordsNote() {
+        var _this = this;
+
+        if (this.removedRecords.missing > 0 || this.removedRecords.nonNumeric > 0) {
+            var message = this.removedRecords.missing > 0 && this.removedRecords.nonNumeric > 0 ? this.removedRecords.missing + ' record' + (this.removedRecords.missing > 1 ? 's' : '') + ' with a missing result and ' + this.removedRecords.nonNumeric + ' record' + (this.removedRecords.nonNumeric > 1 ? 's' : '') + ' with a non-numeric result were removed.' : this.removedRecords.missing > 0 ? this.removedRecords.missing + ' record' + (this.removedRecords.missing > 1 ? 's' : '') + ' with a missing result ' + (this.removedRecords.missing > 1 ? 'were' : 'was') + ' removed.' : this.removedRecords.nonNumeric > 0 ? this.removedRecords.nonNumeric + ' record' + (this.removedRecords.nonNumeric > 1 ? 's' : '') + ' with a non-numeric result ' + (this.removedRecords.nonNumeric > 1 ? 'were' : 'was') + ' removed.' : '';
+            this.removedRecords.container = this.controls.wrap.append('div').style({
+                'position': 'absolute',
+                'font-style': 'italic',
+                'bottom': '-10px',
+                'right': 0
+            }).text(message);
+            this.removedRecords.container.append('span').style({
+                'color': 'blue',
+                'text-decoration': 'underline',
+                'font-style': 'normal',
+                'font-weight': 'bold',
+                'cursor': 'pointer',
+                'font-size': '16px',
+                'margin-left': '5px'
+            }).html('<sup>x</sup>').on('click', function () {
+                return _this.removedRecords.container.style('display', 'none');
+            });
+        }
+    }
+
+    function addBorderAboveChart() {
+        this.wrap.style({
+            'border-top': '1px solid #ccc'
+        });
     }
 
     function addSmallMultiplesContainer() {
         this.multiples = {
-            container: this.wrap.append('div').classed('multiples', true),
+            container: this.wrap.append('div').classed('multiples', true).style({
+                'border-top': '1px solid #ccc',
+                'padding-top': '10px'
+            }),
             id: null
         };
     }
 
     function onLayout() {
-        // Distinguish controls to insert y-axis reset button in the correct position.
-        identifyControls.call(this);
-
-        //Label x-axis options.
+        identifyControls.call(this); // Distinguish controls to insert y-axis reset button in the correct position.
         labelXaxisOptions.call(this);
-
-        //Add a button to reset the y-domain
         addYdomainResetButton.call(this);
-
-        //Group related controls visually.
-        groupControls.call(this);
-
-        //Hide normal range input controls depending on the normal range method.
-        hideNormalRangeInputs.call(this);
-
-        //Add participant count container.
+        groupControls.call(this); // Group related controls visually.
+        hideNormalRangeInputs.call(this); // Hide normal range input controls depending on the normal range method.
         addParticipantCountContainer.call(this);
-
-        //Add container for small multiples.
+        addRemovedRecordsNote.call(this);
+        addBorderAboveChart.call(this);
         addSmallMultiplesContainer.call(this);
     }
 
@@ -754,7 +841,7 @@
         }).sort(function (a, b) {
             return a - b;
         });
-        this.measure.domain = d3$1.extent(this.measure.results);
+        this.measure.domain = d3.extent(this.measure.results);
         this.measure.range = this.measure.domain[1] - this.measure.domain[0];
         this.measure.log10range = Math.log10(this.measure.range);
         this.raw_data = this.measure.data.filter(function (d) {
@@ -766,7 +853,7 @@
         var _this = this;
 
         if (!this.config.visits_without_data) this.config.x.domain = this.config.x.domain.filter(function (visit) {
-            return d3$1.set(_this.raw_data.map(function (d) {
+            return d3.set(_this.raw_data.map(function (d) {
                 return d[_this.config.time_settings.value_col];
             })).values().indexOf(visit) > -1;
         });
@@ -856,18 +943,18 @@
 
         if (this.config.normal_range_method === 'LLN-ULN') {
             this.lln = function (d) {
-                return d instanceof Object ? +d[_this.config.normal_col_low] : d3$1.median(_this.measure.data, function (d) {
+                return d instanceof Object ? +d[_this.config.normal_col_low] : d3.median(_this.measure.data, function (d) {
                     return +d[_this.config.normal_col_low];
                 });
             };
             this.uln = function (d) {
-                return d instanceof Object ? +d[_this.config.normal_col_high] : d3$1.median(_this.measure.data, function (d) {
+                return d instanceof Object ? +d[_this.config.normal_col_high] : d3.median(_this.measure.data, function (d) {
                     return +d[_this.config.normal_col_high];
                 });
             };
         } else if (this.config.normal_range_method === 'Standard Deviation') {
-            this.mean = d3$1.mean(this.measure.results);
-            this.sd = d3$1.deviation(this.measure.results);
+            this.mean = d3.mean(this.measure.results);
+            this.sd = d3.deviation(this.measure.results);
             this.lln = function () {
                 return _this.mean - _this.config.normal_range_sd * _this.sd;
             };
@@ -876,10 +963,10 @@
             };
         } else if (this.config.normal_range_method === 'Quantiles') {
             this.lln = function () {
-                return d3$1.quantile(_this.measure.results, _this.config.normal_range_quantile_low);
+                return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_low);
             };
             this.uln = function () {
-                return d3$1.quantile(_this.measure.results, _this.config.normal_range_quantile_high);
+                return d3.quantile(_this.measure.results, _this.config.normal_range_quantile_high);
             };
         } else {
             this.lln = function (d) {
@@ -922,22 +1009,20 @@
 
     function onDatatransform() {}
 
-    // Takes a webcharts object creates a text annotation giving the
+    function updateParticipantCount() {
+        var _this = this;
 
-    function updateParticipantCount(chart, selector, id_unit) {
         //count the number of unique ids in the current chart and calculate the percentage
-        var currentObs = d3$1.set(chart.filtered_data.map(function (d) {
-            return d[chart.config.id_col];
+        this.participantCount.n = d3.set(this.filtered_data.map(function (d) {
+            return d[_this.config.id_col];
         })).values().length;
-        var percentage = d3$1.format('0.1%')(currentObs / chart.populationCount);
+        this.participantCount.percentage = d3.format('0.1%')(this.participantCount.n / this.participantCount.N);
 
         //clear the annotation
-        var annotation = d3$1.select(selector);
-        d3$1.select(selector).selectAll('*').remove();
+        this.participantCount.container.selectAll('*').remove();
 
         //update the annotation
-        var units = id_unit ? ' ' + id_unit : ' participant(s)';
-        annotation.text('\n' + currentObs + ' of ' + chart.populationCount + units + ' shown (' + percentage + ')');
+        this.participantCount.container.text('\n' + this.participantCount.n + ' of ' + this.participantCount.N + ' participant(s) shown (' + this.participantCount.percentage + ')');
     }
 
     function resetChart() {
@@ -958,7 +1043,7 @@
 
     function onDraw() {
         //Annotate participant count.
-        updateParticipantCount(this, '#participant-count');
+        updateParticipantCount.call(this);
 
         //Clear current multiples.
         resetChart.call(this);
@@ -1041,10 +1126,10 @@
 
     function clearHovered() {
         this.lines.filter(function () {
-            return !d3$1.select(this).classed('selected');
+            return !d3.select(this).classed('selected');
         }).select('path').attr(this.config.line_attributes);
         this.points.filter(function () {
-            return !d3$1.select(this).classed('selected');
+            return !d3.select(this).classed('selected');
         }).select('circle').attr(this.config.point_attributes).attr('r', this.config.marks.find(function (mark) {
             return mark.type === 'circle';
         }).radius);
@@ -1268,12 +1353,12 @@
             }));
 
             //Calculate range of data.
-            var ylo = d3$1.min(filtered_data.map(function (m) {
+            var ylo = d3.min(filtered_data.map(function (m) {
                 return +m[_this.config.y.column];
             }).filter(function (f) {
                 return +f || +f === 0;
             }));
-            var yhi = d3$1.max(filtered_data.map(function (m) {
+            var yhi = d3.max(filtered_data.map(function (m) {
                 return +m[_this.config.y.column];
             }).filter(function (f) {
                 return +f || +f === 0;
@@ -1295,7 +1380,7 @@
     function rangePolygon() {
         var _this = this;
 
-        var area = d3$1.svg.area().x(function (d) {
+        var area = d3.svg.area().x(function (d) {
             return _this.x(d['TIME']) + (_this.config.x.type === 'ordinal' ? _this.x.rangeBand() / 2 : 0);
         }).y0(function (d) {
             return (/^-?[0-9.]+$/.test(d[_this.config.normal_col_low]) ? _this.y(d[_this.config.normal_col_low]) : 0
@@ -1448,18 +1533,18 @@
         var svg = this.svg;
         var results = this.current_data.map(function (d) {
             return +d.values.y;
-        }).sort(d3$1.ascending);
+        }).sort(d3.ascending);
         var height = this.plot_height;
         var width = 1;
         var domain = this.y_dom;
         var boxPlotWidth = 10;
         var boxColor = '#bbb';
         var boxInsideColor = 'white';
-        var fmt = d3$1.format('.3r');
+        var fmt = d3.format('.3r');
 
         //set up scales
-        var x = d3$1.scale.linear().range([0, width]);
-        var y = d3$1.scale.linear().range([height, 0]);
+        var x = d3.scale.linear().range([0, width]);
+        var y = d3.scale.linear().range([height, 0]);
 
         {
             y.domain(domain);
@@ -1467,7 +1552,7 @@
 
         var probs = [0.05, 0.25, 0.5, 0.75, 0.95];
         for (var i = 0; i < probs.length; i++) {
-            probs[i] = d3$1.quantile(results, probs[i]);
+            probs[i] = d3.quantile(results, probs[i]);
         }
 
         var boxplot = this.svg.append('g').attr('class', 'boxplot').datum({
@@ -1497,12 +1582,12 @@
             boxplot.append('line').attr('class', 'boxplot').attr('x1', x(0.5)).attr('x2', x(0.5)).attr('y1', y(probs[iS[i][0]])).attr('y2', y(probs[iS[i][1]])).style('stroke', boxColor);
         }
 
-        boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', x(0.5)).attr('cy', y(d3$1.mean(results))).attr('r', x(boxPlotWidth / 3)).style('fill', boxInsideColor).style('stroke', boxColor);
+        boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', x(0.5)).attr('cy', y(d3.mean(results))).attr('r', x(boxPlotWidth / 3)).style('fill', boxInsideColor).style('stroke', boxColor);
 
-        boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', x(0.5)).attr('cy', y(d3$1.mean(results))).attr('r', x(boxPlotWidth / 6)).style('fill', boxColor).style('stroke', 'None');
+        boxplot.append('circle').attr('class', 'boxplot mean').attr('cx', x(0.5)).attr('cy', y(d3.mean(results))).attr('r', x(boxPlotWidth / 6)).style('fill', boxColor).style('stroke', 'None');
 
         boxplot.append('title').text(function (d) {
-            var tooltip = 'N = ' + d.values.length + '\n' + 'Min = ' + d3$1.min(d.values) + '\n' + '5th % = ' + fmt(d3$1.quantile(d.values, 0.05)).replace(/^ */, '') + '\n' + 'Q1 = ' + fmt(d3$1.quantile(d.values, 0.25)).replace(/^ */, '') + '\n' + 'Median = ' + fmt(d3$1.median(d.values)).replace(/^ */, '') + '\n' + 'Q3 = ' + fmt(d3$1.quantile(d.values, 0.75)).replace(/^ */, '') + '\n' + '95th % = ' + fmt(d3$1.quantile(d.values, 0.95)).replace(/^ */, '') + '\n' + 'Max = ' + d3$1.max(d.values) + '\n' + 'Mean = ' + fmt(d3$1.mean(d.values)).replace(/^ */, '') + '\n' + 'StDev = ' + fmt(d3$1.deviation(d.values)).replace(/^ */, '');
+            var tooltip = 'N = ' + d.values.length + '\n' + 'Min = ' + d3.min(d.values) + '\n' + '5th % = ' + fmt(d3.quantile(d.values, 0.05)).replace(/^ */, '') + '\n' + 'Q1 = ' + fmt(d3.quantile(d.values, 0.25)).replace(/^ */, '') + '\n' + 'Median = ' + fmt(d3.median(d.values)).replace(/^ */, '') + '\n' + 'Q3 = ' + fmt(d3.quantile(d.values, 0.75)).replace(/^ */, '') + '\n' + '95th % = ' + fmt(d3.quantile(d.values, 0.95)).replace(/^ */, '') + '\n' + 'Max = ' + d3.max(d.values) + '\n' + 'Mean = ' + fmt(d3.mean(d.values)).replace(/^ */, '') + '\n' + 'StDev = ' + fmt(d3.deviation(d.values)).replace(/^ */, '');
             return tooltip;
         });
     }

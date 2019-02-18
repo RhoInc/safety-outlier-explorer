@@ -1,6 +1,6 @@
 import { set, ascending } from 'd3';
 
-export default function defineVisitOrder() {
+export default function visit() {
     //ordinal
     this.config.time_cols.filter(time_col => time_col.type === 'ordinal').forEach(time_settings => {
         let visits, visitOrder;
