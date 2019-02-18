@@ -2,6 +2,7 @@ import getCurrentMeasure from './onPreprocess/getCurrentMeasure';
 import defineMeasureData from './onPreprocess/defineMeasureData';
 import setXdomain from './onPreprocess/setXdomain';
 import setYdomain from './onPreprocess/setYdomain';
+import calculateYPrecision from './onPreprocess/calculateYPrecision';
 import updateYaxisLimitControls from './onPreprocess/updateYaxisLimitControls';
 import setYaxisLabel from './onPreprocess/setYaxisLabel';
 import updateYaxisResetButton from './onPreprocess/updateYaxisResetButton';
@@ -19,6 +20,9 @@ export default function onPreprocess() {
 
     // 3b Set y-domain given currently selected measure.
     setYdomain.call(this);
+
+    // 3c Calculate precision of y-domain.
+    calculateYPrecision.call(this);
 
     // 3c Set y-axis label to current measure.
     setYaxisLabel.call(this);
