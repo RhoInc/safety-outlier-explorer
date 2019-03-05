@@ -2,14 +2,19 @@
     "title": "settings",
     "description": "JSON schema for the configuration of safety-outlier-explorer",
     "overview": "The most straightforward way to customize the Safety Outlier Explorer is by using a configuration object whose properties describe the behavior and appearance of the chart. Since the Safety Outlier Explorer is a Webcharts `chart` object, many default Webcharts settings are set in the [defaultSettings.js file](https://github.com/RhoInc/safety-outlier-explorer/blob/master/src/defaultSettings.js) as [described below](#webcharts-settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the Safety Outlier Explorer to facilitate data mapping and other custom functionality. These custom settings are described in detail below. All defaults can be overwritten by users.",
-    "version": "2.2.2",
+    "version": "2.5.0",
     "type": "object",
+    "data-guidelines": "The Safety Outlier Explorer accepts [JSON](https://en.wikipedia.org/wiki/JSON) data of the format returned by [`d3.csv()`](https://github.com/d3/d3-3.x-api-reference/blob/master/CSV.md). The renderer visualizes clinical medical signs data with **one row per participant per visit per medical sign** plus the required variables specified below.",
+    "data-structure": "one record per participant per visit per medical sign",
     "properties": {
         "id_col": {
             "type": "string",
-            "title": "ID",
-            "description": "unique identifier variable name",
-            "default": "USUBJID"
+            "title": "Participant ID",
+            "description": "variable: participant identifier",
+            "default": "USUBJID",
+            "data-mapping": true,
+            "data-type": "character",
+            "required": true
         },
         "time_cols": {
             "type": "array",
@@ -77,37 +82,82 @@
                         "default": 100
                     }
                 }
-            }
+            },
+            "properties": {
+                "visit_col": {
+                    "type": "string",
+                    "title": "Visit",
+                    "description": "variable: visit",
+                    "default": "VISIT",
+                    "data-mapping": true,
+                    "data-type": "character",
+                    "required": true
+                },
+                "visit_order_col": {
+                    "type": "string",
+                    "title": "Visit Order",
+                    "description": "variable: visit order",
+                    "default": "VISITNUM",
+                    "data-mapping": true,
+                    "data-type": "numeric",
+                    "required": false
+                },
+                "study_day_col": {
+                    "type": "string",
+                    "title": "Study Day",
+                    "description": "variable: study day",
+                    "default": "DY",
+                    "data-mapping": true,
+                    "data-type": "numeric",
+                    "required": false
+                }
+            },
+            "data-mapping": true
         },
         "measure_col": {
             "type": "string",
             "title": "Measure",
-            "description": "measure variable name",
-            "default": "TEST"
+            "description": "variable: measure",
+            "default": "TEST",
+            "data-mapping": true,
+            "data-type": "character",
+            "required": true
         },
         "unit_col": {
             "type": "string",
-            "title": "Unit",
-            "description": "measure unit variable name",
-            "default": "STRESU"
+            "title": "Units",
+            "description": "variable: units of measurement",
+            "default": "STRESU",
+            "data-mapping": true,
+            "data-type": "character",
+            "required": false
         },
         "value_col": {
             "type": "string",
             "title": "Result",
-            "description": "result variable name",
-            "default": "STRESN"
+            "description": "variable: result",
+            "default": "STRESN",
+            "data-mapping": true,
+            "data-type": "numeric",
+            "required": true
         },
         "normal_col_low": {
             "type": "string",
             "title": "Lower Limit of Normal",
-            "description": "LLN variable name",
-            "default": "STNRLO"
+            "description": "variable: lower limit of normal",
+            "default": "STNRLO",
+            "data-mapping": true,
+            "data-type": "numeric",
+            "required": false
         },
         "normal_col_high": {
             "type": "string",
             "title": "Upper Limit of Normal",
-            "description": "ULN variable name",
-            "default": "STNRHI"
+            "description": "variable: upper limit of normal",
+            "default": "STNRHI",
+            "data-mapping": true,
+            "data-type": "numeric",
+            "required": false
         },
         "start_value": {
             "type": "string",
@@ -130,12 +180,15 @@
                         "title": "Variable label"
                     }
                 }
-            }
+            },
+            "data-mapping": true,
+            "data-type": "either",
+            "required": false
         },
         "details": {
             "type": "array",
             "title": "Participant details",
-            "description": "an array of ID-level variables and associated metadata",
+            "description": "an array of participant-level variables and associated metadata",
             "defaultObject": [
                 {
                     "value_col": "AGE",
@@ -164,7 +217,10 @@
                         "default": "Age"
                     }
                 }
-            }
+            },
+            "data-mapping": true,
+            "data-type": "either",
+            "required": false
         },
         "multiples_sizing": {
             "type": "object",
@@ -231,7 +287,7 @@
             "description": "a regular expression that identifies unscheduled visits",
             "default": "/unscheduled|early termination/i"
         },
-        "unscheduled_visits_values": {
+        "unscheduled_visit_values": {
             "type": "array",
             "title": "Unscheduled Visit List",
             "description": "an array of strings that identify unscheduled visits; overrides unscheduled_visit_pattern",
@@ -273,7 +329,7 @@
                     "type": "string",
                     "title": "Point Outline Color",
                     "description": "the color of the outline of the point",
-                    "default": "rgb(102,194,165)"
+                    "default": "#1f78b4"
                 },
                 "stroke-width": {
                     "type": "number",
@@ -291,7 +347,7 @@
                     "type": "string",
                     "title": "Point Color",
                     "description": "the color of the point",
-                    "default": "rgb(102,194,165)"
+                    "default": "#1f78b4"
                 },
                 "radius": {
                     "type": "number",
@@ -303,9 +359,40 @@
                     "type": "number",
                     "title": "Point Opacity",
                     "description": "the opacity of the point",
-                    "default": 1
+                    "default": 0.2
                 }
             }
+        },
+        "custom_marks": {
+            "type": "array",
+            "title": "Custom Marks",
+            "description": "an array of Webcharts mark definitions",
+            "items": {
+                "type": "object",
+                "properties": {
+                }
+            }
+        },
+        "tooltip_cols": {
+            "type": "array",
+            "title": "Tooltip Variables",
+            "description": "an array of tooltip variables and associated metadata",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "value_col": {
+                        "type": "string",
+                        "title": "Variable name"
+                    },
+                    "label": {
+                        "type": "string",
+                        "title": "Variable label"
+                    }
+                }
+            },
+            "data-mapping": true,
+            "data-type": "either",
+            "required": false
         }
     }
 }

@@ -1,4 +1,4 @@
-# Saftey Outlier Explorer
+# Safety Outlier Explorer
 ![alt tag](https://user-images.githubusercontent.com/31038805/32173925-d40b050a-bd56-11e7-8750-1bc631296376.gif)
 
 ## Overview 
