@@ -1,6 +1,13 @@
 export default function syncSettings(settings) {
     const time_col = settings.time_cols[0];
 
+    //handle a string arguments to array settings
+    const array_settings = ['filters', 'details', 'tooltip_cols'];
+    array_settings.forEach(function(s) {
+        if (!(settings[s] instanceof Array))
+            settings[s] = typeof settings[s] === 'string' ? [settings[s]] : [];
+    });
+
     //x-axis
     settings.x.column = time_col.value_col;
     settings.x.type = time_col.type;
@@ -72,14 +79,6 @@ export default function syncSettings(settings) {
             );
         settings.unscheduled_visit_regex = new RegExp(pattern, flags);
     }
-
-    //handle a string argument to filters
-    if (!(settings.filters instanceof Array))
-        settings.filters = typeof settings.filters === 'string' ? [settings.filters] : [];
-
-    //handle a string argument to details
-    if (!(settings.details instanceof Array))
-        settings.details = typeof settings.details === 'string' ? [settings.details] : [];
 
     //Define default details.
     let defaultDetails = [{ value_col: settings.id_col, label: 'Participant ID' }];
