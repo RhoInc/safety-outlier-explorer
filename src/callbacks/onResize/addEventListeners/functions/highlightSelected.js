@@ -1,12 +1,10 @@
 export default function highlightSelected() {
     //Add _selected_ class to participant's marks.
     this.marks.forEach(mark => {
-        mark.groups.classed(
-            'selected',
-            d =>
-                mark.type === 'line'
-                    ? d.values[0].values.raw[0][this.config.id_col] === this.selected_id
-                    : d.values.raw[0][this.config.id_col] === this.selected_id
+        mark.groups.classed('selected', d =>
+            mark.type === 'line'
+                ? d.values[0].values.raw[0][this.config.id_col] === this.selected_id
+                : d.values.raw[0][this.config.id_col] === this.selected_id
         );
     });
 

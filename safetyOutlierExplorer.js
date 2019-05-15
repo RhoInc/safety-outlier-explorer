@@ -2,9 +2,9 @@
     typeof exports === 'object' && typeof module !== 'undefined'
         ? (module.exports = factory(require('d3'), require('webcharts')))
         : typeof define === 'function' && define.amd
-          ? define(['d3', 'webcharts'], factory)
-          : ((global = global || self),
-            (global.safetyOutlierExplorer = factory(global.d3, global.webCharts)));
+        ? define(['d3', 'webcharts'], factory)
+        : ((global = global || self),
+          (global.safetyOutlierExplorer = factory(global.d3, global.webCharts)));
 })(this, function(d3, webcharts) {
     'use strict';
 
@@ -319,7 +319,7 @@
             settings.x.column +
             ']';
 
-        //Conadd custom tooltip values
+        //add custom tooltip values
         if (settings.tooltip_cols) {
             settings.tooltip_cols.forEach(function(tooltip) {
                 var obj =
@@ -367,6 +367,69 @@
                     '$1'
                 );
             settings.unscheduled_visit_regex = new RegExp(pattern, flags);
+        }
+
+        //handle a string argument to filters
+        if (!(settings.filters instanceof Array))
+            settings.filters = typeof settings.filters === 'string' ? [settings.filters] : [];
+
+        //handle a string argument to details
+        if (!(settings.details instanceof Array))
+            settings.details = typeof settings.details === 'string' ? [settings.details] : [];
+
+        //Define default details.
+        var defaultDetails = [{ value_col: settings.id_col, label: 'Participant ID' }];
+        if (Array.isArray(settings.filters))
+            settings.filters
+                .filter(function(filter) {
+                    return filter.value_col !== settings.id_col;
+                })
+                .forEach(function(filter) {
+                    return defaultDetails.push({
+                        value_col: filter.value_col ? filter.value_col : filter,
+                        label: filter.label
+                            ? filter.label
+                            : filter.value_col
+                            ? filter.value_col
+                            : filter
+                    });
+                });
+        defaultDetails.push({ value_col: settings.value_col, label: 'Result' });
+        if (settings.normal_col_low)
+            defaultDetails.push({
+                value_col: settings.normal_col_low,
+                label: 'Lower Limit of Normal'
+            });
+        if (settings.normal_col_high)
+            defaultDetails.push({
+                value_col: settings.normal_col_high,
+                label: 'Upper Limit of Normal'
+            });
+
+        //If [settings.details] is not specified:
+        if (!settings.details) settings.details = defaultDetails;
+        else {
+            //If [settings.details] is specified:
+            //Allow user to specify an array of columns or an array of objects with a column property
+            //and optionally a column label.
+            settings.details.forEach(function(detail) {
+                if (
+                    defaultDetails
+                        .map(function(d) {
+                            return d.value_col;
+                        })
+                        .indexOf(detail.value_col ? detail.value_col : detail) === -1
+                )
+                    defaultDetails.push({
+                        value_col: detail.value_col ? detail.value_col : detail,
+                        label: detail.label
+                            ? detail.label
+                            : detail.value_col
+                            ? detail.value_col
+                            : detail
+                    });
+            });
+            settings.details = defaultDetails;
         }
 
         return settings;
@@ -730,9 +793,9 @@
                             return time_settings.order.indexOf(visit) < 0;
                         })
                     );
-                } else
-                    //Otherwise use data-driven visit order.
-                    time_settings.order = visitOrder;
+                }
+                //Otherwise use data-driven visit order.
+                else time_settings.order = visitOrder;
 
                 //Define domain.
                 time_settings.domain = time_settings.order;
@@ -1069,20 +1132,20 @@
                       (this.removedRecords.nonNumeric > 1 ? 's' : '') +
                       ' with a non-numeric result were removed.'
                     : this.removedRecords.missing > 0
-                      ? this.removedRecords.missing +
-                        ' record' +
-                        (this.removedRecords.missing > 1 ? 's' : '') +
-                        ' with a missing result ' +
-                        (this.removedRecords.missing > 1 ? 'were' : 'was') +
-                        ' removed.'
-                      : this.removedRecords.nonNumeric > 0
-                        ? this.removedRecords.nonNumeric +
-                          ' record' +
-                          (this.removedRecords.nonNumeric > 1 ? 's' : '') +
-                          ' with a non-numeric result ' +
-                          (this.removedRecords.nonNumeric > 1 ? 'were' : 'was') +
-                          ' removed.'
-                        : '';
+                    ? this.removedRecords.missing +
+                      ' record' +
+                      (this.removedRecords.missing > 1 ? 's' : '') +
+                      ' with a missing result ' +
+                      (this.removedRecords.missing > 1 ? 'were' : 'was') +
+                      ' removed.'
+                    : this.removedRecords.nonNumeric > 0
+                    ? this.removedRecords.nonNumeric +
+                      ' record' +
+                      (this.removedRecords.nonNumeric > 1 ? 's' : '') +
+                      ' with a non-numeric result ' +
+                      (this.removedRecords.nonNumeric > 1 ? 'were' : 'was') +
+                      ' removed.'
+                    : '';
             this.removedRecords.container = this.controls.wrap
                 .append('div')
                 .style({
@@ -1254,8 +1317,8 @@
             this.measure.range > 0
                 ? Math.abs(this.measure.range / 15) // non-zero range
                 : this.measure.results[0] !== 0
-                  ? Math.abs(this.measure.results[0] / 15) // zero range, non-zero result(s)
-                  : 1; // zero range, zero result(s)
+                ? Math.abs(this.measure.results[0] / 15) // zero range, non-zero result(s)
+                : 1; // zero range, zero result(s)
         if (step < 1) {
             var x10 = 0;
             do {
@@ -1783,7 +1846,9 @@
                 var value_col = detail.value_col ? detail.value_col : detail;
                 var label = detail.label
                     ? detail.label
-                    : detail.value_col ? detail.value_col : detail;
+                    : detail.value_col
+                    ? detail.value_col
+                    : detail;
                 var tuple = [label, participantDatum[value_col]];
 
                 if (tuple[1] !== undefined)
