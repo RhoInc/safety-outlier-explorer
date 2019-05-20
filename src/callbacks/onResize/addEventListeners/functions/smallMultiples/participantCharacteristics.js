@@ -18,7 +18,9 @@ export default function participantCharacteristics() {
             const value_col = detail.value_col ? detail.value_col : detail;
             const label = detail.label
                 ? detail.label
-                : detail.value_col ? detail.value_col : detail;
+                : detail.value_col
+                ? detail.value_col
+                : detail;
             const tuple = [label, participantDatum[value_col]];
 
             if (tuple[1] !== undefined)

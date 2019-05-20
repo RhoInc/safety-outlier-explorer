@@ -17,16 +17,13 @@ export default function hideNormalRangeInputs() {
                     'normal_range_quantile_high'
                 ].indexOf(d.option) > -1
         )
-        .style(
-            'display',
-            d =>
-                (this.config.normal_range_method !== 'Standard Deviation' &&
-                    d.option === 'normal_range_sd') ||
-                (this.config.normal_range_method !== 'Quantiles' &&
-                    ['normal_range_quantile_low', 'normal_range_quantile_high'].indexOf(d.option) >
-                        -1)
-                    ? 'none'
-                    : 'inline-table'
+        .style('display', d =>
+            (this.config.normal_range_method !== 'Standard Deviation' &&
+                d.option === 'normal_range_sd') ||
+            (this.config.normal_range_method !== 'Quantiles' &&
+                ['normal_range_quantile_low', 'normal_range_quantile_high'].indexOf(d.option) > -1)
+                ? 'none'
+                : 'inline-table'
         );
 
     //Set significant digits to .01.
@@ -37,15 +34,12 @@ export default function hideNormalRangeInputs() {
             .select('option:checked')
             .text();
 
-        normalRangeInputs.style(
-            'display',
-            d =>
-                (normal_range_method !== 'Standard Deviation' && d.option === 'normal_range_sd') ||
-                (normal_range_method !== 'Quantiles' &&
-                    ['normal_range_quantile_low', 'normal_range_quantile_high'].indexOf(d.option) >
-                        -1)
-                    ? 'none'
-                    : 'inline-table'
+        normalRangeInputs.style('display', d =>
+            (normal_range_method !== 'Standard Deviation' && d.option === 'normal_range_sd') ||
+            (normal_range_method !== 'Quantiles' &&
+                ['normal_range_quantile_low', 'normal_range_quantile_high'].indexOf(d.option) > -1)
+                ? 'none'
+                : 'inline-table'
         );
     });
 }

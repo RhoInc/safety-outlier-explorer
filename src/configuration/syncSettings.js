@@ -1,6 +1,13 @@
 export default function syncSettings(settings) {
     const time_col = settings.time_cols[0];
 
+    //handle a string arguments to array settings
+    const array_settings = ['filters', 'details', 'tooltip_cols'];
+    array_settings.forEach(function(s) {
+        if (!(settings[s] instanceof Array))
+            settings[s] = typeof settings[s] === 'string' ? [settings[s]] : [];
+    });
+
     //x-axis
     settings.x.column = time_col.value_col;
     settings.x.type = time_col.type;
@@ -24,7 +31,7 @@ export default function syncSettings(settings) {
         settings.value_col
     }] [${settings.unit_col}]\n${settings.x.label} = [${settings.x.column}]`;
 
-    //Conadd custom tooltip values
+    //add custom tooltip values
     if (settings.tooltip_cols) {
         settings.tooltip_cols.forEach(function(tooltip) {
             var obj = typeof tooltip == 'string' ? { label: tooltip, value_col: tooltip } : tooltip;

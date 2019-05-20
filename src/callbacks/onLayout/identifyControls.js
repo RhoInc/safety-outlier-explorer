@@ -6,9 +6,11 @@ export default function identifyControls() {
         .selectAll('.control-group');
 
     //Give each control a unique ID.
-    controlGroups.attr('id', d => d.label.toLowerCase().replace(' ', '-')).each(function(d) {
-        select(this).classed(d.type, true);
-    });
+    controlGroups
+        .attr('id', d => d.label.toLowerCase().replace(' ', '-'))
+        .each(function(d) {
+            select(this).classed(d.type, true);
+        });
 
     //Give y-axis controls a common class name.
     controlGroups
