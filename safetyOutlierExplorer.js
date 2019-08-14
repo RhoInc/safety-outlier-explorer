@@ -1151,7 +1151,6 @@
                 .append('div')
                 .classed('multiples', true)
                 .style({
-                    'border-top': '1px solid #ccc',
                     'padding-top': '10px'
                 }),
             id: null
@@ -1528,7 +1527,7 @@
             .select('circle')
             .attr({
                 r: function r(d) {
-                    return d.radius * 1.5;
+                    return d.radius;
                 },
                 stroke: 'black',
                 'stroke-width': function strokeWidth(d) {
@@ -1622,6 +1621,7 @@
     function addOverlayEventListener() {
         var _this = this;
 
+        var context = this;
         this.overlay
             .on('mouseover', function() {
                 clearHovered.call(_this);
@@ -1629,6 +1629,7 @@
             .on('click', function() {
                 clearHovered.call(_this);
                 clearSelected.call(_this);
+                context.wrap.select('div.overlapNote').remove();
             });
     }
 
@@ -1666,36 +1667,12 @@
             .select('circle')
             .attr({
                 r: function r(d) {
-                    return d.radius * 1.25;
+                    return d.radius;
                 },
                 stroke: 'black',
                 'stroke-width': function strokeWidth(d) {
                     return d.attributes['stroke-width'] * 4;
                 }
-            });
-    }
-
-    function reorderMarks() {
-        var _this = this;
-
-        //Move selected line behind all other lines.
-        this.lines
-            .each(function(d, i) {
-                if (d.key.indexOf(_this.selected_id) === 0) d.order = _this.IDOrder.length - 1;
-                else if (d.order > _this.selected_id_order) d.order = d.order - 1;
-            })
-            .sort(function(a, b) {
-                return b.order - a.order;
-            });
-
-        //Move selected points behind all other points.
-        this.points
-            .each(function(d, i) {
-                if (d.key.indexOf(_this.selected_id) === 0) d.order = _this.IDOrder.length - 1;
-                else if (d.order > _this.selected_id_order) d.order = d.order - 1;
-            })
-            .sort(function(a, b) {
-                return b.order - a.order;
             });
     }
 
@@ -2039,7 +2016,7 @@
                 context.selected_id = context.multiples.id;
                 highlightSelected.call(context);
                 smallMultiples.call(context);
-                chart.wrap.select('div.overlapNote').remove();
+                context.wrap.select('div.overlapNote').remove();
 
                 //Trigger participantsSelected event
                 context.participantsSelected = [context.selected_id];
@@ -2090,11 +2067,7 @@
                 clearHovered.call(_this);
                 clearSelected.call(_this);
                 _this.selected_id = d.values[0].values.raw[0][_this.config.id_col];
-                _this.selected_id_order = _this.IDOrder.find(function(di) {
-                    return di.ID === _this.selected_id;
-                }).order;
                 highlightSelected.call(_this);
-                reorderMarks.call(_this);
                 smallMultiples.call(_this);
 
                 //Trigger participantsSelected event
@@ -2105,7 +2078,31 @@
     }
 
     function checkOverlap(d, chart) {
-        console.log(chart);
+        function showID(d) {
+            //click an overlapping ID to see details for that participant
+            var participantDropdown = chart.multiples.controls.wrap
+                .style('margin', 0)
+                .selectAll('.control-group')
+                .filter(function(d) {
+                    return d.option === 'selected_id';
+                })
+                .select('select')
+                .property('value', d);
+
+            //participantDropdown.on("change")() // Can't quite get this to work, so copy/pasting for now ...
+
+            var context = chart;
+            chart.multiples.id = d;
+            clearSelected.call(context);
+            context.selected_id = context.multiples.id;
+            highlightSelected.call(context);
+            smallMultiples.call(context);
+
+            //Trigger participantsSelected event
+            context.participantsSelected = [context.selected_id];
+            context.events.participantsSelected.data = context.participantsSelected;
+            context.wrap.node().dispatchEvent(context.events.participantsSelected);
+        }
 
         chart.wrap.select('div.overlapNote').remove();
 
@@ -2150,14 +2147,13 @@
                 return d.values.raw[0][chart.config.id_col];
             });
 
-        console.log(chart.overlap_ids);
         // If there are overlapping points, add a note in the details section.
         if (chart.overlap_ids.length) {
             var overlap_div = chart.wrap
                 .insert('div', 'div.multiples')
                 .attr('class', 'overlapNote')
-                .style('background-color', '#999')
-                .style('border', '1px solid #555')
+                .style('background-color', '#eee')
+                .style('border', '1px solid #999')
                 .style('padding', '0.5em')
                 .style('border-radius', '0.2em')
                 .style('margin', '0 0.1em');
@@ -2167,8 +2163,17 @@
                 .html(
                     '<strong>Note</strong>: ' +
                         chart.overlap_ids.length +
-                        ' points overlap with the clicked point. Click an ID for details: '
+                        ' points overlap the clicked point for <span class="idLink">' +
+                        click_id +
+                        '</span>. Click an ID for details: '
                 );
+            overlap_div
+                .select('span.idLink')
+                .datum(click_id)
+                .style('color', 'blue')
+                .style('text-decoration', 'underline')
+                .style('cursor', 'pointer')
+                .on('click', showID);
             var overlap_ul = overlap_div
                 .append('ul')
                 .style('list-style', 'none')
@@ -2181,37 +2186,21 @@
                 .append('li')
                 .style('display', 'inline-block')
                 .style('padding-right', '.5em')
+                .attr('class', 'idLink')
                 .style('color', 'blue')
                 .style('text-decoration', 'underline')
                 .style('cursor', 'pointer')
                 .text(function(d) {
                     return d;
                 })
-                .on('click', function(d) {
-                    //click an overlapping ID to see details for that participant
-                    console.log('changing to participant:', d);
-                    var participantDropdown = chart.multiples.controls.wrap
-                        .style('margin', 0)
-                        .selectAll('.control-group')
-                        .filter(function(d) {
-                            return d.option === 'selected_id';
-                        })
-                        .select('select')
-                        .property('value', d);
-
-                    //participantDropdown.on("change")() // Can't quite get this to work, so copy/pasting for now ...
-
-                    var context = chart;
-                    chart.multiples.id = d;
-                    clearSelected.call(context);
-                    context.selected_id = context.multiples.id;
-                    highlightSelected.call(context);
-                    smallMultiples.call(context);
-
-                    //Trigger participantsSelected event
-                    context.participantsSelected = [context.selected_id];
-                    context.events.participantsSelected.data = context.participantsSelected;
-                    context.wrap.node().dispatchEvent(context.events.participantsSelected);
+                .on('click', showID)
+                .on('mouseover', function(d) {
+                    clearHovered.call(chart);
+                    chart.hovered_id = d;
+                    if (chart.hovered_id !== chart.selected_id) highlightHovered.call(chart);
+                })
+                .on('mouseout', function(d) {
+                    clearHovered.call(chart);
                 });
         }
     }
@@ -2233,11 +2222,7 @@
                 clearHovered.call(chart);
                 clearSelected.call(chart);
                 chart.selected_id = d.values.raw[0][chart.config.id_col];
-                chart.selected_id_order = chart.IDOrder.find(function(di) {
-                    return di.ID === chart.selected_id;
-                }).order;
                 highlightSelected.call(chart);
-                reorderMarks.call(chart);
                 smallMultiples.call(chart);
 
                 //Trigger participantsSelected event

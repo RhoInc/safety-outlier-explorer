@@ -2,7 +2,6 @@ import clearHovered from './functions/clearHovered';
 import highlightHovered from './functions/highlightHovered';
 import clearSelected from './functions/clearSelected';
 import highlightSelected from './functions/highlightSelected';
-import reorderMarks from './functions/reorderMarks';
 import smallMultiples from './functions/smallMultiples';
 import checkOverlap from './functions/checkOverlap';
 export default function addPointEventListeners() {
@@ -20,9 +19,7 @@ export default function addPointEventListeners() {
             clearHovered.call(chart);
             clearSelected.call(chart);
             chart.selected_id = d.values.raw[0][chart.config.id_col];
-            chart.selected_id_order = chart.IDOrder.find(di => di.ID === chart.selected_id).order;
             highlightSelected.call(chart);
-            reorderMarks.call(chart);
             smallMultiples.call(chart);
 
             //Trigger participantsSelected event
