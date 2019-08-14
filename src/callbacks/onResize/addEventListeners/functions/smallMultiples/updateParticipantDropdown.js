@@ -27,6 +27,7 @@ export default function updateParticipantDropdown() {
             context.selected_id = context.multiples.id;
             highlightSelected.call(context);
             smallMultiples.call(context);
+            chart.wrap.select('div.overlapNote').remove();
 
             //Trigger participantsSelected event
             context.participantsSelected = [context.selected_id];
