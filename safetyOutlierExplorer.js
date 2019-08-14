@@ -1564,22 +1564,6 @@
         }
     }
 
-    function orderPoints() {
-        var _this = this;
-
-        this.marks
-            .filter(function(mark) {
-                return mark.type === 'circle';
-            })
-            .forEach(function(mark) {
-                mark.groups.each(function(d, i) {
-                    d.order = _this.IDOrder.find(function(di) {
-                        return d.key.indexOf(di.ID) === 0;
-                    }).order;
-                });
-            });
-    }
-
     function clearHovered() {
         this.lines
             .filter(function() {
@@ -2392,9 +2376,6 @@
 
         //Draw normal range.
         drawNormalRange.call(this);
-
-        //Add initial ordering to points; ordering will update as points are clicked.
-        orderPoints.call(this);
 
         //Add event listeners to lines, points, and overlay.
         addEventListeners.call(this);
