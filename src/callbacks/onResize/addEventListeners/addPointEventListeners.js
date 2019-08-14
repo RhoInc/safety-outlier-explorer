@@ -4,8 +4,9 @@ import clearSelected from './functions/clearSelected';
 import highlightSelected from './functions/highlightSelected';
 import reorderMarks from './functions/reorderMarks';
 import smallMultiples from './functions/smallMultiples';
-
+import checkOverlap from './functions/checkOverlap';
 export default function addPointEventListeners() {
+    var chart = this;
     this.points
         .on('mouseover', d => {
             clearHovered.call(this);
@@ -15,18 +16,21 @@ export default function addPointEventListeners() {
         .on('mouseout', d => {
             clearHovered.call(this);
         })
-        .on('click', d => {
-            clearHovered.call(this);
-            clearSelected.call(this);
-            this.selected_id = d.values.raw[0][this.config.id_col];
-            this.selected_id_order = this.IDOrder.find(di => di.ID === this.selected_id).order;
-            highlightSelected.call(this);
-            reorderMarks.call(this);
-            smallMultiples.call(this);
+        .on('click', function(d) {
+            clearHovered.call(chart);
+            clearSelected.call(chart);
+            chart.selected_id = d.values.raw[0][chart.config.id_col];
+            chart.selected_id_order = chart.IDOrder.find(di => di.ID === chart.selected_id).order;
+            highlightSelected.call(chart);
+            reorderMarks.call(chart);
+            smallMultiples.call(chart);
 
             //Trigger participantsSelected event
-            this.participantsSelected = [this.selected_id];
-            this.events.participantsSelected.data = this.participantsSelected;
-            this.wrap.node().dispatchEvent(this.events.participantsSelected);
+            chart.participantsSelected = [chart.selected_id];
+            chart.events.participantsSelected.data = chart.participantsSelected;
+            chart.wrap.node().dispatchEvent(chart.events.participantsSelected);
+
+            //check for overlapping points
+            checkOverlap.call(this, d, chart);
         });
 }
