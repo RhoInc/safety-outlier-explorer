@@ -3,6 +3,7 @@ import cleanData from './onInit/cleanData';
 import addVariables from './onInit/addVariables';
 import defineSets from './onInit/defineSets';
 import checkControls from './onInit/checkControls';
+import initCustomEvents from './onInit/initCustomEvents';
 
 export default function onInit() {
     // 1. Count number of unique participant IDs in data prior to data cleaning.
@@ -19,4 +20,7 @@ export default function onInit() {
 
     // 5. Check controls.
     checkControls.call(this);
+
+    // 6. Initialize custom events
+    initCustomEvents.call(this);
 }

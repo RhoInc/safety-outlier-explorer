@@ -859,6 +859,12 @@
         updateNormalRangeControl.call(this);
     }
 
+    function initCustomEvents() {
+        var chart = this;
+        chart.participantsSelected = [];
+        chart.events.participantsSelected = new CustomEvent('participantsSelected');
+    }
+
     function onInit() {
         // 1. Count number of unique participant IDs in data prior to data cleaning.
         countParticipants.call(this);
@@ -874,6 +880,9 @@
 
         // 5. Check controls.
         checkControls.call(this);
+
+        // 6. Initialize custom events
+        initCustomEvents.call(this);
     }
 
     function identifyControls() {
@@ -1587,6 +1596,11 @@
         });
         if (this.multiples.chart) this.multiples.chart.destroy();
         delete this.selected_id;
+
+        //Trigger participantsSelected event
+        this.participantsSelected = [];
+        this.events.participantsSelected.data = this.participantsSelected;
+        this.wrap.node().dispatchEvent(this.events.participantsSelected);
     }
 
     function addOverlayEventListener() {
@@ -2009,6 +2023,11 @@
                 context.selected_id = context.multiples.id;
                 highlightSelected.call(context);
                 smallMultiples.call(context);
+
+                //Trigger participantsSelected event
+                context.participantsSelected = [context.selected_id];
+                context.events.participantsSelected.data = context.participantsSelected;
+                context.wrap.node().dispatchEvent(context.events.participantsSelected);
             });
     }
 
@@ -2060,6 +2079,11 @@
                 highlightSelected.call(_this);
                 reorderMarks.call(_this);
                 smallMultiples.call(_this);
+
+                //Trigger participantsSelected event
+                _this.participantsSelected = [_this.selected_id];
+                _this.events.participantsSelected.data = _this.participantsSelected;
+                _this.wrap.node().dispatchEvent(_this.events.participantsSelected);
             });
     }
 
@@ -2085,6 +2109,11 @@
                 highlightSelected.call(_this);
                 reorderMarks.call(_this);
                 smallMultiples.call(_this);
+
+                //Trigger participantsSelected event
+                _this.participantsSelected = [_this.selected_id];
+                _this.events.participantsSelected.data = _this.participantsSelected;
+                _this.wrap.node().dispatchEvent(_this.events.participantsSelected);
             });
     }
 

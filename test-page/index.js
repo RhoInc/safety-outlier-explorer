@@ -44,5 +44,11 @@ d3.csv(
             settings
         );
         instance.init(data);
+
+        //quick test of participantSelected event
+        instance.wrap.on("participantsSelected",function(){
+          console.log("Participant Selected Event:")
+          console.log(d3.event.data)
+        })
     }
 );

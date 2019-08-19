@@ -23,5 +23,10 @@ export default function addPointEventListeners() {
             highlightSelected.call(this);
             reorderMarks.call(this);
             smallMultiples.call(this);
+
+            //Trigger participantsSelected event
+            this.participantsSelected = [this.selected_id];
+            this.events.participantsSelected.data = this.participantsSelected;
+            this.wrap.node().dispatchEvent(this.events.participantsSelected);
         });
 }
