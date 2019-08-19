@@ -19,7 +19,7 @@ export default function highlightSelected() {
         .filter(d => d.values.raw[0][this.config.id_col] === this.selected_id)
         .select('circle')
         .attr({
-            r: d => d.radius * 1.5,
+            r: d => d.radius,
             stroke: 'black',
             'stroke-width': d => d.attributes['stroke-width'] * 8
         });

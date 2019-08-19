@@ -2,7 +2,6 @@ import clearHovered from './functions/clearHovered';
 import highlightHovered from './functions/highlightHovered';
 import clearSelected from './functions/clearSelected';
 import highlightSelected from './functions/highlightSelected';
-import reorderMarks from './functions/reorderMarks';
 import smallMultiples from './functions/smallMultiples';
 
 export default function addLineEventListeners() {
@@ -19,9 +18,7 @@ export default function addLineEventListeners() {
             clearHovered.call(this);
             clearSelected.call(this);
             this.selected_id = d.values[0].values.raw[0][this.config.id_col];
-            this.selected_id_order = this.IDOrder.find(di => di.ID === this.selected_id).order;
             highlightSelected.call(this);
-            reorderMarks.call(this);
             smallMultiples.call(this);
 
             //Trigger participantsSelected event
