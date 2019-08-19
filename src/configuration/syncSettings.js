@@ -27,9 +27,7 @@ export default function syncSettings(settings) {
     //points
     const points = settings.marks.find(mark => mark.type === 'circle');
     points.per = [settings.id_col, settings.measure_col, time_col.value_col, settings.value_col];
-    points.tooltip = `Participant = [${settings.id_col}]\n[${settings.measure_col}] = [${
-        settings.value_col
-    }] [${settings.unit_col}]\n${settings.x.label} = [${settings.x.column}]`;
+    points.tooltip = `Participant = [${settings.id_col}]\n[${settings.measure_col}] = [${settings.value_col}] [${settings.unit_col}]\n${settings.x.label} = [${settings.x.column}]`;
 
     //add custom tooltip values
     if (settings.tooltip_cols) {

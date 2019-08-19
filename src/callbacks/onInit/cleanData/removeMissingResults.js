@@ -29,9 +29,7 @@ export default function removeMissingResults() {
         .map(d => d.key);
     if (this.removedRecords.placeholderRecords.length)
         console.log(
-            `${
-                this.removedRecords.placeholderRecords.length
-            } participants without results have been detected.`
+            `${this.removedRecords.placeholderRecords.length} participants without results have been detected.`
         );
 
     //Count the number of records with missing results.

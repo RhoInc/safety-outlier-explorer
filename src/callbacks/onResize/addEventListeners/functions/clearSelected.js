@@ -8,4 +8,9 @@ export default function clearSelected() {
     });
     if (this.multiples.chart) this.multiples.chart.destroy();
     delete this.selected_id;
+
+    //Trigger participantsSelected event
+    this.participantsSelected = [];
+    this.events.participantsSelected.data = this.participantsSelected;
+    this.wrap.node().dispatchEvent(this.events.participantsSelected);
 }

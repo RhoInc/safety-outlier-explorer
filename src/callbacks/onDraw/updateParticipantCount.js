@@ -14,8 +14,6 @@ export default function updateParticipantCount() {
 
     //update the annotation
     this.participantCount.container.text(
-        `\n${this.participantCount.n} of ${this.participantCount.N} participant(s) shown (${
-            this.participantCount.percentage
-        })`
+        `\n${this.participantCount.n} of ${this.participantCount.N} participant(s) shown (${this.participantCount.percentage})`
     );
 }
