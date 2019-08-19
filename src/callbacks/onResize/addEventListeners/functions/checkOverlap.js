@@ -87,7 +87,9 @@ export default function checkOverlap(d, chart) {
             .html(
                 '<strong>Note</strong>: ' +
                     chart.overlap_ids.length +
-                    ' points overlap the clicked point for <span class="idLink">' +
+                    ` point${chart.overlap_ids.length === 1 ? '' : 's'} overlap${
+                        chart.overlap_ids.length === 1 ? 's' : ''
+                    } the clicked point for <span class="idLink">` +
                     click_id +
                     '</span>. Click an ID for details: '
             );
