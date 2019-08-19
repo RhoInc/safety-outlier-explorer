@@ -97,7 +97,15 @@ export default function checkOverlap(d, chart) {
             .style('color', 'blue')
             .style('text-decoration', 'underline')
             .style('cursor', 'pointer')
-            .on('click', showID);
+            .on('click', showID)
+            .on('mouseover', d => {
+                clearHovered.call(chart);
+                chart.hovered_id = d;
+                if (chart.hovered_id !== chart.selected_id) highlightHovered.call(chart);
+            })
+            .on('mouseout', d => {
+                clearHovered.call(chart);
+            });
         const overlap_ul = overlap_div
             .append('ul')
             .style('list-style', 'none')

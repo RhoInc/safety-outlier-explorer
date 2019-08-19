@@ -1450,6 +1450,7 @@
 
     function resetChart() {
         this.svg.selectAll('.line,.point').remove();
+        this.wrap.select('div.overlapNote').remove();
         //delete this.hovered_id;
         //delete this.selected_id;
         //if (this.multiples.chart)
@@ -2157,7 +2158,15 @@
                 .style('color', 'blue')
                 .style('text-decoration', 'underline')
                 .style('cursor', 'pointer')
-                .on('click', showID);
+                .on('click', showID)
+                .on('mouseover', function(d) {
+                    clearHovered.call(chart);
+                    chart.hovered_id = d;
+                    if (chart.hovered_id !== chart.selected_id) highlightHovered.call(chart);
+                })
+                .on('mouseout', function(d) {
+                    clearHovered.call(chart);
+                });
             var overlap_ul = overlap_div
                 .append('ul')
                 .style('list-style', 'none')
