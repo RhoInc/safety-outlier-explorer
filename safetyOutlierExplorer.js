@@ -2174,6 +2174,7 @@
             var overlap_ul = overlap_div
                 .append('ul')
                 .style('list-style', 'none')
+                .style('padding', '0')
                 .style('display', 'inline-block');
 
             overlap_ul
