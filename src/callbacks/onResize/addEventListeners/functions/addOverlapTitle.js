@@ -11,7 +11,7 @@ export default function addOverlapTitle(d, chart) {
         var currentTitle = titleEl.text();
         var hasOverlapNote = currentTitle.search('overlapping'); //minor hack ...
         if (hasOverlapNote == -1) {
-            var newTitle = currentTitle + '\nNumber of overlapping point(s) ' + overlap.length;
+            var newTitle = currentTitle + '\nNumber of overlapping point(s) = ' + overlap.length;
             titleEl.text(newTitle);
         }
     }
