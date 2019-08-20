@@ -3,14 +3,17 @@ import highlightHovered from './functions/highlightHovered';
 import clearSelected from './functions/clearSelected';
 import highlightSelected from './functions/highlightSelected';
 import smallMultiples from './functions/smallMultiples';
-import checkOverlap from './functions/checkOverlap';
+import addOverlapNote from './functions/addOverlapNote';
+import addOverlapTitle from './functions/addOverlapTitle';
+
 export default function addPointEventListeners() {
     var chart = this;
     this.points
-        .on('mouseover', d => {
-            clearHovered.call(this);
-            this.hovered_id = d.values.raw[0][this.config.id_col];
-            if (this.hovered_id !== this.selected_id) highlightHovered.call(this);
+        .on('mouseover', function(d) {
+            addOverlapTitle.call(this, d, chart);
+            clearHovered.call(chart);
+            chart.hovered_id = d.values.raw[0][chart.config.id_col];
+            if (chart.hovered_id !== chart.selected_id) highlightHovered.call(chart);
         })
         .on('mouseout', d => {
             clearHovered.call(this);
@@ -28,6 +31,6 @@ export default function addPointEventListeners() {
             chart.wrap.node().dispatchEvent(chart.events.participantsSelected);
 
             //check for overlapping points
-            checkOverlap.call(this, d, chart);
+            addOverlapNote.call(this, d, chart);
         });
 }

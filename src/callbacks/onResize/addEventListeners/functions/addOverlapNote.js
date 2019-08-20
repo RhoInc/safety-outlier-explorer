@@ -4,8 +4,9 @@ import highlightSelected from './highlightSelected';
 import smallMultiples from './smallMultiples';
 import clearHovered from './clearHovered';
 import highlightHovered from './highlightHovered';
+import checkPointOverlap from './checkPointOverlap';
 
-export default function checkOverlap(d, chart) {
+export default function addOverlapNote(d, chart) {
     function showID(d) {
         //click an overlapping ID to see details for that participant
         const participantDropdown = chart.multiples.controls.wrap
@@ -32,47 +33,13 @@ export default function checkOverlap(d, chart) {
 
     chart.wrap.select('div.overlapNote').remove();
 
-    // Get the position of the clicked point
-    const click_x = d3
-        .select(this)
-        .select('circle')
-        .attr('cx');
-    const click_y = d3
-        .select(this)
-        .select('circle')
-        .attr('cy');
-    const click_r = d3
-        .select(this)
-        .select('circle')
-        .attr('r');
-    const click_id = d.values.raw[0][chart.config.id_col];
-
-    // See if any other points overlap
-    chart.overlap_ids = chart.points
-        .filter(function(f) {
-            const point_id = f.values.raw[0][chart.config.id_col];
-            const point_x = d3
-                .select(this)
-                .select('circle')
-                .attr('cx');
-            const point_y = d3
-                .select(this)
-                .select('circle')
-                .attr('cy');
-            const distance_x2 = Math.pow(click_x - point_x, 2);
-            const distance_y2 = Math.pow(click_y - point_y, 2);
-            const distance = Math.sqrt(distance_x2 + distance_y2);
-
-            const max_distance = click_r * 2;
-            const overlap = distance <= max_distance;
-            const diff_id = point_id != click_id;
-            return diff_id & overlap;
-        })
-        .data()
-        .map(d => d.values.raw[0][chart.config.id_col]);
+    // check for overlapping points
+    chart.overlap_ids = checkPointOverlap.call(this, d, chart);
 
     // If there are overlapping points, add a note in the details section.
+
     if (chart.overlap_ids.length) {
+        const click_id = d.values.raw[0][chart.config.id_col];
         const overlap_div = chart.wrap
             .insert('div', 'div.multiples')
             .attr('class', 'overlapNote')

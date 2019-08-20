@@ -2062,7 +2062,52 @@
             });
     }
 
-    function checkOverlap(d, chart) {
+    function checkPointOverlap(d, chart) {
+        // Get the position of the clicked point
+        var click_x = d3
+            .select(this)
+            .select('circle')
+            .attr('cx');
+        var click_y = d3
+            .select(this)
+            .select('circle')
+            .attr('cy');
+        var click_r = d3
+            .select(this)
+            .select('circle')
+            .attr('r');
+        var click_id = d.values.raw[0][chart.config.id_col];
+
+        // See if any other points overlap
+        var overlap_ids = chart.points
+            .filter(function(f) {
+                var point_id = f.values.raw[0][chart.config.id_col];
+                var point_x = d3
+                    .select(this)
+                    .select('circle')
+                    .attr('cx');
+                var point_y = d3
+                    .select(this)
+                    .select('circle')
+                    .attr('cy');
+                var distance_x2 = Math.pow(click_x - point_x, 2);
+                var distance_y2 = Math.pow(click_y - point_y, 2);
+                var distance = Math.sqrt(distance_x2 + distance_y2);
+
+                var max_distance = click_r * 2;
+                var overlap = distance <= max_distance;
+                var diff_id = point_id != click_id;
+                return diff_id & overlap;
+            })
+            .data()
+            .map(function(d) {
+                return d.values.raw[0][chart.config.id_col];
+            });
+
+        return overlap_ids;
+    }
+
+    function addOverlapNote(d, chart) {
         function showID(d) {
             //click an overlapping ID to see details for that participant
             var participantDropdown = chart.multiples.controls.wrap
@@ -2091,49 +2136,13 @@
 
         chart.wrap.select('div.overlapNote').remove();
 
-        // Get the position of the clicked point
-        var click_x = d3
-            .select(this)
-            .select('circle')
-            .attr('cx');
-        var click_y = d3
-            .select(this)
-            .select('circle')
-            .attr('cy');
-        var click_r = d3
-            .select(this)
-            .select('circle')
-            .attr('r');
-        var click_id = d.values.raw[0][chart.config.id_col];
-
-        // See if any other points overlap
-        chart.overlap_ids = chart.points
-            .filter(function(f) {
-                var point_id = f.values.raw[0][chart.config.id_col];
-                var point_x = d3
-                    .select(this)
-                    .select('circle')
-                    .attr('cx');
-                var point_y = d3
-                    .select(this)
-                    .select('circle')
-                    .attr('cy');
-                var distance_x2 = Math.pow(click_x - point_x, 2);
-                var distance_y2 = Math.pow(click_y - point_y, 2);
-                var distance = Math.sqrt(distance_x2 + distance_y2);
-
-                var max_distance = click_r * 2;
-                var overlap = distance <= max_distance;
-                var diff_id = point_id != click_id;
-                return diff_id & overlap;
-            })
-            .data()
-            .map(function(d) {
-                return d.values.raw[0][chart.config.id_col];
-            });
+        // check for overlapping points
+        chart.overlap_ids = checkPointOverlap.call(this, d, chart);
 
         // If there are overlapping points, add a note in the details section.
+
         if (chart.overlap_ids.length) {
+            var click_id = d.values.raw[0][chart.config.id_col];
             var overlap_div = chart.wrap
                 .insert('div', 'div.multiples')
                 .attr('class', 'overlapNote')
@@ -2203,15 +2212,34 @@
         }
     }
 
+    function addOverlapTitle(d, chart) {
+        // check for overlapping points
+        var overlap = checkPointOverlap.call(this, d, chart);
+
+        // If there are overlapping points, add a note in the details section.
+
+        if (overlap.length > 0) {
+            var titleEl = d3.select(this).select('title');
+            var currentTitle = titleEl.text();
+            var hasOverlapNote = currentTitle.search('overlapping'); //minor hack ...
+            if (hasOverlapNote == -1) {
+                var newTitle =
+                    currentTitle + '\nNumber of overlapping point(s) = ' + overlap.length;
+                titleEl.text(newTitle);
+            }
+        }
+    }
+
     function addPointEventListeners() {
         var _this = this;
 
         var chart = this;
         this.points
             .on('mouseover', function(d) {
-                clearHovered.call(_this);
-                _this.hovered_id = d.values.raw[0][_this.config.id_col];
-                if (_this.hovered_id !== _this.selected_id) highlightHovered.call(_this);
+                addOverlapTitle.call(this, d, chart);
+                clearHovered.call(chart);
+                chart.hovered_id = d.values.raw[0][chart.config.id_col];
+                if (chart.hovered_id !== chart.selected_id) highlightHovered.call(chart);
             })
             .on('mouseout', function(d) {
                 clearHovered.call(_this);
@@ -2229,7 +2257,7 @@
                 chart.wrap.node().dispatchEvent(chart.events.participantsSelected);
 
                 //check for overlapping points
-                checkOverlap.call(this, d, chart);
+                addOverlapNote.call(this, d, chart);
             });
     }
 
