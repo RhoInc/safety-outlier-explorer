@@ -4,7 +4,6 @@ export default function addSmallMultiplesContainer() {
             .append('div')
             .classed('multiples', true)
             .style({
-                'border-top': '1px solid #ccc',
                 'padding-top': '10px'
             }),
         id: null

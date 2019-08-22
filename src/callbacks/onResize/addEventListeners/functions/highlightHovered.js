@@ -10,7 +10,7 @@ export default function highlightHovered() {
         .filter(d => d.values.raw[0][this.config.id_col] === this.hovered_id)
         .select('circle')
         .attr({
-            r: d => d.radius * 1.25,
+            r: d => d.radius,
             stroke: 'black',
             'stroke-width': d => d.attributes['stroke-width'] * 4
         });
