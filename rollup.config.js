@@ -1,8 +1,8 @@
 import babel from 'rollup-plugin-babel';
 
-var pkg = require('./package.json');
+const pkg = require('./package.json');
 
-module.exports = {
+export default {
     input: pkg.module,
     output: {
         name: pkg.name
@@ -18,11 +18,7 @@ module.exports = {
 			webcharts: 'webCharts'
 		},
     },
-    external: (function() {
-        var dependencies = pkg.dependencies;
-
-        return Object.keys(dependencies);
-    }()),
+    external: Object.keys(pkg.dependencies),
     plugins: [
         babel({
             exclude: 'node_modules/**',
