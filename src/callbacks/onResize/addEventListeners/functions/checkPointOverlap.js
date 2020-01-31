@@ -1,15 +1,14 @@
+import { select } from 'd3';
+
 export default function checkPointOverlap(d, chart) {
     // Get the position of the clicked point
-    const click_x = d3
-        .select(this)
+    const click_x = select(this)
         .select('circle')
         .attr('cx');
-    const click_y = d3
-        .select(this)
+    const click_y = select(this)
         .select('circle')
         .attr('cy');
-    const click_r = d3
-        .select(this)
+    const click_r = select(this)
         .select('circle')
         .attr('r');
     const click_id = d.values.raw[0][chart.config.id_col];
@@ -18,12 +17,10 @@ export default function checkPointOverlap(d, chart) {
     var overlap_ids = chart.points
         .filter(function(f) {
             const point_id = f.values.raw[0][chart.config.id_col];
-            const point_x = d3
-                .select(this)
+            const point_x = select(this)
                 .select('circle')
                 .attr('cx');
-            const point_y = d3
-                .select(this)
+            const point_y = select(this)
                 .select('circle')
                 .attr('cy');
             const distance_x2 = Math.pow(click_x - point_x, 2);

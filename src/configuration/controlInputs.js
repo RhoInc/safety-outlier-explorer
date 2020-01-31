@@ -8,7 +8,7 @@ export default function controlInputs() {
         },
         {
             type: 'dropdown',
-            option: 'x.column',
+            options: ['x.column', 'marks.1.per.2'],
             label: 'X-axis',
             require: true
         },
