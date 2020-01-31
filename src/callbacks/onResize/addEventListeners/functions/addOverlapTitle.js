@@ -1,4 +1,5 @@
 import checkPointOverlap from './checkPointOverlap';
+import { select } from 'd3';
 
 export default function addOverlapTitle(d, chart) {
     // check for overlapping points
@@ -7,7 +8,7 @@ export default function addOverlapTitle(d, chart) {
     // If there are overlapping points, add a note in the details section.
 
     if (overlap.length > 0) {
-        var titleEl = d3.select(this).select('title');
+        var titleEl = select(this).select('title');
         var currentTitle = titleEl.text();
         var hasOverlapNote = currentTitle.search('overlapping'); //minor hack ...
         if (hasOverlapNote == -1) {
