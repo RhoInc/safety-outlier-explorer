@@ -9,7 +9,15 @@ export default function identifyControls() {
     controlGroups
         .attr('id', d => d.label.toLowerCase().replace(' ', '-'))
         .each(function(d) {
-            select(this).classed(d.type, true);
+            const controlGroup = select(this);
+            controlGroup
+                .classed(d.type, true)
+                .classed(
+                    `${d.type.toLowerCase().replace(' ', '-')} ${d.label
+                        .toLowerCase()
+                        .replace(' ', '-')}`,
+                    true
+                );
         });
 
     //Give y-axis controls a common class name.

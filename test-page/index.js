@@ -8,36 +8,49 @@ d3.csv(
         if (error)
             console.log(error);
 
-        var settings = {
+        const settings = {
             filters: [
                 {
-                    label: 'Treatment Group',
-                    value_col: 'ARM'
-                },
+                    value_col: 'ARM',
+                    label: 'Treatment Group'
+                }
             ],
+            //groups: [
+            //    {
+            //        value_col: 'ARM',
+            //        label: 'Treatment Group'
+            //    }
+            //],
             tooltip_cols: [
                 {
                     label: 'Date',
                     value_col: 'DT'
                 }
             ],
-            custom_marks: [
-                {
-                    per: ['USUBJID', 'VISIT', 'TEST', 'STRESN'],
-                    type: 'circle',
-                    attributes: {
-                        fill: 'red',
-                        'fill-opacity': 1,
-                        stroke: 'black',
-                        'stroke-opacity': 1,
-                    },
-                    radius: 4,
-                    tooltip: '[USUBJID] is right on schedule at [VISIT] (Study day [DY]).',
-                    values: {
-                        DY: ['56', '112', '168', '224', '280', '336']
-                    },
-                }
-            ],
+            //color_by: 'ARM',
+            normal_range_method: null,
+            //line_attributes: {
+            //    'stroke': 'black',
+            //    'stroke-width': 3,
+            //    'stroke-opacity': .25,
+            //},
+            //custom_marks: [
+            //    {
+            //        per: ['USUBJID', 'VISIT', 'TEST', 'STRESN'],
+            //        type: 'circle',
+            //        attributes: {
+            //            fill: 'red',
+            //            'fill-opacity': 1,
+            //            stroke: 'black',
+            //            'stroke-opacity': 1,
+            //        },
+            //        radius: 4,
+            //        tooltip: '[USUBJID] is right on schedule at [VISIT] (Study day [DY]).',
+            //        values: {
+            //            DY: ['56', '112', '168', '224', '280', '336']
+            //        },
+            //    }
+            //],
         };
         var instance = safetyOutlierExplorer(
             '#container',
@@ -46,8 +59,8 @@ d3.csv(
         instance.init(data);
 
         //quick test of participantSelected event
-        instance.wrap.on("participantsSelected",function(){
-          console.log("Participant Selected Event:")
+        instance.wrap.on('participantsSelected',function(){
+          console.log('Participant Selected Event:')
           console.log(d3.event.data)
         })
     }

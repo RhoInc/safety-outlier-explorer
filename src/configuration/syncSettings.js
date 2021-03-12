@@ -1,3 +1,5 @@
+import { set } from 'd3';
+
 export default function syncSettings(settings) {
     const time_col = settings.time_cols[0];
 
@@ -77,6 +79,55 @@ export default function syncSettings(settings) {
             );
         settings.unscheduled_visit_regex = new RegExp(pattern, flags);
     }
+
+    //stratification
+    const defaultGroup = { value_col: 'soe_none', label: 'None' };
+    if (!(settings.groups instanceof Array && settings.groups.length))
+        settings.groups = [defaultGroup];
+    else
+        settings.groups = [defaultGroup].concat(
+            settings.groups.map(group => {
+                return {
+                    value_col: group.value_col || group,
+                    label: group.label || group.value_col || group
+                };
+            })
+        );
+
+    //Remove duplicate values.
+    settings.groups = set(settings.groups.map(group => group.value_col))
+        .values()
+        .map(value => {
+            return {
+                value_col: value,
+                label: settings.groups.find(group => group.value_col === value).label
+            };
+        });
+
+    //Set initial group-by variable.
+    settings.color_by = settings.color_by
+        ? settings.color_by
+        : settings.groups.length > 1
+        ? settings.groups[1].value_col
+        : defaultGroup.value_col;
+
+    if (settings.color_by !== 'soe_none')
+        delete settings.marks
+            .find(mark => mark.type === 'line')
+            .attributes
+            .stroke;
+    else
+        Object.assign(
+            settings.marks
+                .find(mark => mark.type === 'line')
+                .attributes,
+            settings.line_attributes
+        );
+
+    //Set initial group-by label.
+    settings.legend.label = settings.groups.find(
+        group => group.value_col === settings.color_by
+    ).label;
 
     return settings;
 }
