@@ -40,7 +40,7 @@ export default function addRemovedRecordsNote() {
                 cursor: 'pointer',
                 'font-size': '16px',
                 bottom: '8px',
-                right: '-10px',
+                right: '-10px'
             })
             .html('<sup>x</sup>')
             .on('click', () => this.removedRecords.container.style('display', 'none'));

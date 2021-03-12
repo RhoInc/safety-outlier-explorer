@@ -65,6 +65,6 @@ export default function controlInputs() {
             start: null, // set in ./syncControlInputs.js
             values: null, // set in ./syncControlInputs.js
             require: true
-        },
+        }
     ];
 }

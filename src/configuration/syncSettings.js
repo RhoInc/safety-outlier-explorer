@@ -112,29 +112,16 @@ export default function syncSettings(settings) {
         : defaultGroup.value_col;
 
     if (settings.color_by !== 'soe_none') {
-        delete settings.marks
-            .find(mark => mark.type === 'line')
-            .attributes
-            .stroke;
-        delete settings.marks
-            .find(mark => mark.type === 'circle')
-            .attributes
-            .fill;
-        delete settings.marks
-            .find(mark => mark.type === 'circle')
-            .attributes
-            .stroke;
+        delete settings.marks.find(mark => mark.type === 'line').attributes.stroke;
+        delete settings.marks.find(mark => mark.type === 'circle').attributes.fill;
+        delete settings.marks.find(mark => mark.type === 'circle').attributes.stroke;
     } else {
         Object.assign(
-            settings.marks
-                .find(mark => mark.type === 'line')
-                .attributes,
+            settings.marks.find(mark => mark.type === 'line').attributes,
             settings.line_attributes
         );
         Object.assign(
-            settings.marks
-                .find(mark => mark.type === 'circle')
-                .attributes,
+            settings.marks.find(mark => mark.type === 'circle').attributes,
             settings.point_attributes
         );
     }

@@ -19,29 +19,19 @@ export default function customizeGroupByControl() {
                 context.config.legend.label = label;
 
                 if (context.config.color_by !== 'soe_none') {
-                    delete context.config.marks
-                        .find(mark => mark.type === 'line')
-                        .attributes
+                    delete context.config.marks.find(mark => mark.type === 'line').attributes
                         .stroke;
-                    delete context.config.marks
-                        .find(mark => mark.type === 'circle')
-                        .attributes
+                    delete context.config.marks.find(mark => mark.type === 'circle').attributes
                         .fill;
-                    delete context.config.marks
-                        .find(mark => mark.type === 'circle')
-                        .attributes
+                    delete context.config.marks.find(mark => mark.type === 'circle').attributes
                         .stroke;
                 } else {
                     Object.assign(
-                        context.config.marks
-                            .find(mark => mark.type === 'line')
-                            .attributes,
+                        context.config.marks.find(mark => mark.type === 'line').attributes,
                         context.config.line_attributes
                     );
                     Object.assign(
-                        context.config.marks
-                            .find(mark => mark.type === 'circle')
-                            .attributes,
+                        context.config.marks.find(mark => mark.type === 'circle').attributes,
                         context.config.point_attributes
                     );
                 }

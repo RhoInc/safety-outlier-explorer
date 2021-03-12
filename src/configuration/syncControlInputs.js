@@ -19,10 +19,8 @@ export default function syncControlInputs(controlInputs, settings) {
     }
 
     //Sync group control.
-    const groupControl = controlInputs
-        .find(controlInput => controlInput.label === 'Group by');
-    groupControl.start = settings.groups
-        .find(group => group.value_col === settings.color_by).label;
+    const groupControl = controlInputs.find(controlInput => controlInput.label === 'Group by');
+    groupControl.start = settings.groups.find(group => group.value_col === settings.color_by).label;
     groupControl.values = settings.groups.map(group => group.label);
 
     //Remove unscheduled visit control if unscheduled visit pattern is unscpecified.

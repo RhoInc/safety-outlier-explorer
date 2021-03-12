@@ -447,6 +447,9 @@ The object below contains Webcharts settings as of version 2.5.0 of the Safety O
             "default": true
         }
     ],
+    "legend": {
+        "mark": "line"
+    },
     "resizable": true,
     "margin": {
         "right": 30,
