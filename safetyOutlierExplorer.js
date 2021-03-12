@@ -370,11 +370,24 @@
         //Set initial group-by variable.
         settings.color_by = settings.color_by ? settings.color_by : settings.groups.length > 1 ? settings.groups[1].value_col : defaultGroup.value_col;
 
-        if (settings.color_by !== 'soe_none') delete settings.marks.find(function (mark) {
-            return mark.type === 'line';
-        }).attributes.stroke;else Object.assign(settings.marks.find(function (mark) {
-            return mark.type === 'line';
-        }).attributes, settings.line_attributes);
+        if (settings.color_by !== 'soe_none') {
+            delete settings.marks.find(function (mark) {
+                return mark.type === 'line';
+            }).attributes.stroke;
+            delete settings.marks.find(function (mark) {
+                return mark.type === 'circle';
+            }).attributes.fill;
+            delete settings.marks.find(function (mark) {
+                return mark.type === 'circle';
+            }).attributes.stroke;
+        } else {
+            Object.assign(settings.marks.find(function (mark) {
+                return mark.type === 'line';
+            }).attributes, settings.line_attributes);
+            Object.assign(settings.marks.find(function (mark) {
+                return mark.type === 'circle';
+            }).attributes, settings.point_attributes);
+        }
 
         //Set initial group-by label.
         settings.legend.label = settings.groups.find(function (group) {
@@ -472,7 +485,6 @@
         var groupControl = controlInputs.find(function (controlInput) {
             return controlInput.label === 'Group by';
         });
-        console.log(settings.groups);
         groupControl.start = settings.groups.find(function (group) {
             return group.value_col === settings.color_by;
         }).label;
@@ -764,7 +776,7 @@
     }
 
     function identifyControls() {
-        var controlGroups = this.controls.wrap.style('padding-bottom', '8px').selectAll('.control-group');
+        var controlGroups = this.controls.wrap.style('padding-bottom', '8px').selectAll('.control-group').style('vertical-align', 'middle');
 
         //Give each control a unique ID.
         controlGroups.attr('id', function (d) {
@@ -820,7 +832,8 @@
     function insertGrouping(selector, label) {
         var grouping = this.controls.wrap.insert('div', selector).style({
             display: 'inline-block',
-            'margin-right': '5px'
+            'margin-right': '5px',
+            'vertical-align': 'middle'
         }).append('fieldset').style('padding', '0px 2px');
         grouping.append('legend').text(label);
         this.controls.wrap.selectAll(selector).each(function (d) {
@@ -888,11 +901,26 @@
             //context.config.marks[0].per[0] = value_col;
             context.config.color_by = value_col;
             context.config.legend.label = label;
-            if (context.config.color_by !== 'soe_none') delete context.config.marks.find(function (mark) {
-                return mark.type === 'line';
-            }).attributes.stroke;else Object.assign(context.config.marks.find(function (mark) {
-                return mark.type === 'line';
-            }).attributes, context.config.line_attributes);
+
+            if (context.config.color_by !== 'soe_none') {
+                delete context.config.marks.find(function (mark) {
+                    return mark.type === 'line';
+                }).attributes.stroke;
+                delete context.config.marks.find(function (mark) {
+                    return mark.type === 'circle';
+                }).attributes.fill;
+                delete context.config.marks.find(function (mark) {
+                    return mark.type === 'circle';
+                }).attributes.stroke;
+            } else {
+                Object.assign(context.config.marks.find(function (mark) {
+                    return mark.type === 'line';
+                }).attributes, context.config.line_attributes);
+                Object.assign(context.config.marks.find(function (mark) {
+                    return mark.type === 'circle';
+                }).attributes, context.config.point_attributes);
+            }
+
             context.draw();
         }).selectAll('option').property('selected', function (d) {
             return d === _this.config.legend.label;
@@ -921,12 +949,14 @@
             }).text(message);
             this.removedRecords.container.append('span').style({
                 color: 'blue',
+                position: 'absolute',
                 'text-decoration': 'underline',
                 'font-style': 'normal',
                 'font-weight': 'bold',
                 cursor: 'pointer',
                 'font-size': '16px',
-                'margin-left': '5px'
+                bottom: '8px',
+                right: '-10px'
             }).html('<sup>x</sup>').on('click', function () {
                 return _this.removedRecords.container.style('display', 'none');
             });
@@ -1333,7 +1363,7 @@
             r: function r(d) {
                 return d.radius;
             },
-            stroke: 'black',
+            //stroke: 'black',
             'stroke-width': function strokeWidth(d) {
                 return d.attributes['stroke-width'] * 4;
             }
@@ -1389,6 +1419,12 @@
         this.multiples.settings = Object.assign({}, clone(this.config), clone(Object.getPrototypeOf(this.config)));
         this.multiples.settings.x.domain = null;
         this.multiples.settings.y.domain = null;
+        Object.assign(this.multiples.settings.marks.find(function (mark) {
+            return mark.type === 'line';
+        }).attributes, this.config.line_attributes);
+        Object.assign(this.multiples.settings.marks.find(function (mark) {
+            return mark.type === 'circle';
+        }).attributes, this.config.point_attributes);
         this.multiples.settings.resizable = false;
         this.multiples.settings.scale_text = false;
 
@@ -1838,8 +1874,11 @@
         });
     }
 
+    function removeLegend() {
+        if (this.config.color_by === 'soe_none') this.wrap.select('.legend').remove();
+    }
+
     function onResize$1() {
-        console.log(this.config);
         //Attach mark groups to central chart object.
         attachMarks.call(this);
 
@@ -1857,6 +1896,9 @@
 
         //Rotate tick marks to prevent text overlap.
         adjustTicks.call(this);
+
+        // Remove legend when not stratifying.
+        removeLegend.call(this);
     }
 
     function onDestroy() {}

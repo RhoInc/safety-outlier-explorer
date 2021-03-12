@@ -3,7 +3,8 @@ import { select } from 'd3';
 export default function identifyControls() {
     const controlGroups = this.controls.wrap
         .style('padding-bottom', '8px')
-        .selectAll('.control-group');
+        .selectAll('.control-group')
+        .style('vertical-align', 'middle');
 
     //Give each control a unique ID.
     controlGroups

@@ -21,7 +21,6 @@ export default function syncControlInputs(controlInputs, settings) {
     //Sync group control.
     const groupControl = controlInputs
         .find(controlInput => controlInput.label === 'Group by');
-    console.log(settings.groups);
     groupControl.start = settings.groups
         .find(group => group.value_col === settings.color_by).label;
     groupControl.values = settings.groups.map(group => group.label);

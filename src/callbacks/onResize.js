@@ -4,9 +4,9 @@ import drawNormalRange from './onResize/drawNormalRange';
 import addEventListeners from './onResize/addEventListeners';
 import addBoxPlot from './onResize/addBoxPlot';
 import adjustTicks from './onResize/adjustTicks';
+import removeLegend from './onResize/removeLegend';
 
 export default function onResize() {
-    console.log(this.config);
     //Attach mark groups to central chart object.
     attachMarks.call(this);
 
@@ -24,4 +24,7 @@ export default function onResize() {
 
     //Rotate tick marks to prevent text overlap.
     adjustTicks.call(this);
+
+    // Remove legend when not stratifying.
+    removeLegend.call(this);
 }

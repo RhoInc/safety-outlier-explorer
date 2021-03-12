@@ -17,18 +17,35 @@ export default function customizeGroupByControl() {
                 //context.config.marks[0].per[0] = value_col;
                 context.config.color_by = value_col;
                 context.config.legend.label = label;
-                if (context.config.color_by !== 'soe_none')
+
+                if (context.config.color_by !== 'soe_none') {
                     delete context.config.marks
                         .find(mark => mark.type === 'line')
                         .attributes
                         .stroke;
-                else
+                    delete context.config.marks
+                        .find(mark => mark.type === 'circle')
+                        .attributes
+                        .fill;
+                    delete context.config.marks
+                        .find(mark => mark.type === 'circle')
+                        .attributes
+                        .stroke;
+                } else {
                     Object.assign(
                         context.config.marks
                             .find(mark => mark.type === 'line')
                             .attributes,
                         context.config.line_attributes
                     );
+                    Object.assign(
+                        context.config.marks
+                            .find(mark => mark.type === 'circle')
+                            .attributes,
+                        context.config.point_attributes
+                    );
+                }
+
                 context.draw();
             })
             .selectAll('option')

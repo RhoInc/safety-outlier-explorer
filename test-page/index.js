@@ -1,6 +1,6 @@
 d3.csv(
-    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/renderer-specific/adbds.csv',
-    //'../../data-library/data/clinical-trials/renderer-specific/adbds.csv',
+    //'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/renderer-specific/adbds.csv',
+    '../../data-library/data/clinical-trials/renderer-specific/adbds.csv',
     function(d,i) {
         return d;
     },
@@ -15,12 +15,16 @@ d3.csv(
                     label: 'Treatment Group'
                 }
             ],
-            //groups: [
-            //    {
-            //        value_col: 'ARM',
-            //        label: 'Treatment Group'
-            //    }
-            //],
+            groups: [
+                {
+                    value_col: 'ARM',
+                    label: 'Treatment Group'
+                },
+                {
+                    value_col: 'SEX',
+                    label: 'Sex'
+                }
+            ],
             tooltip_cols: [
                 {
                     label: 'Date',
@@ -32,7 +36,7 @@ d3.csv(
             //line_attributes: {
             //    'stroke': 'black',
             //    'stroke-width': 3,
-            //    'stroke-opacity': .25,
+            //    'stroke-opacity': .5,
             //},
             //custom_marks: [
             //    {
@@ -52,16 +56,16 @@ d3.csv(
             //    }
             //],
         };
-        var instance = safetyOutlierExplorer(
+        const instance = safetyOutlierExplorer(
             '#container',
             settings
         );
         instance.init(data);
 
-        //quick test of participantSelected event
-        instance.wrap.on('participantsSelected',function(){
-          console.log('Participant Selected Event:')
-          console.log(d3.event.data)
-        })
+        // quick test of participantSelected event
+        instance.wrap.on('participantsSelected', function() {
+            console.log('Participant Selected Event:');
+            console.log(d3.event.data);
+        });
     }
 );
