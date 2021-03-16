@@ -1,6 +1,6 @@
 {
   "name": "safety-outlier-explorer",
-  "version": "2.6.1",
+  "version": "2.7.0",
   "description": "Chart showing participant trajectories of lab measures, vital signs and other related measures in clinical trials.",
   "module": "./src/index.js",
   "main": "./safetyOutlierExplorer.js",

@@ -1,12 +1,16 @@
 d3.csv(
-    //'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/renderer-specific/adbds.csv',
-    '../../data-library/data/clinical-trials/renderer-specific/adbds.csv',
+    'https://raw.githubusercontent.com/RhoInc/data-library/master/data/clinical-trials/renderer-specific/adbds.csv',
+    //'../../data-library/data/clinical-trials/renderer-specific/adbds.csv',
     function(d,i) {
         return d;
     },
-    function(error,data) {
-        if (error)
-            console.log(error);
+    function(data) {
+        const measures = [...new Set(data.map(d => d.TEST)).values()]
+            .sort(webCharts.dataOps.naturalSorter)
+            .reverse();
+        data.forEach(d => {
+            d.TESTN = measures.findIndex(measure => measure === d.TEST);
+        });
 
         const settings = {
             filters: [
@@ -31,6 +35,7 @@ d3.csv(
                     value_col: 'DT'
                 }
             ],
+            start_value: 'IgE',
             //color_by: 'ARM',
             normal_range_method: null,
             //line_attributes: {

@@ -202,6 +202,7 @@
             measure_col: 'TEST',
             start_value: null,
             unit_col: 'STRESU',
+            measure_order_col: 'TESTN',
 
             //result
             value_col: 'STRESN',
@@ -216,6 +217,7 @@
 
             //filters
             filters: null,
+            groups: null,
 
             //marks
             line_attributes: {
@@ -852,25 +854,96 @@
             });
     }
 
+    var _typeof =
+        typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
+            ? function(obj) {
+                  return typeof obj;
+              }
+            : function(obj) {
+                  return obj &&
+                      typeof Symbol === 'function' &&
+                      obj.constructor === Symbol &&
+                      obj !== Symbol.prototype
+                      ? 'symbol'
+                      : typeof obj;
+              };
+
+    var toConsumableArray = function(arr) {
+        if (Array.isArray(arr)) {
+            for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+            return arr2;
+        } else {
+            return Array.from(arr);
+        }
+    };
+
     function measure() {
         var _this = this;
 
-        this.measures = d3
-            .set(
-                this.initial_data.map(function(d) {
-                    return d[_this.config.measure_col];
-                })
-            )
-            .values()
-            .sort();
-        this.soe_measures = d3
-            .set(
-                this.initial_data.map(function(d) {
-                    return d.soe_measure;
-                })
-            )
-            .values()
-            .sort();
+        // Define set of measure values as they appear in the data.
+        this.measures = this.initial_data[0].hasOwnProperty(this.config.measure_order_col)
+            ? []
+                  .concat(
+                      toConsumableArray(
+                          new Set(
+                              this.initial_data.map(function(d) {
+                                  return +d[_this.config.measure_order_col];
+                              })
+                          ).values()
+                      )
+                  )
+                  .sort(function(a, b) {
+                      return a - b;
+                  })
+                  .map(function(value) {
+                      return _this.initial_data.find(function(d) {
+                          return +d[_this.config.measure_order_col] === value;
+                      })[_this.config.measure_col];
+                  })
+            : []
+                  .concat(
+                      toConsumableArray(
+                          new Set(
+                              this.initial_data.map(function(d) {
+                                  return d[_this.config.measure_col];
+                              })
+                          ).values()
+                      )
+                  )
+                  .sort(webcharts.dataOps.naturalSorter);
+
+        // Define set of measure values with units (in ADaM units are already attached; in SDTM units are captured in a separate variable).
+        this.soe_measures = this.initial_data[0].hasOwnProperty(this.config.measure_order_col)
+            ? []
+                  .concat(
+                      toConsumableArray(
+                          new Set(
+                              this.initial_data.map(function(d) {
+                                  return +d[_this.config.measure_order_col];
+                              })
+                          ).values()
+                      )
+                  )
+                  .sort(function(a, b) {
+                      return a - b;
+                  })
+                  .map(function(value) {
+                      return _this.initial_data.find(function(d) {
+                          return +d[_this.config.measure_order_col] === value;
+                      }).soe_measure;
+                  }) // sort measures by measure order
+            : []
+                  .concat(
+                      toConsumableArray(
+                          new Set(
+                              this.initial_data.map(function(d) {
+                                  return d.soe_measure;
+                              })
+                          ).values()
+                      )
+                  )
+                  .sort(webcharts.dataOps.naturalSorter); // sort measures alphabetically
     }
 
     function defineSets() {
@@ -884,6 +957,7 @@
         var measureInput = this.controls.config.inputs.find(function(input) {
             return input.label === 'Measure';
         });
+        measureInput.values = this.soe_measures;
         if (
             this.config.start_value &&
             this.soe_measures.indexOf(this.config.start_value) < 0 &&
@@ -1816,20 +1890,6 @@
                 }
             });
     }
-
-    var _typeof =
-        typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
-            ? function(obj) {
-                  return typeof obj;
-              }
-            : function(obj) {
-                  return obj &&
-                      typeof Symbol === 'function' &&
-                      obj.constructor === Symbol &&
-                      obj !== Symbol.prototype
-                      ? 'symbol'
-                      : typeof obj;
-              };
 
     /*------------------------------------------------------------------------------------------------\
       Clone a variable (http://stackoverflow.com/a/728694).
