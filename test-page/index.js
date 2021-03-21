@@ -16,7 +16,7 @@ d3.csv(
             filters: [
                 {
                     value_col: 'ARM',
-                    label: 'Treatment Group'
+                    label: 'Treatment Group',
                 }
             ],
             groups: [
