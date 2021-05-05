@@ -3,7 +3,7 @@ The most straightforward way to customize the Safety Outlier Explorer is by usin
 In addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the Safety Outlier Explorer to facilitate data mapping and other custom functionality. These custom settings are described in detail below. All defaults can be overwritten by users.
 
 # Renderer-specific settings
-The sections below describe each safety-outlier-explorer setting as of version 2.5.0.
+The sections below describe each safety-outlier-explorer setting as of version 2.7.0.
 
 ## settings.id_col
 `string`
@@ -443,7 +443,7 @@ Variable label
 **default:** none
 
 # Webcharts settings
-The object below contains Webcharts settings as of version 2.5.0 of the Safety Outlier Explorer.
+The object below contains Webcharts settings as of version 2.7.0 of the Safety Outlier Explorer.
 
 ```
 {

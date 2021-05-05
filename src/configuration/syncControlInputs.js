@@ -9,7 +9,7 @@ export default function syncControlInputs(controlInputs, settings) {
                 value_col: d.value_col ? d.value_col : d,
                 label: d.label ? d.label : d.value_col ? d.value_col : d,
                 start: d.start || null,
-                all: d.all || true,
+                all: d.all || true
             };
             //add the filter to the control inputs (as long as it isn't already there)
             var current_value_cols = controlInputs
