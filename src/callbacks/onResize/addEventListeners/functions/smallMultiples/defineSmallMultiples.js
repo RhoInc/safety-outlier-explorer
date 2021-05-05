@@ -11,6 +11,14 @@ export default function defineSmallMultiples() {
     );
     this.multiples.settings.x.domain = null;
     this.multiples.settings.y.domain = null;
+    Object.assign(
+        this.multiples.settings.marks.find(mark => mark.type === 'line').attributes,
+        this.config.line_attributes
+    );
+    Object.assign(
+        this.multiples.settings.marks.find(mark => mark.type === 'circle').attributes,
+        this.config.point_attributes
+    );
     this.multiples.settings.resizable = false;
     this.multiples.settings.scale_text = false;
 

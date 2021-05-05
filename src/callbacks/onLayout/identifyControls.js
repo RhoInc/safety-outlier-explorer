@@ -3,13 +3,22 @@ import { select } from 'd3';
 export default function identifyControls() {
     const controlGroups = this.controls.wrap
         .style('padding-bottom', '8px')
-        .selectAll('.control-group');
+        .selectAll('.control-group')
+        .style('vertical-align', 'middle');
 
     //Give each control a unique ID.
     controlGroups
         .attr('id', d => d.label.toLowerCase().replace(' ', '-'))
         .each(function(d) {
-            select(this).classed(d.type, true);
+            const controlGroup = select(this);
+            controlGroup
+                .classed(d.type, true)
+                .classed(
+                    `${d.type.toLowerCase().replace(' ', '-')} ${d.label
+                        .toLowerCase()
+                        .replace(' ', '-')}`,
+                    true
+                );
         });
 
     //Give y-axis controls a common class name.

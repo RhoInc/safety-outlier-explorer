@@ -13,10 +13,12 @@ required and optional variables:
 |`visit_order_col`|VISITNUM|**numeric**|visit order||
 |`study_day_col`|DY|**numeric**|study day||
 |`measure_col`|_TEST_|**character**|measure|**Yes**|
+|`measure_order_col`|_TESTN_|**numeric**|measure order||
 |`unit_col`|_STRESU_|**character**|units of measurement||
 |`value_col`|_STRESN_|**numeric**|result|**Yes**|
 |`normal_col_low`|_STNRLO_|**numeric**|lower limit of normal||
 |`normal_col_high`|_STNRHI_|**numeric**|upper limit of normal||
 |`filters[]`||**either**|an array of filter variables and associated metadata||
+|`groups[]`||**either**|an array of grouping variables and associated metadata||
 |`details[]`||**either**|an array of participant-level variables and associated metadata||
 |`tooltip_cols[]`||**either**|an array of tooltip variables and associated metadata||

@@ -32,6 +32,9 @@ export default function webchartsSettings() {
                 default: true
             }
         ],
+        legend: {
+            mark: 'line'
+        },
         resizable: true,
         margin: {
             right: 30, // create space for box plot

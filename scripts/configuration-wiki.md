@@ -103,6 +103,15 @@ variable: measure
 
 
 
+## settings.measure_order_col
+`string`
+
+variable: measure order
+
+**default:** `"TESTN"`
+
+
+
 ## settings.unit_col
 `string`
 
@@ -163,6 +172,29 @@ Variable name
 **default:** none
 
 ### settings.filters[].label
+`string`
+
+Variable label
+
+**default:** none
+
+
+
+## settings.groups
+`array`
+
+an array of grouping variables and associated metadata
+
+**default:** none
+
+### settings.groups[].value_col
+`string`
+
+Variable name
+
+**default:** none
+
+### settings.groups[].label
 `string`
 
 Variable label
@@ -447,6 +479,9 @@ The object below contains Webcharts settings as of version 2.5.0 of the Safety O
             "default": true
         }
     ],
+    "legend": {
+        "mark": "line"
+    },
     "resizable": true,
     "margin": {
         "right": 30,

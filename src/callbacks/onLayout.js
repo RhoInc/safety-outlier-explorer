@@ -3,6 +3,7 @@ import labelXaxisOptions from './onLayout/labelXaxisOptions';
 import addYdomainResetButton from './onLayout/addYdomainResetButton';
 import groupControls from './onLayout/groupControls';
 import hideNormalRangeInputs from './onLayout/hideNormalRangeInputs';
+import customizeGroupByControl from './onLayout/customizeGroupByControl';
 import addParticipantCountContainer from './onLayout/addParticipantCountContainer';
 import addRemovedRecordsContainer from './onLayout/addRemovedRecordsContainer';
 import addBorderAboveChart from './onLayout/addBorderAboveChart';
@@ -14,6 +15,7 @@ export default function onLayout() {
     addYdomainResetButton.call(this);
     groupControls.call(this); // Group related controls visually.
     hideNormalRangeInputs.call(this); // Hide normal range input controls depending on the normal range method.
+    customizeGroupByControl.call(this);
     addParticipantCountContainer.call(this);
     addRemovedRecordsContainer.call(this);
     addBorderAboveChart.call(this);

@@ -11,7 +11,7 @@ export default function highlightHovered() {
         .select('circle')
         .attr({
             r: d => d.radius,
-            stroke: 'black',
+            //stroke: 'black',
             'stroke-width': d => d.attributes['stroke-width'] * 4
         });
 }

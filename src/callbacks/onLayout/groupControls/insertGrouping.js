@@ -3,7 +3,8 @@ export default function insertGrouping(selector, label) {
         .insert('div', selector)
         .style({
             display: 'inline-block',
-            'margin-right': '5px'
+            'margin-right': '5px',
+            'vertical-align': 'middle'
         })
         .append('fieldset')
         .style('padding', '0px 2px');

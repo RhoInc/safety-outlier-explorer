@@ -57,6 +57,14 @@ export default function controlInputs() {
             inline: true,
             option: 'unscheduled_visits',
             label: 'Unscheduled'
+        },
+        {
+            type: 'dropdown',
+            label: 'Group by',
+            options: ['color_by'],
+            start: null, // set in ./syncControlInputs.js
+            values: null, // set in ./syncControlInputs.js
+            require: true
         }
     ];
 }

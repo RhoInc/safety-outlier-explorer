@@ -123,6 +123,15 @@
             "data-type": "character",
             "required": true
         },
+        "measure_order_col": {
+            "type": "string",
+            "title": "Measure Order",
+            "description": "variable: measure order",
+            "default": "TESTN",
+            "data-mapping": true,
+            "data-type": "numeric",
+            "required": false
+        },
         "unit_col": {
             "type": "string",
             "title": "Units",
@@ -168,6 +177,27 @@
             "type": "array",
             "title": "Filters",
             "description": "an array of filter variables and associated metadata",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "value_col": {
+                        "type": "string",
+                        "title": "Variable name"
+                    },
+                    "label": {
+                        "type": "string",
+                        "title": "Variable label"
+                    }
+                }
+            },
+            "data-mapping": true,
+            "data-type": "either",
+            "required": false
+        },
+        "groups": {
+            "type": "array",
+            "title": "Groups",
+            "description": "an array of grouping variables and associated metadata",
             "items": {
                 "type": "object",
                 "properties": {

@@ -7,7 +7,9 @@ export default function syncControlInputs(controlInputs, settings) {
             const thisFilter = {
                 type: 'subsetter',
                 value_col: d.value_col ? d.value_col : d,
-                label: d.label ? d.label : d.value_col ? d.value_col : d
+                label: d.label ? d.label : d.value_col ? d.value_col : d,
+                start: d.start || null,
+                all: d.all || true,
             };
             //add the filter to the control inputs (as long as it isn't already there)
             var current_value_cols = controlInputs
@@ -17,6 +19,11 @@ export default function syncControlInputs(controlInputs, settings) {
                 controlInputs.splice(4 + i, 0, thisFilter);
         });
     }
+
+    //Sync group control.
+    const groupControl = controlInputs.find(controlInput => controlInput.label === 'Group by');
+    groupControl.start = settings.groups.find(group => group.value_col === settings.color_by).label;
+    groupControl.values = settings.groups.map(group => group.label);
 
     //Remove unscheduled visit control if unscheduled visit pattern is unscpecified.
     if (
