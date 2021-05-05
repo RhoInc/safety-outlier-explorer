@@ -9,12 +9,13 @@ export default function clearSelected() {
             .attr(mark.attributes);
     });
 
-    // Reset color of selected point to original color
-    this.points
-        .filter(d => d.values.raw[0][this.config.id_col] === this.selected_id)
-        .select('circle')
-        .attr('stroke', d => context.colorScale(d.values.raw[0][context.config.color_by]));
-
+    // Reset color of selected point to original color if group by active
+    if (this.config.color_by != 'soe_none') {
+        this.points
+            .filter(d => d.values.raw[0][this.config.id_col] === this.selected_id)
+            .select('circle')
+            .attr('stroke', d => context.colorScale(d.values.raw[0][context.config.color_by]));
+    }
     if (this.multiples.chart) this.multiples.chart.destroy();
     delete this.selected_id;
 
