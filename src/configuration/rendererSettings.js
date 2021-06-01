@@ -38,6 +38,7 @@ export default function rendererSettings() {
         measure_col: 'TEST',
         start_value: null,
         unit_col: 'STRESU',
+        measure_order_col: 'TESTN',
 
         //result
         value_col: 'STRESN',
@@ -52,6 +53,7 @@ export default function rendererSettings() {
 
         //filters
         filters: null,
+        groups: null,
 
         //marks
         line_attributes: {

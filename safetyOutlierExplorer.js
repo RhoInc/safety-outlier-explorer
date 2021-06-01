@@ -202,6 +202,7 @@
             measure_col: 'TEST',
             start_value: null,
             unit_col: 'STRESU',
+            measure_order_col: 'TESTN',
 
             //result
             value_col: 'STRESN',
@@ -216,6 +217,7 @@
 
             //filters
             filters: null,
+            groups: null,
 
             //marks
             line_attributes: {
@@ -276,6 +278,9 @@
                     default: true
                 }
             ],
+            legend: {
+                mark: 'line'
+            },
             resizable: true,
             margin: {
                 right: 30, // create space for box plot
@@ -389,6 +394,74 @@
             settings.unscheduled_visit_regex = new RegExp(pattern, flags);
         }
 
+        //stratification
+        var defaultGroup = { value_col: 'soe_none', label: 'None' };
+        if (!(settings.groups instanceof Array && settings.groups.length))
+            settings.groups = [defaultGroup];
+        else
+            settings.groups = [defaultGroup].concat(
+                settings.groups.map(function(group) {
+                    return {
+                        value_col: group.value_col || group,
+                        label: group.label || group.value_col || group
+                    };
+                })
+            );
+
+        //Remove duplicate values.
+        settings.groups = d3
+            .set(
+                settings.groups.map(function(group) {
+                    return group.value_col;
+                })
+            )
+            .values()
+            .map(function(value) {
+                return {
+                    value_col: value,
+                    label: settings.groups.find(function(group) {
+                        return group.value_col === value;
+                    }).label
+                };
+            });
+
+        //Set initial group-by variable.
+        settings.color_by = settings.color_by
+            ? settings.color_by
+            : settings.groups.length > 1
+            ? settings.groups[1].value_col
+            : defaultGroup.value_col;
+
+        if (settings.color_by !== 'soe_none') {
+            delete settings.marks.find(function(mark) {
+                return mark.type === 'line';
+            }).attributes.stroke;
+            delete settings.marks.find(function(mark) {
+                return mark.type === 'circle';
+            }).attributes.fill;
+            delete settings.marks.find(function(mark) {
+                return mark.type === 'circle';
+            }).attributes.stroke;
+        } else {
+            Object.assign(
+                settings.marks.find(function(mark) {
+                    return mark.type === 'line';
+                }).attributes,
+                settings.line_attributes
+            );
+            Object.assign(
+                settings.marks.find(function(mark) {
+                    return mark.type === 'circle';
+                }).attributes,
+                settings.point_attributes
+            );
+        }
+
+        //Set initial group-by label.
+        settings.legend.label = settings.groups.find(function(group) {
+            return group.value_col === settings.color_by;
+        }).label;
+
         return settings;
     }
 
@@ -451,6 +524,14 @@
                 inline: true,
                 option: 'unscheduled_visits',
                 label: 'Unscheduled'
+            },
+            {
+                type: 'dropdown',
+                label: 'Group by',
+                options: ['color_by'],
+                start: null, // set in ./syncControlInputs.js
+                values: null, // set in ./syncControlInputs.js
+                require: true
             }
         ];
     }
@@ -468,7 +549,9 @@
                 var thisFilter = {
                     type: 'subsetter',
                     value_col: d.value_col ? d.value_col : d,
-                    label: d.label ? d.label : d.value_col ? d.value_col : d
+                    label: d.label ? d.label : d.value_col ? d.value_col : d,
+                    start: d.start || null,
+                    all: d.all || true
                 };
                 //add the filter to the control inputs (as long as it isn't already there)
                 var current_value_cols = controlInputs
@@ -482,6 +565,17 @@
                     controlInputs.splice(4 + i, 0, thisFilter);
             });
         }
+
+        //Sync group control.
+        var groupControl = controlInputs.find(function(controlInput) {
+            return controlInput.label === 'Group by';
+        });
+        groupControl.start = settings.groups.find(function(group) {
+            return group.value_col === settings.color_by;
+        }).label;
+        groupControl.values = settings.groups.map(function(group) {
+            return group.label;
+        });
 
         //Remove unscheduled visit control if unscheduled visit pattern is unscpecified.
         if (
@@ -666,6 +760,9 @@
                         d[ordinalTimeSettings.value_col]
                     );
             }
+
+            //Add placeholder variable for non-grouped comparisons.
+            d.soe_none = 'All Participants';
         });
     }
 
@@ -759,25 +856,96 @@
             });
     }
 
+    var _typeof =
+        typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
+            ? function(obj) {
+                  return typeof obj;
+              }
+            : function(obj) {
+                  return obj &&
+                      typeof Symbol === 'function' &&
+                      obj.constructor === Symbol &&
+                      obj !== Symbol.prototype
+                      ? 'symbol'
+                      : typeof obj;
+              };
+
+    var toConsumableArray = function(arr) {
+        if (Array.isArray(arr)) {
+            for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) arr2[i] = arr[i];
+
+            return arr2;
+        } else {
+            return Array.from(arr);
+        }
+    };
+
     function measure() {
         var _this = this;
 
-        this.measures = d3
-            .set(
-                this.initial_data.map(function(d) {
-                    return d[_this.config.measure_col];
-                })
-            )
-            .values()
-            .sort();
-        this.soe_measures = d3
-            .set(
-                this.initial_data.map(function(d) {
-                    return d.soe_measure;
-                })
-            )
-            .values()
-            .sort();
+        // Define set of measure values as they appear in the data.
+        this.measures = this.initial_data[0].hasOwnProperty(this.config.measure_order_col)
+            ? []
+                  .concat(
+                      toConsumableArray(
+                          new Set(
+                              this.initial_data.map(function(d) {
+                                  return +d[_this.config.measure_order_col];
+                              })
+                          ).values()
+                      )
+                  )
+                  .sort(function(a, b) {
+                      return a - b;
+                  })
+                  .map(function(value) {
+                      return _this.initial_data.find(function(d) {
+                          return +d[_this.config.measure_order_col] === value;
+                      })[_this.config.measure_col];
+                  })
+            : []
+                  .concat(
+                      toConsumableArray(
+                          new Set(
+                              this.initial_data.map(function(d) {
+                                  return d[_this.config.measure_col];
+                              })
+                          ).values()
+                      )
+                  )
+                  .sort(webcharts.dataOps.naturalSorter);
+
+        // Define set of measure values with units (in ADaM units are already attached; in SDTM units are captured in a separate variable).
+        this.soe_measures = this.initial_data[0].hasOwnProperty(this.config.measure_order_col)
+            ? []
+                  .concat(
+                      toConsumableArray(
+                          new Set(
+                              this.initial_data.map(function(d) {
+                                  return +d[_this.config.measure_order_col];
+                              })
+                          ).values()
+                      )
+                  )
+                  .sort(function(a, b) {
+                      return a - b;
+                  })
+                  .map(function(value) {
+                      return _this.initial_data.find(function(d) {
+                          return +d[_this.config.measure_order_col] === value;
+                      }).soe_measure;
+                  }) // sort measures by measure order
+            : []
+                  .concat(
+                      toConsumableArray(
+                          new Set(
+                              this.initial_data.map(function(d) {
+                                  return d.soe_measure;
+                              })
+                          ).values()
+                      )
+                  )
+                  .sort(webcharts.dataOps.naturalSorter); // sort measures alphabetically
     }
 
     function defineSets() {
@@ -791,6 +959,7 @@
         var measureInput = this.controls.config.inputs.find(function(input) {
             return input.label === 'Measure';
         });
+        measureInput.values = this.soe_measures;
         if (
             this.config.start_value &&
             this.soe_measures.indexOf(this.config.start_value) < 0 &&
@@ -901,7 +1070,8 @@
     function identifyControls() {
         var controlGroups = this.controls.wrap
             .style('padding-bottom', '8px')
-            .selectAll('.control-group');
+            .selectAll('.control-group')
+            .style('vertical-align', 'middle');
 
         //Give each control a unique ID.
         controlGroups
@@ -909,7 +1079,15 @@
                 return d.label.toLowerCase().replace(' ', '-');
             })
             .each(function(d) {
-                d3.select(this).classed(d.type, true);
+                var controlGroup = d3.select(this);
+                controlGroup
+                    .classed(d.type, true)
+                    .classed(
+                        d.type.toLowerCase().replace(' ', '-') +
+                            ' ' +
+                            d.label.toLowerCase().replace(' ', '-'),
+                        true
+                    );
             });
 
         //Give y-axis controls a common class name.
@@ -988,7 +1166,8 @@
             .insert('div', selector)
             .style({
                 display: 'inline-block',
-                'margin-right': '5px'
+                'margin-right': '5px',
+                'vertical-align': 'middle'
             })
             .append('fieldset')
             .style('padding', '0px 2px');
@@ -1070,6 +1249,61 @@
         });
     }
 
+    function customizeGroupByControl() {
+        var _this = this;
+
+        var context = this;
+
+        var groupControl = this.controls.wrap.selectAll('.control-group.dropdown.group-by');
+        if (groupControl.datum().values.length === 1) groupControl.style('display', 'none');
+        else
+            groupControl
+                .selectAll('select')
+                .on('change', function(d) {
+                    var label = d3
+                        .select(this)
+                        .selectAll('option:checked')
+                        .text();
+                    var value_col = context.config.groups.find(function(group) {
+                        return group.label === label;
+                    }).value_col;
+                    //context.config.marks[0].per[0] = value_col;
+                    context.config.color_by = value_col;
+                    context.config.legend.label = label;
+
+                    if (context.config.color_by !== 'soe_none') {
+                        delete context.config.marks.find(function(mark) {
+                            return mark.type === 'line';
+                        }).attributes.stroke;
+                        delete context.config.marks.find(function(mark) {
+                            return mark.type === 'circle';
+                        }).attributes.fill;
+                        delete context.config.marks.find(function(mark) {
+                            return mark.type === 'circle';
+                        }).attributes.stroke;
+                    } else {
+                        Object.assign(
+                            context.config.marks.find(function(mark) {
+                                return mark.type === 'line';
+                            }).attributes,
+                            context.config.line_attributes
+                        );
+                        Object.assign(
+                            context.config.marks.find(function(mark) {
+                                return mark.type === 'circle';
+                            }).attributes,
+                            context.config.point_attributes
+                        );
+                    }
+
+                    context.draw();
+                })
+                .selectAll('option')
+                .property('selected', function(d) {
+                    return d === _this.config.legend.label;
+                });
+    }
+
     function addParticipantCountContainer() {
         this.participantCount.container = this.controls.wrap
             .style('position', 'relative')
@@ -1125,12 +1359,14 @@
                 .append('span')
                 .style({
                     color: 'blue',
+                    position: 'absolute',
                     'text-decoration': 'underline',
                     'font-style': 'normal',
                     'font-weight': 'bold',
                     cursor: 'pointer',
                     'font-size': '16px',
-                    'margin-left': '5px'
+                    bottom: '8px',
+                    right: '-10px'
                 })
                 .html('<sup>x</sup>')
                 .on('click', function() {
@@ -1163,6 +1399,7 @@
         addYdomainResetButton.call(this);
         groupControls.call(this); // Group related controls visually.
         hideNormalRangeInputs.call(this); // Hide normal range input controls depending on the normal range method.
+        customizeGroupByControl.call(this);
         addParticipantCountContainer.call(this);
         addRemovedRecordsNote.call(this);
         addBorderAboveChart.call(this);
@@ -1540,11 +1777,9 @@
 
     function drawNormalRange() {
         if (this.normalRange) this.normalRange.remove();
+        this.normalRange = this.svg.insert('g', '.line-supergroup').classed('normal-range', true);
 
         if (this.config.normal_range_method) {
-            this.normalRange = this.svg
-                .insert('g', '.line-supergroup')
-                .classed('normal-range', true);
             this.normalRange
                 .append('rect')
                 .attr({
@@ -1584,6 +1819,10 @@
     }
 
     function clearSelected() {
+        var _this = this;
+
+        var context = this;
+
         this.marks.forEach(function(mark) {
             var element = mark.type === 'line' ? 'path' : mark.type;
             mark.groups
@@ -1591,6 +1830,18 @@
                 .select(element)
                 .attr(mark.attributes);
         });
+
+        // Reset color of selected point to original color if group by active
+        if (this.config.color_by != 'soe_none') {
+            this.points
+                .filter(function(d) {
+                    return d.values.raw[0][_this.config.id_col] === _this.selected_id;
+                })
+                .select('circle')
+                .attr('stroke', function(d) {
+                    return context.colorScale(d.values.raw[0][context.config.color_by]);
+                });
+        }
         if (this.multiples.chart) this.multiples.chart.destroy();
         delete this.selected_id;
 
@@ -1651,26 +1902,12 @@
                 r: function r(d) {
                     return d.radius;
                 },
-                stroke: 'black',
+                //stroke: 'black',
                 'stroke-width': function strokeWidth(d) {
                     return d.attributes['stroke-width'] * 4;
                 }
             });
     }
-
-    var _typeof =
-        typeof Symbol === 'function' && typeof Symbol.iterator === 'symbol'
-            ? function(obj) {
-                  return typeof obj;
-              }
-            : function(obj) {
-                  return obj &&
-                      typeof Symbol === 'function' &&
-                      obj.constructor === Symbol &&
-                      obj !== Symbol.prototype
-                      ? 'symbol'
-                      : typeof obj;
-              };
 
     /*------------------------------------------------------------------------------------------------\
       Clone a variable (http://stackoverflow.com/a/728694).
@@ -1720,6 +1957,18 @@
         );
         this.multiples.settings.x.domain = null;
         this.multiples.settings.y.domain = null;
+        Object.assign(
+            this.multiples.settings.marks.find(function(mark) {
+                return mark.type === 'line';
+            }).attributes,
+            this.config.line_attributes
+        );
+        Object.assign(
+            this.multiples.settings.marks.find(function(mark) {
+                return mark.type === 'circle';
+            }).attributes,
+            this.config.point_attributes
+        );
         this.multiples.settings.resizable = false;
         this.multiples.settings.scale_text = false;
 
@@ -2406,6 +2655,10 @@
         });
     }
 
+    function removeLegend() {
+        if (this.config.color_by === 'soe_none') this.wrap.select('.legend').remove();
+    }
+
     function onResize$1() {
         //Attach mark groups to central chart object.
         attachMarks.call(this);
@@ -2424,6 +2677,9 @@
 
         //Rotate tick marks to prevent text overlap.
         adjustTicks.call(this);
+
+        // Remove legend when not stratifying.
+        removeLegend.call(this);
     }
 
     function onDestroy() {}

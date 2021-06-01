@@ -19,5 +19,8 @@ export default function addVariables() {
                     d[ordinalTimeSettings.value_col]
                 );
         }
+
+        //Add placeholder variable for non-grouped comparisons.
+        d.soe_none = 'All Participants';
     });
 }

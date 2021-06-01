@@ -2,7 +2,7 @@
     "title": "settings",
     "description": "JSON schema for the configuration of safety-outlier-explorer",
     "overview": "The most straightforward way to customize the Safety Outlier Explorer is by using a configuration object whose properties describe the behavior and appearance of the chart. Since the Safety Outlier Explorer is a Webcharts `chart` object, many default Webcharts settings are set in the [defaultSettings.js file](https://github.com/RhoInc/safety-outlier-explorer/blob/master/src/defaultSettings.js) as [described below](#webcharts-settings). Refer to the [Webcharts documentation](https://github.com/RhoInc/Webcharts/wiki/Chart-Configuration) for more details on these settings.\nIn addition to the standard Webcharts settings several custom settings not available in the base Webcharts library have been added to the Safety Outlier Explorer to facilitate data mapping and other custom functionality. These custom settings are described in detail below. All defaults can be overwritten by users.",
-    "version": "2.5.0",
+    "version": "2.7.0",
     "type": "object",
     "data-guidelines": "The Safety Outlier Explorer accepts [JSON](https://en.wikipedia.org/wiki/JSON) data of the format returned by [`d3.csv()`](https://github.com/d3/d3-3.x-api-reference/blob/master/CSV.md). The renderer visualizes clinical medical signs data with **one row per participant per visit per medical sign** plus the required variables specified below.",
     "data-structure": "one record per participant per visit per medical sign",
@@ -123,6 +123,15 @@
             "data-type": "character",
             "required": true
         },
+        "measure_order_col": {
+            "type": "string",
+            "title": "Measure Order",
+            "description": "variable: measure order",
+            "default": "TESTN",
+            "data-mapping": true,
+            "data-type": "numeric",
+            "required": false
+        },
         "unit_col": {
             "type": "string",
             "title": "Units",
@@ -168,6 +177,27 @@
             "type": "array",
             "title": "Filters",
             "description": "an array of filter variables and associated metadata",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "value_col": {
+                        "type": "string",
+                        "title": "Variable name"
+                    },
+                    "label": {
+                        "type": "string",
+                        "title": "Variable label"
+                    }
+                }
+            },
+            "data-mapping": true,
+            "data-type": "either",
+            "required": false
+        },
+        "groups": {
+            "type": "array",
+            "title": "Groups",
+            "description": "an array of grouping variables and associated metadata",
             "items": {
                 "type": "object",
                 "properties": {

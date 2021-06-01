@@ -4,16 +4,30 @@ d3.csv(
     function(d,i) {
         return d;
     },
-    function(error,data) {
-        if (error)
-            console.log(error);
+    function(data) {
+        const measures = [...new Set(data.map(d => d.TEST)).values()]
+            .sort(webCharts.dataOps.naturalSorter)
+            .reverse();
+        data.forEach(d => {
+            d.TESTN = measures.findIndex(measure => measure === d.TEST);
+        });
 
-        var settings = {
+        const settings = {
             filters: [
                 {
+                    value_col: 'ARM',
                     label: 'Treatment Group',
-                    value_col: 'ARM'
+                }
+            ],
+            groups: [
+                {
+                    value_col: 'ARM',
+                    label: 'Treatment Group'
                 },
+                {
+                    value_col: 'SEX',
+                    label: 'Sex'
+                }
             ],
             tooltip_cols: [
                 {
@@ -21,34 +35,42 @@ d3.csv(
                     value_col: 'DT'
                 }
             ],
-            custom_marks: [
-                {
-                    per: ['USUBJID', 'VISIT', 'TEST', 'STRESN'],
-                    type: 'circle',
-                    attributes: {
-                        fill: 'red',
-                        'fill-opacity': 1,
-                        stroke: 'black',
-                        'stroke-opacity': 1,
-                    },
-                    radius: 4,
-                    tooltip: '[USUBJID] is right on schedule at [VISIT] (Study day [DY]).',
-                    values: {
-                        DY: ['56', '112', '168', '224', '280', '336']
-                    },
-                }
-            ],
+            start_value: 'IgE',
+            //color_by: 'ARM',
+            normal_range_method: null,
+            //line_attributes: {
+            //    'stroke': 'black',
+            //    'stroke-width': 3,
+            //    'stroke-opacity': .5,
+            //},
+            //custom_marks: [
+            //    {
+            //        per: ['USUBJID', 'VISIT', 'TEST', 'STRESN'],
+            //        type: 'circle',
+            //        attributes: {
+            //            fill: 'red',
+            //            'fill-opacity': 1,
+            //            stroke: 'black',
+            //            'stroke-opacity': 1,
+            //        },
+            //        radius: 4,
+            //        tooltip: '[USUBJID] is right on schedule at [VISIT] (Study day [DY]).',
+            //        values: {
+            //            DY: ['56', '112', '168', '224', '280', '336']
+            //        },
+            //    }
+            //],
         };
-        var instance = safetyOutlierExplorer(
+        const instance = safetyOutlierExplorer(
             '#container',
             settings
         );
         instance.init(data);
 
-        //quick test of participantSelected event
-        instance.wrap.on("participantsSelected",function(){
-          console.log("Participant Selected Event:")
-          console.log(d3.event.data)
-        })
+        // quick test of participantSelected event
+        instance.wrap.on('participantsSelected', function() {
+            console.log('Participant Selected Event:');
+            console.log(d3.event.data);
+        });
     }
 );

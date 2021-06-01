@@ -33,12 +33,14 @@ export default function addRemovedRecordsNote() {
             .append('span')
             .style({
                 color: 'blue',
+                position: 'absolute',
                 'text-decoration': 'underline',
                 'font-style': 'normal',
                 'font-weight': 'bold',
                 cursor: 'pointer',
                 'font-size': '16px',
-                'margin-left': '5px'
+                bottom: '8px',
+                right: '-10px'
             })
             .html('<sup>x</sup>')
             .on('click', () => this.removedRecords.container.style('display', 'none'));
